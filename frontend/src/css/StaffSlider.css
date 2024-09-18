@@ -1,0 +1,23 @@
+.staff-slider {
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  margin-left: 150px;
+}
+
+.img :hover {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.staff-member img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+@media (min-width: 768px) {
+  .staff-slider {
+    scroll-snap-type: x mandatory;
+  }
+}

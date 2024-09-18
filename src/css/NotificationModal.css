@@ -1,0 +1,71 @@
+.notification-modal {
+    position: fixed;
+    top: 42%;
+    left: 85%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    background: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    z-index: 1000;
+    color: black;
+}
+
+.notification-header {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: small;
+}
+
+.notification-body {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.notification-item {
+    padding: 5px;
+    border-bottom: 1px solid #ddd;
+}
+
+.notification-item.read {
+   color: white;
+}
+
+.notification-item.unread {
+    color: #007bff;
+    font-weight: bold;
+}
+
+/* .notification-footer {
+    padding: 10px;
+    border-top: 1px solid #ccc;
+    text-align: center;
+} */
+
+.mark-all-read {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    width: 90px;
+    font-size: 10px;
+}
+
+.mark-all-read:hover {
+    background: #0056b3;
+}
+
+.delete{
+    background:none;
+    color: black;
+}
+
+.delete:hover{
+    background: none;
+}

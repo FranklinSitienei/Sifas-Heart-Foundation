@@ -1,0 +1,12 @@
+{
+    "name": "Sifa's Heart Foundation",
+    "version": "1.0.0",
+    "scripts": {
+        "frontend": "cd frontend && npm start",
+        "backend": "cd backend && npm run dev",
+        "dev": "concurrently \"npm run frontend\" \"npm run backend\""
+    },
+    "dependencies": {
+        "concurrently": "^7.6.0"
+    }
+}

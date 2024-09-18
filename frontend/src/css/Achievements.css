@@ -1,0 +1,78 @@
+.achievements-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: white;
+  color: rgb(0, 0, 0);
+  margin-top: 20px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  box-shadow: 2px 0 5px rgba(255, 255, 255, 0.1);
+}
+
+.level-progress-bar {
+  margin-bottom: 20px;
+}
+
+.level-progress-bar .bar-container {
+  background-color: #e0e0e0;
+  border-radius: 25px;
+  height: 20px;
+  width: 100%;
+}
+
+.level-progress-bar .bar {
+  background-color: #4caf50;
+  height: 100%;
+  border-radius: 25px;
+}
+
+.latest-achievement {
+  margin-bottom: 20px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.latest-achievement .icon img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.table-container {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.achievement-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.achievement-table th,
+.achievement-table td {
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+.achievement-table th {
+  background-color: #f2f2f2;
+}
+
+.achievement-table td img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.achievement-table tbody tr {
+  max-height: 4rem;
+}
+

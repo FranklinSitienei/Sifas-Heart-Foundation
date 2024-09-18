@@ -1,0 +1,41 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(to bottom, #1e3c72, #2a5298); /* Blue to Purple gradient */
+  color: #fff;
+  
+}
+
+.App {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow: hidden;
+  padding: 0;
+}
+
+.nav {
+  
+  /* position: fixed; */
+  width: 100%;
+}
+
+.content {
+  flex: 1;
+  
+}
+
+/* General Styles for Buttons */
+button {
+  background-color: #2a5298; /* Purple */
+  color: #fff;
+  border: none;
+  
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:hover {
+  background-color: #1e3c72; /* Darker Blue */
+}

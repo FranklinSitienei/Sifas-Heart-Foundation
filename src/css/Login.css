@@ -1,0 +1,100 @@
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 2rem;
+  color: black;
+}
+
+.login-card {
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  padding: 2rem;
+  width: 100%;
+}
+
+.login-form {
+  margin-bottom: 1rem;
+}
+
+.input-group {
+  width: calc(100% - 2rem);
+}
+
+.social-login {
+  margin-top: 1rem;
+}
+
+.login-button {
+  display: block;
+  margin: 0.5rem auto;
+}
+
+/* Google and Apple login buttons */
+.oauth-buttons {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+}
+
+.google-button, .apple-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border-radius: 5px;
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  margin: 5px 0;
+}
+
+.google-button {
+  background-color: #db4437; /* Google red */
+}
+
+.apple-button {
+  background-color: #000; /* Apple black */
+}
+
+.oauth-icon {
+  margin-right: 10px;
+}
+
+.recovery-form {
+  margin-top: 1rem;
+}
+
+.recover-link {
+  margin-top: 1rem;
+}
+
+.recover-button {
+  display: block;
+  margin: 0.5rem auto;
+  background-color: #007bff;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.cancel-recovery {
+  display: block;
+  margin: 0.5rem auto;
+  background-color: #6c757d;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.cancel-recovery:hover {
+  background-color: #5a6268;
+}
+

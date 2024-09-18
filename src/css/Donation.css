@@ -1,0 +1,106 @@
+.donations-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 40%; /* Reduced width for a smaller view */
+  margin: auto;
+  margin-bottom: 40px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 12px; /* Slightly rounded corners */
+  background-color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  width: 100%;
+  margin-top: 40px;
+}
+
+.title {
+  font-size: 1.8rem; /* Slightly smaller font size */
+  margin-bottom: 20px;
+  color: #333;
+  text-align: center;
+}
+
+.donations-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.amount{
+    width: calc(100% - 40px); /* Full width with padding */
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin: 5px 20px; /* Margin for better spacing */
+    box-sizing: border-box; /* Ensure padding and border are included in the width */
+    display: flex;
+}
+.input-group {
+  width: calc(100% - 40px); /* Full width with padding */
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin: 5px 20px; /* Margin for better spacing */
+  box-sizing: border-box; /* Ensure padding and border are included in the width */
+}
+
+.input-group::placeholder {
+  color: #aaa; /* Lighter placeholder color */
+}
+
+.options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin: 5px 20px;
+  box-sizing: border-box;
+}
+
+.payment-icons {
+  display: flex;
+  gap: 10px;
+}
+
+.payment-icon {
+  font-size: 1.5rem;
+}
+
+.payment-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.payment-details input {
+  width: calc(100% - 40px);
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-top: 5px;
+}
+
+.submit-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  cursor: pointer;
+  border-radius: 8px; /* Rounded corners for the button */
+  margin: 20px 20px 10px 20px;
+}
+
+.submit-button:hover {
+  background-color: #45a049;
+}
+
+.thank-you-message {
+  margin-top: 20px;
+  font-size: 1rem;
+  color: #555;
+  text-align: center;
+}

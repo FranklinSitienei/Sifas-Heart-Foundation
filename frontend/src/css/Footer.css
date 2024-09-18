@@ -1,0 +1,107 @@
+.footer {
+  background-color: #f8f9fa;
+  color: #333;
+  border-top: 1px solid #ddd;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+}
+
+.footer-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  max-width: 1200px;
+  width: 100%;
+}
+
+.footer-column {
+  flex: 1;
+  min-width: 200px;
+  margin-bottom: 2rem;
+}
+
+.footer-column h4 {
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.footer-column p, .footer-column ul {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-links li {
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.footer-link {
+  text-decoration: none;
+  color: #007bff;
+  font-size: 14px;
+  margin-left: 5px;
+}
+
+.footer-link:hover {
+  text-decoration: underline;
+}
+
+.footer-socials {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-socials li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.social-icon {
+  margin-right: 10px;
+}
+
+.footer-complaint-form input,
+.footer-complaint-form textarea {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 0.25rem;
+}
+
+.cta-button {
+  width: 50%;
+  padding: 0.5rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  margin-left: 90px;
+}
+
+.cta-button:hover {
+  background-color: #0056b3;
+}
+
+.footer-copyright {
+  font-size: 0.875rem;
+  color: #666;
+  text-align: center;
+  margin-top: 1rem;
+}
