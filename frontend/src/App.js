@@ -1,5 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { store } from '../src/components/store';
 import Navbar from './components/Navbar';
 import HomePage from './components/HomePage';
 import LoginPage from './components/LoginPage';
@@ -16,36 +18,38 @@ import Campaigns from './components/Campaigns';
 import AboutUs from './components/AboutUs';
 import Footer from './components/Footer';
 import ChatBox from './components/ChatBox';
-import TokenHandler from './components/TokenHandler'; // Import TokenHandler
+import TokenHandler from './components/TokenHandler';
 import './App.css';
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <TokenHandler /> {/* Include TokenHandler */}
-        <div className='nav'>
-         <Navbar />
-        </div>  
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/upload-profile-picture" element={<ProfilePictureUpload />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/achievements" element={<Achievements />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/badges" element={<Badges/>} />
-          <Route path="/notifications" element={<Notifications/>} />
-          <Route path="/account" element={<AccountPage />} />
-          <Route path="/donations" element={<Donations />} />
-          <Route path="/campaigns" element={<Campaigns />} />
-          <Route path="/about" element={<AboutUs />} />
-        </Routes>
-        <Footer />
-        <ChatBox /> {/* Include ChatBox */}
-      </div>
-    </Router>
+    <Provider store={store}>  {/* Provide the Redux store */}
+      <Router>
+        <div className="App">
+          <TokenHandler /> {/* Include TokenHandler */}
+          <div className='nav'>
+            <Navbar />
+          </div>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/upload-profile-picture" element={<ProfilePictureUpload />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/achievements" element={<Achievements />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/badges" element={<Badges />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/account" element={<AccountPage />} />
+            <Route path="/donations" element={<Donations />} />
+            <Route path="/campaigns" element={<Campaigns />} />
+            <Route path="/about" element={<AboutUs />} />
+          </Routes>
+          <Footer />
+          <ChatBox />
+        </div>
+      </Router>
+    </Provider>
   );
 }
 

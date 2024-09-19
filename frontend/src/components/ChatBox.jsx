@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaPaperPlane } from 'react-icons/fa';
 import { MdChat } from 'react-icons/md';
-import { BsEmojiSmile } from 'react-icons/bs'; // Emoji icon
-import { FaUserCircle } from 'react-icons/fa'; // Fallback profile icon
+import { BsEmojiSmile } from 'react-icons/bs';
+import { FaUserCircle } from 'react-icons/fa'; 
 import '../css/ChatBox.css';
 
 const ChatBox = () => {
@@ -14,7 +14,8 @@ const ChatBox = () => {
   const [adminDetails, setAdminDetails] = useState({});
   const [editMessageId, setEditMessageId] = useState(null);
   const [editMessageText, setEditMessageText] = useState('');
-  const [lastAutomaticMessageDate, setLastAutomaticMessageDate] = useState(null);
+  const [emojiList, setEmojiList] = useState([]); // New state for emoji list
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false); // Toggle emoji picker
   const token = localStorage.getItem('token');
   const chatBodyRef = useRef(null);
 
@@ -23,6 +24,7 @@ const ChatBox = () => {
       fetchChatHistory();
       checkAdminStatus();
       addGreetingMessage();
+      fetchEmojis(); // Fetch emojis when chatbox is opened
     }
   }, [isOpen]);
 
@@ -31,6 +33,17 @@ const ChatBox = () => {
       chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
     }
   }, [messages]);
+
+  const fetchEmojis = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/emoji/emojis');
+      if (!response.ok) throw new Error('Failed to fetch emojis');
+      const emojis = await response.json();
+      setEmojiList(emojis);
+    } catch (error) {
+      console.error('Error fetching emojis:', error);
+    }
+  };
 
   const fetchChatHistory = async () => {
     try {
@@ -140,8 +153,8 @@ const ChatBox = () => {
     }
   };
 
-  const handleEmojiClick = (emoji) => {
-    setMessage(message + emoji);
+  const handleEmojiClick = (emojiSymbol) => {
+    setMessage(message + emojiSymbol);
   };
 
   const handleChange = (e) => {
@@ -187,7 +200,20 @@ const ChatBox = () => {
               onChange={handleChange}
               placeholder="Type a message..."
             />
-            <BsEmojiSmile className="emoji-icon" onClick={() => handleEmojiClick('😊')} />
+            <BsEmojiSmile className="emoji-icon" onClick={() => setShowEmojiPicker(!showEmojiPicker)} />
+            {showEmojiPicker && (
+              <div className="emoji-picker">
+                {emojiList.map((emojiItem) => (
+                  <span
+                    key={emojiItem.name}
+                    className="emoji"
+                    onClick={() => handleEmojiClick(emojiItem.symbol)}
+                  >
+                    {emojiItem.symbol}
+                  </span>
+                ))}
+              </div>
+            )}
             <button onClick={handleSend} disabled={isLoading}>
               <FaPaperPlane />
             </button>

@@ -24,4 +24,4 @@ CALLBACK_URL=https://mydomain.com/path
 PARTY_A="254708374149"
 
 # Install:
-npm install express mongoose bcryptjs jsonwebtoken passport passport-google-oauth20 passport-apple nodemailer dotenv pdfkit cors mongodb stripe mpesa-node flutterwave-node-v3 next-auth multer bcrypt moment-timezone
+npm install express mongoose bcryptjs jsonwebtoken passport passport-google-oauth20 passport-apple nodemailer dotenv pdfkit cors mongodb stripe mpesa-node flutterwave-node-v3 multer bcrypt moment-timezone

@@ -102,7 +102,7 @@ const Login = () => {
                             {loading ? <FaSpinner className="spinner" /> : 'Login'}
                         </button>
                         <div className="recover-link">
-                            <button type="button" onClick={() => setShowRecovery(true)}>
+                            <button type="button" onClick={() => setShowRecovery(true)} className='button'>
                                 Forgot Password?
                             </button>
                         </div>

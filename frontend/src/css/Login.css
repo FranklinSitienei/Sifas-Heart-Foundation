@@ -98,3 +98,12 @@
   background-color: #5a6268;
 }
 
+.button{
+  background: none;
+  color: #007bff;
+}
+
+.button:hover {
+  background: none;
+  text-decoration: underline;
+}

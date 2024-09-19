@@ -107,7 +107,9 @@ const HomePage = () => {
             <p className="campaign-card-description">
               Your donation can bring clean drinking water to communities in need.
             </p>
-            <Link to="/donations" className="campaign-card-button">Donate</Link>
+            <button className="campaign-card-button">
+            <Link to="/donations">Donate</Link>
+            </button>
           </div>
         </div>
       </section>
