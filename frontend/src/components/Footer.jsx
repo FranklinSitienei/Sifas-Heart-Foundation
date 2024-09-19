@@ -10,8 +10,9 @@ const Footer = () => {
         <div className="footer-column">
           <h4>Company Name:</h4>
           <p>Remake Project</p>
-          <p>P.O. Box 12345</p>
+          <p>P.O BOX 8172 – 00300</p>
           <p>Nairobi, Kenya</p>
+          <p>Phone number: +254 702309511</p>
         </div>
 
         {/* Navbar Links */}

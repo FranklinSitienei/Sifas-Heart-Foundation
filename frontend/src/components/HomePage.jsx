@@ -7,7 +7,7 @@ import Victims from '../images/victims.jpg';
 import Water from '../images/water.jpeg';
 import Students from '../images/students.jpeg';
 import CleanWater from '../images/clean.jpeg';
-import Profile1 from '../images/profile1.jpeg';
+import Profile1 from '../images/CEO.jpg';
 import Profile2 from '../images/profile2.jpeg';
 import Profile3 from '../images/profile3.jpeg';
 

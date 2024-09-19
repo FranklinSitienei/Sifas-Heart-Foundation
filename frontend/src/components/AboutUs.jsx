@@ -1,11 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import '../css/AboutUs.css';
 import partner1 from '../images/patner1.png';
 import partner2 from '../images/patner2.png';
 import partner3 from '../images/patner3.png';
 import staffImage from '../images/staffImage.jpg';
+import ConceptPDF from '../file/Concept.pdf';
 
 const AboutUs = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
   return (
     <div className="about-us-container">
       <section className="about-us-section">
@@ -85,6 +96,32 @@ const AboutUs = () => {
           </div>
         </div>
       </section>
+
+      <section className="about-us-section">
+        <h2>Download Our Program</h2>
+        <button className="view-document-button" onClick={openModal}>
+          View PDF
+        </button>
+      </section>
+
+      {/* PDF Modal */}
+      {isModalOpen && (
+        <div className="pdf-modal">
+          <div className="pdf-modal-content">
+            <button className="close-modal" onClick={closeModal}>
+              &times;
+            </button>
+            <iframe
+              src={ConceptPDF}
+              title="Sifa's Heart Foundation PDF"
+              className="pdf-viewer"
+            />
+            <a href={ConceptPDF} download="Concept.pdf" className="download-link">
+              Download PDF
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
