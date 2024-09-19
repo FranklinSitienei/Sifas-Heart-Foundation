@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../css/HomePage.css';
 import Children from '../images/children.jpeg';
-import Family from '../images/family.jpeg';
-import School from '../images/school.jpeg';
+import Family from '../images/Children.jpg';
+import Victims from '../images/victims.jpg';
 import Water from '../images/water.jpeg';
 import Students from '../images/students.jpeg';
 import CleanWater from '../images/clean.jpeg';
@@ -90,11 +90,11 @@ const HomePage = () => {
       {/* Active Campaigns Section */}
       <section className="active-campaigns">
         <div className="campaign-card" onClick={() => handleImageClick("Build a School in Africa: Help us raise funds to build a school in a remote village in Africa.")}>
-          <img src={School} alt="Campaign 1" />
+          <img src={Victims} alt="Campaign 1" />
           <div className="campaign-card-content">
-            <h3 className="campaign-card-title">Build a School in Africa</h3>
+            <h3 className="campaign-card-title">The survivors of Congo</h3>
             <p className="campaign-card-description">
-              Help us raise funds to build a school in a remote village in Africa.
+              We hope that you will donate to help this survivors of war.
             </p>
             <Link to="/donations" className="campaign-card-button">Donate</Link>
           </div>
@@ -113,7 +113,7 @@ const HomePage = () => {
       </section>
 
       {/* School and Water Section */}
-      <section className="school-water-section">
+      {/* <section className="school-water-section">
         <div className="school-water-card" onClick={() => handleImageClick("Building Schools: Contribute to the construction of schools in underserved areas.")}>
           <img src={Students} alt="School" />
           <h3 className="school-water-card-title">Building Schools</h3>
@@ -125,7 +125,7 @@ const HomePage = () => {
           <h3 className="school-water-card-title">Providing Clean Water</h3>
           <p>Help us provide clean and safe drinking water to those in need.</p>
         </div>
-      </section>
+      </section> */}
 
       {/* Call-to-Action Section */}
       <section className="cta-section">
