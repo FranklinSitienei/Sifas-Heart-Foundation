@@ -12,9 +12,8 @@ const ChatBox = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isAdminOnline, setIsAdminOnline] = useState(false);
   const [adminDetails, setAdminDetails] = useState({});
-  const [editMessageId, setEditMessageId] = useState(null);
-  const [editMessageText, setEditMessageText] = useState('');
-  const [emojiList, setEmojiList] = useState([]); // New state for emoji list
+  const [editMessageId, setEditMessageId] = useState(null); // ID of the message being edited
+  const [emojiList, setEmojiList] = useState([]); // Emoji list
   const [showEmojiPicker, setShowEmojiPicker] = useState(false); // Toggle emoji picker
   const token = localStorage.getItem('token');
   const chatBodyRef = useRef(null);
@@ -36,7 +35,7 @@ const ChatBox = () => {
 
   const fetchEmojis = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/emoji/emojis');
+      const response = await fetch('https://sifas-heart-foundation-2.onrender.com/api/emoji/emojis');
       if (!response.ok) throw new Error('Failed to fetch emojis');
       const emojis = await response.json();
       setEmojiList(emojis);
@@ -47,14 +46,12 @@ const ChatBox = () => {
 
   const fetchChatHistory = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/chat/messages', {
+      const response = await fetch('https://sifas-heart-foundation-2.onrender.com/api/chat/messages', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-  
       if (!response.ok) throw new Error('Failed to fetch chat history');
-  
       const chatData = await response.json();
       setMessages(chatData.messages || []);
     } catch (error) {
@@ -64,9 +61,8 @@ const ChatBox = () => {
 
   const checkAdminStatus = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/chat/admin-status');
+      const response = await fetch('https://sifas-heart-foundation-2.onrender.com/api/chat/admin-status');
       if (!response.ok) throw new Error('Failed to check admin status');
-  
       const adminStatus = await response.json();
       setIsAdminOnline(adminStatus.isOnline);
       if (adminStatus.isOnline) {
@@ -81,20 +77,28 @@ const ChatBox = () => {
     if (message.trim()) {
       try {
         setIsLoading(true);
-        const response = await fetch('http://localhost:5000/api/chat/send', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ message }),
-        });
+
+        // Check if we're editing or sending a new message
+        if (editMessageId) {
+          await handleEdit();
+        } else {
+          const response = await fetch('https://sifas-heart-foundation-2.onrender.com/api/chat/send', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ message }),
+          });
   
-        if (!response.ok) throw new Error('Failed to send message');
+          if (!response.ok) throw new Error('Failed to send message');
   
-        const newMessage = await response.json();
-        setMessages([...messages, newMessage]);
+          const newMessage = await response.json();
+          setMessages([...messages, newMessage]);
+        }
+
         setMessage('');
+        setEditMessageId(null); // Clear editing mode
         setIsLoading(false);
       } catch (error) {
         console.error('Error sending message:', error);
@@ -104,32 +108,31 @@ const ChatBox = () => {
   };
 
   const handleEdit = async () => {
-    if (editMessageText.trim()) {
-      try {
-        const response = await fetch('http://localhost:5000/api/chat/edit', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ messageId: editMessageId, newText: editMessageText }),
-        });
-  
-        if (!response.ok) throw new Error('Failed to edit message');
-  
-        const result = await response.json();
-        setMessages(messages.map(msg => (msg._id === editMessageId ? { ...msg, text: editMessageText } : msg)));
-        setEditMessageId(null);
-        setEditMessageText('');
-      } catch (error) {
-        console.error('Error editing message:', error);
-      }
+    try {
+      const response = await fetch('https://sifas-heart-foundation-2.onrender.com/api/chat/edit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ messageId: editMessageId, newText: message }),
+      });
+
+      if (!response.ok) throw new Error('Failed to edit message');
+
+      // Update the message in the UI
+      setMessages(messages.map(msg => (msg._id === editMessageId ? { ...msg, text: message } : msg)));
+
+      setEditMessageId(null); // Clear editing state
+      setMessage(''); // Clear the input after editing
+    } catch (error) {
+      console.error('Error editing message:', error);
     }
   };
 
   const handleDelete = async (messageId) => {
     try {
-      const response = await fetch('http://localhost:5000/api/chat/delete', {
+      const response = await fetch('https://sifas-heart-foundation-2.onrender.com/api/chat/delete', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -180,7 +183,7 @@ const ChatBox = () => {
                 </div>
                 {msg.from === 'user' && (
                   <div className="message-actions">
-                    <button onClick={() => { setEditMessageId(msg._id); setEditMessageText(msg.text); }}>Edit</button>
+                    <button onClick={() => { setEditMessageId(msg._id); setMessage(msg.text); }}>Edit</button>
                     <button onClick={() => handleDelete(msg._id)}>Delete</button>
                   </div>
                 )}
@@ -198,7 +201,7 @@ const ChatBox = () => {
               type="text"
               value={message}
               onChange={handleChange}
-              placeholder="Type a message..."
+              placeholder={editMessageId ? 'Edit your message...' : 'Type a message...'}
             />
             <BsEmojiSmile className="emoji-icon" onClick={() => setShowEmojiPicker(!showEmojiPicker)} />
             {showEmojiPicker && (

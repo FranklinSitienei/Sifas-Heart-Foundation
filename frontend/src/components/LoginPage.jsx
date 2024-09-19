@@ -15,7 +15,7 @@ const Login = () => {
         e.preventDefault();
         setLoading(true); // Start loading
 
-        const response = await fetch('http://localhost:5000/api/auth/login', {
+        const response = await fetch('https://sifas-heart-foundation-2.onrender.com/api/auth/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -38,7 +38,7 @@ const Login = () => {
     // Handle Google Login
     const handleGoogleLogin = async () => {
         try {
-            window.location.href = 'http://localhost:5000/api/auth/google';
+            window.location.href = 'https://sifas-heart-foundation-2.onrender.com/api/auth/google';
         } catch (error) {
             console.error('Error during Google login', error);
         }
@@ -48,7 +48,7 @@ const Login = () => {
     const handleRecoverySubmit = async (e) => {
         e.preventDefault();
 
-        const response = await fetch('http://localhost:5000/api/auth/recover', {
+        const response = await fetch('https://sifas-heart-foundation-2.onrender.com/api/auth/recover', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

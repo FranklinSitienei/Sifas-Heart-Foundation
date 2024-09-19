@@ -21,7 +21,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     if (token) {
-      fetch('http://localhost:5000/api/auth/profile', {
+      fetch('https://sifas-heart-foundation-2.onrender.com/api/auth/profile', {
         headers: {
             'Authorization': `Bearer ${token}`,
         },
@@ -86,7 +86,7 @@ const ProfilePage = () => {
       formData.append('profilePicture', profilePictureFile);
     }
 
-    fetch('http://localhost:5000/api/auth/update_profile', {
+    fetch('https://sifas-heart-foundation-2.onrender.com/api/auth/update_profile', {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,

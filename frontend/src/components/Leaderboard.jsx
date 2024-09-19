@@ -14,7 +14,7 @@ const Leaderboard = () => {
 
     useEffect(() => {
         // Fetch leaderboard data for the current year and timezone
-        fetch(`http://localhost:5000/api/leaderboards/monthly?year=${currentYear}&timezone=${timezone}`)
+        fetch(`https://sifas-heart-foundation-2.onrender.com/api/leaderboards/monthly?year=${currentYear}&timezone=${timezone}`)
             .then(response => response.json())
             .then(data => setData(data))
             .catch(error => console.error('Error fetching leaderboard:', error));

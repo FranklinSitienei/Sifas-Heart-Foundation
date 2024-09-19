@@ -19,7 +19,7 @@ const Navbar = () => {
       const fetchUserProfile = async () => {
         try {
           const response = await fetch(
-            "http://localhost:5000/api/auth/profile",
+            "https://sifas-heart-foundation-2.onrender.com/api/auth/profile",
             {
               method: "GET",
               headers: {
@@ -48,7 +48,7 @@ const Navbar = () => {
       const fetchUnreadCount = async () => {
         try {
           const response = await fetch(
-            "http://localhost:5000/api/notifications/unread-count",
+            "https://sifas-heart-foundation-2.onrender.com/api/notifications/unread-count",
             {
               method: "GET",
               headers: {

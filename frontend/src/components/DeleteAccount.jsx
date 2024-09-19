@@ -19,7 +19,7 @@ const DeleteAccount = () => {
         }
 
         try {
-            const response = await axios.delete('http://localhost:5000/api/auth/delete_account', {
+            const response = await axios.delete('https://sifas-heart-foundation-2.onrender.com/api/auth/delete_account', {
                 headers: { 'Authorization': `Bearer ${token}` },
                 data: { password, email, reason, otherReason }
             });

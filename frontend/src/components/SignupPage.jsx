@@ -58,7 +58,7 @@ const Signup = () => {
         }
 
         try {
-            const response = await fetch('http://localhost:5000/api/auth/signup', {
+            const response = await fetch('https://sifas-heart-foundation-2.onrender.com/api/auth/signup', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -81,7 +81,7 @@ const Signup = () => {
 
     const handleGoogleSignUp = () => {
         // Redirect to backend Google OAuth route
-        window.open('http://localhost:5000/api/auth/google', '_self');
+        window.open('https://sifas-heart-foundation-2.onrender.com/api/auth/google', '_self');
     };
 
     // Handle modal password creation after Google sign-up
@@ -94,7 +94,7 @@ const Signup = () => {
         }
 
         try {
-            const response = await fetch('http://localhost:5000/api/auth/password-setup', {
+            const response = await fetch('https://sifas-heart-foundation-2.onrender.com/api/auth/password-setup', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

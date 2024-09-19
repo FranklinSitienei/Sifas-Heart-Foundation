@@ -1,10 +1,9 @@
 import React from 'react';
 import '../css/AboutUs.css';
-import StaffSlider from './StaffSlider';
-import partner1 from '../images/CAT.png';
-import partner2 from '../images/PlayStation.png';
-import partner3 from '../images/Adidas.png';
-import partner4 from '../images/Redbull.png';
+import partner1 from '../images/patner1.png';
+import partner2 from '../images/patner2.png';
+import partner3 from '../images/patner3.png';
+import staffImage from '../images/staffImage.jpg';
 
 const AboutUs = () => {
   return (
@@ -66,7 +65,7 @@ const AboutUs = () => {
 
       <section className="about-us-section">
         <h2>Meet Our Staff</h2>
-        <StaffSlider /> {/* This will display the staff slider similar to the committee slider on the homepage */}
+        <img src={staffImage} alt="Meet our Staff" className="staff-image" /> {/* Replace StaffSlider with the image */}
       </section>
 
       <section className="about-us-section partners-section">
@@ -74,19 +73,15 @@ const AboutUs = () => {
         <div className="partners-flex">
           <div className="partner">
             <img src={partner1} alt="Otto Benecker" />
-            <p>Otto Benecker</p>
-          </div>
-          <div className="partner">
-            <img src={partner2} alt="Radio la Bouche" />
-            <p>Radio la Bouche</p>
-          </div>
-          <div className="partner">
-            <img src={partner3} alt="Congolese Diaspora in Kenya" />
             <p>Congolese Diaspora in Kenya</p>
           </div>
           <div className="partner">
-            <img src={partner4} alt="Lyamba TV" />
+            <img src={partner2} alt="Radio la Bouche" />
             <p>Lyamba TV</p>
+          </div>
+          <div className="partner">
+            <img src={partner3} alt="Congolese Diaspora in Kenya" />
+            <p>Otto Benecker</p>
           </div>
         </div>
       </section>

@@ -56,6 +56,7 @@
 .partner {
   text-align: center;
   margin-top: 1rem;
+  font-size: 5px;
 }
 
 .partner img {
@@ -63,18 +64,20 @@
   height: auto;
 }
 
-.staff-slider {
-  display: flex;
-  overflow-x: auto;
-  gap: 1rem;
-  margin: 0;
+.staff-image {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  margin: 0 auto;
+  display: block;
 }
 
-.staff-slider img {
+
+/* .staff-slider img {
   width: 150px;
   height: auto;
   border-radius: 50%;
-}
+} */
 
 @media (min-width: 768px) {
   .staff-slider {

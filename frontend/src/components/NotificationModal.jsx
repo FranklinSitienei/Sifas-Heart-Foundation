@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FaTimes } from 'react-icons/fa';
-import '../css/NotificationModal.css';
 import { RiDeleteBin5Line } from "react-icons/ri";
+import '../css/NotificationModal.css';
 
 const NotificationModal = ({ token, onClose }) => {
     const [notifications, setNotifications] = useState([]);
@@ -11,7 +11,7 @@ const NotificationModal = ({ token, onClose }) => {
         const fetchNotifications = async () => {
             try {
                 const response = await fetch(
-                    "http://localhost:5000/api/notifications",
+                    "https://sifas-heart-foundation-2.onrender.com/api/notifications",
                     {
                         method: "GET",
                         headers: {
@@ -39,7 +39,7 @@ const NotificationModal = ({ token, onClose }) => {
     const markAsRead = async (id) => {
         try {
             const response = await fetch(
-                `http://localhost:5000/api/notifications/${id}`,
+                `https://sifas-heart-foundation-2.onrender.com/api/notifications/${id}`,
                 {
                     method: "PUT",
                     headers: {
@@ -67,7 +67,7 @@ const NotificationModal = ({ token, onClose }) => {
     const deleteNotification = async (id) => {
         try {
             const response = await fetch(
-                `http://localhost:5000/api/notifications/${id}`,
+                `https://sifas-heart-foundation-2.onrender.com/api/notifications/${id}`,
                 {
                     method: "DELETE",
                     headers: {
@@ -109,7 +109,7 @@ const NotificationModal = ({ token, onClose }) => {
                                 {notification.message}
                             </p>
                             <button onClick={() => deleteNotification(notification._id)} className='delete'>
-                            <RiDeleteBin5Line />
+                                <RiDeleteBin5Line />
                             </button>
                         </div>
                     ))
