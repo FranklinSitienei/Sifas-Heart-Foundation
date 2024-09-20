@@ -69,7 +69,7 @@ const HomePage = () => {
         <div className="committee-cards">
           <div className="committee-card">
             <img src={Profile1} alt="Committee Member" />
-            <h4 className="committee-card-name">John Doe</h4>
+            <h4 className="committee-card-name">Tropexcel Wahu Wambui</h4>
             <p className="committee-card-role">Founder & CEO</p>
           </div>
 
@@ -79,11 +79,11 @@ const HomePage = () => {
             <p className="committee-card-role">Chief Operations Officer</p>
           </div>
 
-          <div className="committee-card">
+          {/* <div className="committee-card">
             <img src={Profile3} alt="Committee Member" />
             <h4 className="committee-card-name">Emily Johnson</h4>
             <p className="committee-card-role">Head of Fundraising</p>
-          </div>
+          </div> */}
         </div>
       </section>
 

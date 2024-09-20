@@ -72,7 +72,7 @@ const handleDonationAchievements = async (userId, amount) => {
 
     // Award first donation achievement
     if (user.donationCount === 1) {
-        await addAchievement(userId, 'First Donation', 'Completed your first donation', '/images/volunteering.png');
+        await addAchievement(userId, 'First Donation', 'Completed your first donation', '/images/donate.png');
     }
 
     // Award regular donation achievement
@@ -83,7 +83,7 @@ const handleDonationAchievements = async (userId, amount) => {
 
     // Award badges based on total donations
     if (user.totalDonated >= 100 && !user.badges.some(b => b.title === 'Century Club')) {
-        await addBadge(userId, 'Century Club', '/images/give-love.png');
+        await addBadge(userId, 'Century Club', '/images/thank-you.png');
     }
 
     if (user.totalDonated >= 500 && !user.badges.some(b => b.title === 'Half a Grand')) {
@@ -98,7 +98,7 @@ const handleTimeSpentAchievements = async (userId, timeSpentInMinutes) => {
 
     // Check if time spent exceeds the threshold for achievement
     if (timeSpentInMinutes >= 60) {
-        await addAchievement(userId, 'Site Enthusiast', 'Spent over an hour on the site in a day', '/images/time-management.png');
+        await addAchievement(userId, 'Site Enthusiast', 'Spent over an hour on the site in a day', '/images/time.png');
     }
 };
 
@@ -122,7 +122,7 @@ const handleProfileUpdateAchievements = async (userId) => {
     const user = await User.findById(new mongoose.Types.ObjectId(userId));
     if (!user) return;
 
-    await addAchievement(userId, 'Profile Updated', 'Successfully updated your profile', '/images/placeholder.png');
+    await addAchievement(userId, 'Profile Updated', 'Successfully updated your profile', '/images/profile.png');
 };
 
 // Achievements for chatting with the admin

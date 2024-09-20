@@ -3,6 +3,8 @@
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
+  justify-content: center;
+  align-items: center;
 }
 
 /* Hero Section */
@@ -92,6 +94,8 @@
 .committee-section {
   margin-bottom: 3rem;
   cursor: pointer;
+  align-items: center;
+  justify-content: center;
 }
 
 .committee-card img :hover {
@@ -102,6 +106,7 @@
   font-size: 2rem;
   font-weight: bold;
   margin-bottom: 1.5rem;
+  align-items: center;
 }
 
 .committee-cards {
