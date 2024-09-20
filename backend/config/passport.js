@@ -15,25 +15,35 @@ module.exports = (passport) => {
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
-          const { id, emails, name } = profile;
-          const email = emails[0].value;
+          const { id, email, given_name, family_name, picture } = profile._json;
 
-          // Check if user already exists
-          let user = await User.findOne({ googleId: id });
+          if (!email || !given_name || !family_name) {
+            return done(new Error("Missing required Google profile fields"), null);
+          }
+
+          // Check if a user with this email already exists
+          let user = await User.findOne({ email });
 
           if (!user) {
             // If user doesn't exist, create a new user
             user = new User({
               googleId: id,
               email: email,
-              firstName: name.givenName,
-              lastName: name.familyName,
+              firstName: given_name,
+              lastName: family_name,
+              profilePicture: picture, // Add profile picture
             });
             await user.save();
+          } else if (!user.googleId) {
+            // If user exists but doesn't have a Google ID, add it
+            user.googleId = id;
+            user.profilePicture = picture; // Update profile picture
+            await user.save();
           }
+
           return done(null, user);
         } catch (error) {
-          return done(error, false);
+          return done(error, null);
         }
       }
     )
@@ -66,10 +76,10 @@ module.exports = (passport) => {
               email: email,
               firstName: given_name,
               lastName: family_name,
-              profilePicture: picture,
+              profilePicture: picture, // Add profile picture
             });
             await admin.save();
-          } else {
+          } else if (!admin.googleId) {
             // Update admin with new Google ID and profile picture
             admin.googleId = id;
             admin.profilePicture = picture;

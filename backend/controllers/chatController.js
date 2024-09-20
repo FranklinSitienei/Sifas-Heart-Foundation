@@ -1,66 +1,77 @@
-const Chat = require('../models/Chat');
-const Admin = require('../models/Admin');
-const Notification = require('../models/Notification');
+const Chat = require("../models/Chat");
+const Admin = require("../models/Admin");
+const Notification = require("../models/Notification");
+const { handleAdminChatAchievements } = require("../utils/achievementUtils");
 
 // Send a message from the user or admin
 exports.sendMessage = async (req, res) => {
   const { message, emoji } = req.body;
   const userId = req.user.id;
-  const from = 'user';
-  
+  const from = "user";
+
   try {
-    let chat = await Chat.findOne({ userId });
+      let chat = await Chat.findOne({ userId });
 
-    if (!chat) {
-      chat = new Chat({
-        userId
-        // Do not include adminId here
-      });
-    }
-
-    chat.messages.push({ from, text: message, emoji, createdAt: new Date() });
-    chat.lastActive = Date.now();
-    await chat.save();
-
-    // Automated responses
-    let autoResponse = '';
-    if (message.toLowerCase().includes('hello')) {
-      autoResponse = 'Hi there! How can I assist you today? 😊';
-    } else if (message.toLowerCase().includes('help')) {
-      autoResponse = 'Sure! What do you need help with?';
-    }
-
-    if (autoResponse) {
-      chat.messages.push({
-        from: 'admin',
-        text: autoResponse,
-        createdAt: new Date()
-      });
-      await chat.save();
-    }
-
-    // Handle complex messages
-    const complexKeywords = ['issue', 'problem', 'urgent'];
-    if (complexKeywords.some(keyword => message.toLowerCase().includes(keyword))) {
-      chat.isComplex = true;
-      await chat.save();
-      // Notify the admin
-      const admin = await Admin.findOne({ isOnline: true });
-      if (admin) {
-        await Notification.create({
-          userId: chat.adminId,
-          message: 'A complex query requires your attention.',
-          type: 'admin_chat',
-        });
+      if (!chat) {
+          chat = new Chat({
+              userId,
+          });
       }
-    }
 
-    res.json({ from, text: message, emoji, createdAt: new Date() });
+      chat.messages.push({ from, text: message, emoji, createdAt: new Date() });
+      chat.lastActive = Date.now();
+      await chat.save();
+
+      // Increment chat count for achievements
+      const user = await User.findById(userId);
+      if (user) {
+          user.chatCount = user.chatCount ? user.chatCount + 1 : 1; // Initialize if undefined
+          await user.save();
+      }
+
+      // Automated responses
+      let autoResponse = "";
+      if (message.toLowerCase().includes("hello")) {
+          autoResponse = "Hi there! How can I assist you today? 😊";
+      } else if (message.toLowerCase().includes("help")) {
+          autoResponse = "Sure! What do you need help with?";
+      }
+
+      if (autoResponse) {
+          chat.messages.push({
+              from: "admin",
+              text: autoResponse,
+              createdAt: new Date(),
+          });
+          await chat.save();
+          await handleAdminChatAchievements(userId); // Correctly call achievements after sending a message
+      }
+
+      // Handle complex messages
+      const complexKeywords = ["issue", "problem", "urgent"];
+      if (
+          complexKeywords.some((keyword) => message.toLowerCase().includes(keyword))
+      ) {
+          chat.isComplex = true;
+          await chat.save();
+          // Notify the admin
+          const admin = await Admin.findOne({ isOnline: true });
+          if (admin) {
+              await Notification.create({
+                  userId: chat.adminId,
+                  message: "A complex query requires your attention.",
+                  type: "admin_chat",
+              });
+          }
+      }
+
+      res.json({ from, text: message, emoji, createdAt: new Date() });
   } catch (error) {
-    console.error('Error sending message:', error);
-    res.status(500).send('Server error');
+      console.error("Error sending message:", error);
+      res.status(500).send("Server error");
   }
 };
+
 
 // Edit a message
 exports.editMessage = async (req, res) => {
@@ -69,21 +80,22 @@ exports.editMessage = async (req, res) => {
 
   try {
     let chat = await Chat.findOne({ userId });
-    if (!chat) return res.status(404).json({ msg: 'No chat found' });
+    if (!chat) return res.status(404).json({ msg: "No chat found" });
 
     const message = chat.messages.id(messageId);
-    if (!message) return res.status(404).json({ msg: 'Message not found' });
+    if (!message) return res.status(404).json({ msg: "Message not found" });
 
     const messageAge = Date.now() - new Date(message.createdAt).getTime();
-    if (messageAge > 30000) return res.status(400).json({ msg: 'Editing time expired' });
+    if (messageAge > 30000)
+      return res.status(400).json({ msg: "Editing time expired" });
 
     message.text = newText;
     await chat.save();
 
-    res.json({ msg: 'Message updated successfully' });
+    res.json({ msg: "Message updated successfully" });
   } catch (error) {
-    console.error('Error editing message:', error);
-    res.status(500).json({ msg: 'Server error' });
+    console.error("Error editing message:", error);
+    res.status(500).json({ msg: "Server error" });
   }
 };
 
@@ -94,19 +106,19 @@ exports.deleteMessage = async (req, res) => {
 
   try {
     let chat = await Chat.findOne({ userId });
-    if (!chat) return res.status(404).json({ msg: 'No chat found' });
+    if (!chat) return res.status(404).json({ msg: "No chat found" });
 
     const message = chat.messages.id(messageId);
-    if (!message) return res.status(404).json({ msg: 'Message not found' });
+    if (!message) return res.status(404).json({ msg: "Message not found" });
 
     // Use the pull method to remove the message from the array
     chat.messages.pull({ _id: messageId });
     await chat.save();
 
-    res.json({ msg: 'Message deleted successfully' });
+    res.json({ msg: "Message deleted successfully" });
   } catch (error) {
-    console.error('Error deleting message:', error);
-    res.status(500).json({ msg: 'Server error' });
+    console.error("Error deleting message:", error);
+    res.status(500).json({ msg: "Server error" });
   }
 };
 
@@ -115,10 +127,10 @@ exports.fetchChatMessages = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    if (!userId) return res.status(400).json({ msg: 'Invalid user ID' });
+    if (!userId) return res.status(400).json({ msg: "Invalid user ID" });
 
-    const chat = await Chat.findOne({ userId }).populate('adminId');
-    if (!chat) return res.status(404).json({ msg: 'No chat found' });
+    const chat = await Chat.findOne({ userId }).populate("adminId");
+    if (!chat) return res.status(404).json({ msg: "No chat found" });
 
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     if (chat.lastActive < twentyFourHoursAgo && chat.messages.length === 0) {
@@ -127,8 +139,8 @@ exports.fetchChatMessages = async (req, res) => {
 
     res.json({ messages: chat.messages });
   } catch (error) {
-    console.error('Error fetching chat messages:', error);
-    res.status(500).json({ error: 'Server error' });
+    console.error("Error fetching chat messages:", error);
+    res.status(500).json({ error: "Server error" });
   }
 };
 
@@ -148,8 +160,8 @@ exports.checkAdminStatus = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error checking admin status:', error);
-    res.status(500).json({ error: 'Server error' });
+    console.error("Error checking admin status:", error);
+    res.status(500).json({ error: "Server error" });
   }
 };
 
@@ -160,10 +172,10 @@ exports.handleComplexMessage = async (req, res) => {
 
   try {
     const chat = await Chat.findOne({ userId });
-    if (!chat) return res.status(404).json({ msg: 'No chat found' });
+    if (!chat) return res.status(404).json({ msg: "No chat found" });
 
     const message = chat.messages.id(messageId);
-    if (!message) return res.status(404).json({ msg: 'Message not found' });
+    if (!message) return res.status(404).json({ msg: "Message not found" });
 
     chat.isComplex = true;
     await chat.save();
@@ -171,13 +183,13 @@ exports.handleComplexMessage = async (req, res) => {
     // Notify the admin
     await Notification.create({
       userId: chat.adminId,
-      message: 'A complex query requires your attention.',
-      type: 'admin_chat',
+      message: "A complex query requires your attention.",
+      type: "admin_chat",
     });
 
-    res.json({ msg: 'Message flagged as complex and admin notified' });
+    res.json({ msg: "Message flagged as complex and admin notified" });
   } catch (error) {
-    console.error('Error handling complex message:', error);
-    res.status(500).json({ msg: 'Server error' });
+    console.error("Error handling complex message:", error);
+    res.status(500).json({ msg: "Server error" });
   }
 };

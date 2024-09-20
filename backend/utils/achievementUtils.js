@@ -72,22 +72,22 @@ const handleDonationAchievements = async (userId, amount) => {
 
     // Award first donation achievement
     if (user.donationCount === 1) {
-        await addAchievement(userId, 'First Donation', 'Completed your first donation', '/images/first-donation.png');
+        await addAchievement(userId, 'First Donation', 'Completed your first donation', '/images/volunteering.png');
     }
 
     // Award regular donation achievement
     if (user.donationCount === 10) {
-        await addAchievement(userId, 'Regular Donor', 'Donated 10 times', '/images/regular-donor.png');
-        await addBadge(userId, 'Consistent Donor', '/images/consistently-donate.png');
+        await addAchievement(userId, 'Regular Donor', 'Donated 10 times', '/images/solidarity.png');
+        await addBadge(userId, 'Consistent Donor', '/images/hearts.png');
     }
 
     // Award badges based on total donations
     if (user.totalDonated >= 100 && !user.badges.some(b => b.title === 'Century Club')) {
-        await addBadge(userId, 'Century Club', '/images/century-club.png');
+        await addBadge(userId, 'Century Club', '/images/give-love.png');
     }
 
     if (user.totalDonated >= 500 && !user.badges.some(b => b.title === 'Half a Grand')) {
-        await addBadge(userId, 'Half a Grand', '/images/half-a-grand.png');
+        await addBadge(userId, 'Half a Grand', '/images/charity.png');
     }
 };
 
@@ -96,8 +96,9 @@ const handleTimeSpentAchievements = async (userId, timeSpentInMinutes) => {
     const user = await User.findById(new mongoose.Types.ObjectId(userId));
     if (!user) return;
 
+    // Check if time spent exceeds the threshold for achievement
     if (timeSpentInMinutes >= 60) {
-        await addAchievement(userId, 'Site Enthusiast', 'Spent over an hour on the site in a day', '/images/site-enthusiast.png');
+        await addAchievement(userId, 'Site Enthusiast', 'Spent over an hour on the site in a day', '/images/time-management.png');
     }
 };
 
@@ -106,7 +107,14 @@ const handleDailyVisitAchievements = async (userId) => {
     const user = await User.findById(new mongoose.Types.ObjectId(userId));
     if (!user) return;
 
-    await addAchievement(userId, 'Daily Visitor', 'Visited the app daily', '/images/daily-visitor.png');
+    // Assuming user.lastVisited is a Date field that tracks the last visit date
+    const today = new Date();
+    if (!user.lastVisited || (today - user.lastVisited) > 24 * 60 * 60 * 1000) {
+        user.lastVisited = today; // Update last visited date
+        await user.save();
+
+        await addAchievement(userId, 'Daily Visitor', 'Visited the app daily', '/images/24-hours.png');
+    }
 };
 
 // Achievements for profile update
@@ -114,7 +122,7 @@ const handleProfileUpdateAchievements = async (userId) => {
     const user = await User.findById(new mongoose.Types.ObjectId(userId));
     if (!user) return;
 
-    await addAchievement(userId, 'Profile Updated', 'Successfully updated your profile', '/images/profile-updated.png');
+    await addAchievement(userId, 'Profile Updated', 'Successfully updated your profile', '/images/placeholder.png');
 };
 
 // Achievements for chatting with the admin
@@ -122,7 +130,18 @@ const handleAdminChatAchievements = async (userId) => {
     const user = await User.findById(new mongoose.Types.ObjectId(userId));
     if (!user) return;
 
-    await addAchievement(userId, 'Engaged User', 'Chatted with the admin', '/images/engaged-user.png');
+    await addAchievement(userId, 'Engaged User', 'Chatted with the admin', '/images/chat.png');
+    // New achievements for chat interactions
+    if (user.chatCount === 1) {
+        await addAchievement(userId, 'First Message', 'Sent your first chat message', '/images/first-message.png');
+    }
+
+    if (user.chatCount === 10) {
+        await addAchievement(userId, 'Chat Veteran', 'Sent 10 messages', '/images/chat-veteran.png');
+    }
+
+    user.chatCount += 1; // Increment chat count
+    await user.save();
 };
 
 // New function for user signup achievements
@@ -137,5 +156,5 @@ module.exports = {
     handleDailyVisitAchievements,
     handleProfileUpdateAchievements,
     handleAdminChatAchievements,
-    handleSignupAchievements, // Added new function
+    handleSignupAchievements,
 };

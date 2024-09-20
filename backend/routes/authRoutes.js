@@ -13,7 +13,6 @@ const {
   handleProfileUpdateAchievements,
   handleTimeSpentAchievements,
   handleDailyVisitAchievements,
-  handleAdminChatAchievements,
 } = require("../utils/achievementUtils");
 const { authMiddleware } = require("../middleware/authMiddleware");
 const crypto = require("crypto");
@@ -105,7 +104,26 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-// User Login Route
+// Time Spent Achievement Route
+router.post("/time_spent", authMiddleware, async (req, res) => {
+  const { timeSpentInMinutes } = req.body; // Expecting time spent in minutes
+
+  if (typeof timeSpentInMinutes !== 'number' || timeSpentInMinutes < 0) {
+    return res.status(400).json({ msg: "Invalid time spent value" });
+  }
+
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ msg: "User not found" });
+    
+    await handleTimeSpentAchievements(user.id, timeSpentInMinutes); // Pass the time spent
+    res.json({ msg: "Time spent achievement processed" });
+  } catch (err) {
+    res.status(500).send("Server error");
+  }
+});
+
+// Daily Visit Achievement on Login
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -128,7 +146,9 @@ router.post("/login", async (req, res) => {
 
     const token = generateToken(user);
     await handleLoginAchievements(user.id);
-    await updateUserLogin(user.id);
+    
+    // Check and award daily visit achievement
+    await handleDailyVisitAchievements(user.id); 
 
     const loginMessage = "You have successfully logged in.";
     await Notification.create({ userId: user.id, message: loginMessage, type: "login" });

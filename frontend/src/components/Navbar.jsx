@@ -3,7 +3,7 @@ import { Link, NavLink } from "react-router-dom";
 import { FaUserCircle, FaBell, FaChevronDown } from "react-icons/fa";
 import NotificationModal from "./NotificationModal";
 import "../css/Navbar.css";
-import logo from "../images/logo.jpg"; // Import the logo image
+import logo from "../images/logo.jpg";
 
 const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);

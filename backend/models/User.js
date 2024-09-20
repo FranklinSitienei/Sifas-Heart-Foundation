@@ -42,7 +42,6 @@ const UserSchema = new mongoose.Schema({
     },
     mobileNumber: {
         type: String, // Include country code
-        required: true,
     },
     donations: [
         {
@@ -77,6 +76,19 @@ const UserSchema = new mongoose.Schema({
 
     resetPasswordToken: String,
     resetPasswordExpires: Date,
+
+    timeSpent: {
+        type: Number,
+        default: 0, // Total time spent in minutes
+    },
+    dailyVisits: {
+        type: Number,
+        default: 0, // Count of daily visits
+    },
+    chatAchievements: {
+        type: Number,
+        default: 0, // Count of chat-related achievements
+    },
 });
 
 const User = mongoose.model('User', UserSchema);

@@ -140,6 +140,7 @@ nav {
   align-items: center;
   position: relative;
   cursor: pointer;
+  font-size: small;
 }
 
 .profile-pic {
