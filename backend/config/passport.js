@@ -6,24 +6,31 @@ const Admin = require("../models/Admin");
 module.exports = (passport) => {
   // Google Strategy for Users
   passport.use(
-    'google-user',
+    "google-user",
     new GoogleStrategy(
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: "https://sifas-heart-foundation-2.onrender.com/api/auth/google/callback",
-        scope: ["profile", "email"],
+        callbackURL:
+          "https://sifas-heart-foundation-2.onrender.com/api/auth/google/callback",
+        scope: ["profile", "email", "openid"],
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
-          const { id, email, given_name, family_name, picture } = profile._json;
-    
-          if (!email || !given_name || !family_name) {
-            return done(new Error("Missing required Google profile fields"), null);
+          const { id, email, given_name, family_name, picture } = profile;
+
+          if (!email) {
+            return done(new Error("Missing email field"), null);
           }
-    
+          if (!given_name) {
+            return done(new Error("Missing given_name field"), null);
+          }
+          if (!family_name) {
+            return done(new Error("Missing family_name field"), null);
+          }
+
           let user = await User.findOne({ email });
-    
+
           if (!user) {
             user = new User({
               googleId: id,
@@ -38,31 +45,38 @@ module.exports = (passport) => {
             user.profilePicture = picture;
             await user.save();
           }
-    
+
           return done(null, user);
         } catch (error) {
           return done(error, null);
         }
       }
-    )    
+    )
   );
 
   // Google Strategy for Admins
   passport.use(
-    'google-admin',
+    "google-admin",
     new GoogleStrategy(
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: "https://sifas-heart-foundation-2.onrender.com/api/admin/google/callback",
-        scope: ["profile", "email"],
+        callbackURL:
+          "https://sifas-heart-foundation-2.onrender.com/api/admin/google/callback",
+        scope: ["profile", "email", "openid"],
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
-          const { id, email, given_name, family_name, picture } = profile._json;
+          const { id, email, given_name, family_name, picture } = profile;
 
-          if (!email || !given_name || !family_name) {
-            return done(new Error("Missing required Google profile fields"), null);
+          if (!email) {
+            return done(new Error("Missing email field"), null);
+          }
+          if (!given_name) {
+            return done(new Error("Missing given_name field"), null);
+          }
+          if (!family_name) {
+            return done(new Error("Missing family_name field"), null);
           }
 
           // Check if admin already exists
@@ -95,7 +109,10 @@ module.exports = (passport) => {
 
   // Serialize User or Admin
   passport.serializeUser((entity, done) => {
-    done(null, { id: entity.id, type: entity instanceof User ? "User" : "Admin" });
+    done(null, {
+      id: entity.id,
+      type: entity instanceof User ? "User" : "Admin",
+    });
   });
 
   // Deserialize User or Admin
