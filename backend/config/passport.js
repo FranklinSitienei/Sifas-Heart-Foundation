@@ -6,31 +6,27 @@ const Admin = require("../models/Admin");
 module.exports = (passport) => {
   // Google Strategy for Users
   passport.use(
-    "google-user",
+    'google-user',
     new GoogleStrategy(
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL:
-          "https://sifas-heart-foundation-2.onrender.com/api/auth/google/callback",
-        scope: ["profile", "email", "openid"],
+        callbackURL: "https://sifas-heart-foundation-2.onrender.com/api/auth/google/callback",
+        scope: ["profile", "email"],
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
-          const { id, email, given_name, family_name, picture } = profile;
-
-          if (!email) {
-            return done(new Error("Missing email field"), null);
+          console.log('Profile:', profile); // Log the entire profile object
+  
+          const { id, email, given_name, family_name, picture } = profile._json;
+  
+          if (!email || !given_name || !family_name) {
+            console.error('Received profile fields:', profile._json); // Log missing fields
+            return done(new Error("Missing required Google profile fields"), null);
           }
-          if (!given_name) {
-            return done(new Error("Missing given_name field"), null);
-          }
-          if (!family_name) {
-            return done(new Error("Missing family_name field"), null);
-          }
-
+  
           let user = await User.findOne({ email });
-
+  
           if (!user) {
             user = new User({
               googleId: id,
@@ -45,14 +41,14 @@ module.exports = (passport) => {
             user.profilePicture = picture;
             await user.save();
           }
-
+  
           return done(null, user);
         } catch (error) {
           return done(error, null);
         }
       }
     )
-  );
+  );  
 
   // Google Strategy for Admins
   passport.use(
