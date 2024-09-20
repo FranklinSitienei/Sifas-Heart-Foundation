@@ -29,10 +29,16 @@ router.get(
   "/google/callback",
   passport.authenticate('google-user', { session: false }),
   async (req, res) => {
-    const token = generateToken(req.user);
-    // Handle achievements for Google sign-up
-    await handleSignupAchievements(req.user.id);
-    res.redirect(`http://localhost:3000?token=${token}`);
+    try {
+      const token = generateToken(req.user);
+      await handleSignupAchievements(req.user.id);
+      
+      // Set token in the response header instead of query param
+      res.setHeader('Authorization', `Bearer ${token}`);
+      res.redirect('http://localhost:3000');  // Redirect without the token in URL
+    } catch (err) {
+      res.status(500).send("Server error during Google callback");
+    }
   }
 );
 
@@ -305,30 +311,28 @@ router.put('/update_mobile', authMiddleware, async (req, res) => {
 //     }
 // );
 
-// Password Setup Route
-router.post('/password-setup', async (req, res) => {
-    const { token, password, confirmPassword } = req.body;
+router.post('/password-setup', authMiddleware, async (req, res) => {
+  const { password, confirmPassword } = req.body;
 
-    if (!token || !password || password !== confirmPassword) {
-        return res.status(400).json({ msg: 'Invalid token or passwords do not match' });
-    }
+  if (!password || password !== confirmPassword) {
+      return res.status(400).json({ msg: 'Passwords do not match' });
+  }
 
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        let user = await User.findById(decoded.user.id);
+  try {
+      const user = await User.findById(req.user.id);  // Use user from auth middleware
 
-        if (!user) {
-            return res.status(404).json({ msg: 'User not found' });
-        }
+      if (!user) {
+          return res.status(404).json({ msg: 'User not found' });
+      }
 
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(password, salt);
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
 
-        await user.save();
-        res.json({ msg: 'Password setup successful' });
-    } catch (err) {
-        res.status(500).send('Server error');
-    }
+      await user.save();
+      res.json({ msg: 'Password setup successful' });
+  } catch (err) {
+      res.status(500).send('Server error');
+  }
 });
 
 // Delete Account Route
