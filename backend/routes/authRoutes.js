@@ -59,7 +59,7 @@ router.get("/login/failed", (req, res) => {
 // Logout Route
 router.get("/logout", (req, res) => {
   req.logout();
-  res.redirect(process.env.CLIENT_URL); // Redirect to your client-side URL
+  res.redirect("http://localhost:3000"); // Redirect to your client-side URL
 });
 
 // User Signup Route
