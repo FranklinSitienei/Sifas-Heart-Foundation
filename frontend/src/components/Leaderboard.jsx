@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import '../css/Leaderboard.css';
 
 const months = [
@@ -39,25 +39,29 @@ const Leaderboard = () => {
         <div className="leaderboard-container">
             <div className="chart-container">
                 <h2>Donations Per Month</h2>
-                <BarChart width={900} height={300} data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="donations" fill="#8884d8" />
-                </BarChart>
+                <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="donations" fill="#8884d8" />
+                    </BarChart>
+                </ResponsiveContainer>
             </div>
             <div className="chart-container">
                 <h2>Logins Per Month</h2>
-                <BarChart width={900} height={300} data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="logins" fill="#82ca9d" />
-                </BarChart>
+                <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="logins" fill="#82ca9d" />
+                    </BarChart>
+                </ResponsiveContainer>
             </div>
             <div className="leaderboard">
                 <h2>Leaderboard</h2>

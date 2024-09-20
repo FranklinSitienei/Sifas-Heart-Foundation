@@ -35,7 +35,7 @@ router.get(
       
       // Set token in the response header instead of query param
       res.setHeader('Authorization', `Bearer ${token}`);
-      res.redirect('http://localhost:3000');  // Redirect without the token in URL
+      res.redirect('/');  // Redirect without the token in URL
     } catch (err) {
       res.status(500).send("Server error during Google callback");
     }

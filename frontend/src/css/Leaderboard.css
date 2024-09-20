@@ -8,14 +8,14 @@
     margin-bottom: 20px;
     border-radius: 10px;
     box-shadow: 2px 0 5px rgba(255, 255, 255, 0.1);
-    width: 150%;
+    width: 100%; /* Make it 100% to fit in the parent container */
+    max-width: 1200px;
     overflow: hidden;
 }
 
 .chart-container {
-    width: 100%;
+    width: 100%; /* Ensure chart takes full width */
     margin-bottom: 20px;
-    font-size: smaller;
 }
 
 .leaderboard {
