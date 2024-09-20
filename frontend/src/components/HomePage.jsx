@@ -100,7 +100,7 @@ const HomePage = () => {
           </div>
         </div>
 
-        <div className="campaign-card" onClick={() => handleImageClick("Provide Clean Water: Your donation can bring clean drinking water to communities in need.")}>
+        {/* <div className="campaign-card" onClick={() => handleImageClick("Provide Clean Water: Your donation can bring clean drinking water to communities in need.")}>
           <img src={Water} alt="Campaign 2" />
           <div className="campaign-card-content">
             <h3 className="campaign-card-title">Provide Clean Water</h3>
@@ -111,7 +111,7 @@ const HomePage = () => {
             <Link to="/donations">Donate</Link>
             </button>
           </div>
-        </div>
+        </div> */}
       </section>
 
       {/* School and Water Section */}
