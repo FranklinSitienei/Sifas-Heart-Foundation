@@ -37,13 +37,11 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/emoji', emojiRoutes);
 app.use('/api/leaderboards', leaderboardRoutes);
 app.use('/api/lipa', lipaRoute);
-app.use('/api/chat', chatRoutes)
-app.get("/", (req, res) => {
-    res.send("Daraja API payment gateway");
-  });
+app.use('/api/chat', chatRoutes);
 
 // Serve static files from the 'public' directory
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
+
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {

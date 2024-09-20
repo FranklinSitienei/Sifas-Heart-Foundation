@@ -51,12 +51,12 @@ const Signup = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
         if (password !== confirmPassword) {
             alert('Passwords do not match');
             return;
         }
-
+    
         try {
             const response = await fetch('https://sifas-heart-foundation-2.onrender.com/api/auth/signup', {
                 method: 'POST',
@@ -65,11 +65,15 @@ const Signup = () => {
                 },
                 body: JSON.stringify({ firstName, lastName, email, password, confirmPassword, mobileNumber }),
             });
-
+    
             if (response.ok) {
                 const data = await response.json();
-                localStorage.setItem('token', data.token); // Store the token
-                navigate('/account'); // Redirect to the homepage
+                if (data.redirect) {
+                    navigate(data.redirect); // Redirect to the existing profile
+                } else {
+                    localStorage.setItem('token', data.token); // Store the token
+                    navigate('/account'); // Redirect to the homepage
+                }
             } else {
                 const error = await response.json();
                 alert(`Signup failed: ${error.msg}`);
@@ -78,7 +82,7 @@ const Signup = () => {
             console.error('Signup error:', err);
         }
     };
-
+    
     const handleGoogleSignUp = () => {
         // Redirect to backend Google OAuth route
         window.open('https://sifas-heart-foundation-2.onrender.com/api/auth/google', '_self');

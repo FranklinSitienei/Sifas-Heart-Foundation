@@ -35,7 +35,7 @@ router.get(
       
       // Set token in the response header instead of query param
       res.setHeader('Authorization', `Bearer ${token}`);
-      res.redirect('/');  // Redirect without the token in URL
+        
     } catch (err) {
       res.status(500).send("Server error during Google callback");
     }
@@ -81,7 +81,8 @@ router.post("/signup", async (req, res) => {
     let user = await User.findOne({ email });
 
     if (user) {
-      return res.status(400).json({ msg: "User with this email already exists. Please log in or use a different email." });
+      // Redirect to the existing user's profile instead of sending an error
+      return res.status(200).json({ redirect: `/account` }); // Change `/account` to your actual user profile route if different
     }
 
     // Proceed with user creation if the email is not in use
