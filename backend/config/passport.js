@@ -11,7 +11,7 @@ module.exports = (passport) => {
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: "http://localhost:10000/api/auth/google/callback",
+        callbackURL: "https://sifas-heart-foundation-2.onrender.com/api/auth/google/callback",
         scope: ["profile", "email"],
       },
       async (accessToken, refreshToken, profile, done) => {
@@ -54,7 +54,7 @@ module.exports = (passport) => {
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: "http://localhost:10000/api/admin/google/callback",
+        callbackURL: "https://sifas-heart-foundation-2.onrender.com/api/admin/google/callback",
         scope: ["profile", "email"],
       },
       async (accessToken, refreshToken, profile, done) => {
