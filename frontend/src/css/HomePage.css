@@ -43,6 +43,7 @@
   gap: 2rem;
   margin-bottom: 3rem;
   cursor: pointer;
+  flex-wrap: wrap; /* Enable wrapping on smaller screens */
 }
 
 .donation-cards :hover {
@@ -98,21 +99,17 @@
   justify-content: center;
 }
 
-.committee-card img :hover {
-  box-shadow: 0 0 10px rgb(255, 255, 255, 0.2);
-}
-
 .committee-title {
   font-size: 2rem;
   font-weight: bold;
   margin-bottom: 1.5rem;
-  align-items: center;
 }
 
 .committee-cards {
   display: flex;
   justify-content: space-around;
   gap: 1rem;
+  flex-wrap: wrap; /* Enable wrapping */
 }
 
 .committee-card {
@@ -140,13 +137,9 @@
 .active-campaigns {
   display: flex;
   justify-content: center;
-  gap: 2rem;
   margin-bottom: 3rem;
   cursor: pointer;
-}
-
-.active-campaigns:hover {
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  flex-wrap: wrap; /* Enable wrapping */
 }
 
 .campaign-card {
@@ -209,6 +202,7 @@
   justify-content: space-between;
   margin-bottom: 3rem;
   cursor: pointer;
+  flex-wrap: wrap; /* Enable wrapping */
 }
 
 .school-water-card {
@@ -293,4 +287,54 @@
 
 .modal-close-button:hover {
   background-color: #c82333;
+}
+
+/* Responsive Styles */
+@media screen and (max-width: 768px) {
+  /* Stack elements vertically for smaller screens */
+  .donation-cards, .committee-cards, .school-water-section {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .campaign-card-content{
+    flex-direction: column;
+    align-items: center;
+    height: 70%;
+    width: 100%;
+    font-size: smaller;
+  }
+
+  .active-campaigns{
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    width: 90%;
+  }
+
+  /* Adjust card width and image size */
+  .donation-card, .campaign-card, .school-water-card {
+    width: 100%;
+  }
+
+  .donation-card img, .campaign-card img, .school-water-card img {
+    height: 150px;
+  }
+
+  /* Reduce font sizes */
+  .hero-title, .committee-title, .cta-title {
+    font-size: 1.75rem;
+  }
+
+  .hero-description, .cta-description, .committee-card-name {
+    font-size: 1rem;
+  }
+
+  .donation-card-title, .campaign-card-title, .school-water-card-title {
+    font-size: 1.25rem;
+  }
+
+  .donation-card-description, .campaign-card-description {
+    font-size: 0.9rem;
+  }
 }

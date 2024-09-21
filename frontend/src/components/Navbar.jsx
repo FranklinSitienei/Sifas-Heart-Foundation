@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { FaUserCircle, FaBell, FaChevronDown } from "react-icons/fa";
+import { FaUserCircle, FaBell, FaChevronDown, FaHome, FaDonate, FaInfoCircle, FaChevronUp } from "react-icons/fa";
 import NotificationModal from "./NotificationModal";
 import "../css/Navbar.css";
 import logo from "../images/logo.jpg";
@@ -90,16 +90,12 @@ const Navbar = () => {
     <nav>
       <div className="nav-container">
         <div className="nav-flex">
+          {/* Top Navbar */}
           <div className="nav-brand">
             <Link to="/" className="nav-brand-link">
-              <img
-                src={logo}
-                alt="Logo"
-                style={{ width: "70px", height: "50px" }} // Styling the logo image
-              />
+              <img src={logo} alt="Logo" style={{ width: "70px", height: "50px" }} />
             </Link>
           </div>
-
           <div className="nav-links">
             <NavLink to="/" className="nav-link" exact>
               Home
@@ -142,10 +138,7 @@ const Navbar = () => {
                     </div>
                   )}
                 </div>
-                <div
-                  className="notification-icon"
-                  onClick={toggleNotifications}
-                >
+                <div className="notification-icon" onClick={toggleNotifications}>
                   <FaBell />
                   {unreadCount > 0 && (
                     <span className="notification-badge">
@@ -171,6 +164,48 @@ const Navbar = () => {
               </>
             )}
           </div>
+        </div>
+
+        {/* Bottom Navbar for mobile */}
+        <div className="mobile-nav">
+          <NavLink to="/" className="nav-icon">
+            <FaHome />
+          </NavLink>
+          <NavLink to="/donations" className="nav-icon">
+            <FaDonate />
+          </NavLink>
+          <NavLink to="/about" className="nav-icon">
+            <FaInfoCircle />
+          </NavLink>
+          {token ? (
+            <div className="nav-icon" onClick={toggleDropdown}>
+              {profile && profile.profilePicture ? (
+                <img src={profile.profilePicture} alt="Profile" className="profile-image" />
+              ) : (
+                <FaUserCircle />
+              )}
+              <FaChevronUp className="dropdown-icon" />
+                  {activeDropdown === "profile" && (
+                    <div className="dropdown-menu">
+                      <Link to="/account" className="dropdown-item">
+                        Account
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="dropdown-item"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  )}
+            </div>
+          ) : (
+            <>
+              <NavLink to="/login" className="nav-icon">
+                <FaUserCircle />
+              </NavLink>
+            </>
+          )}
         </div>
       </div>
     </nav>

@@ -49,10 +49,44 @@
 }
 
 .content {
-  margin-left: 100px;
   width: 100%;
   max-width: 50%;
   border-radius: 8px;
   overflow-y: auto;
   color: #333;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 150px; /* Reduced width */
+  }
+
+  .sidebar-button {
+    font-size: 12px; /* Smaller font size */
+    padding: 6px 10px; /* Adjusted padding */
+  }
+
+  .content {
+    max-width: 100%; /* Allow more content width */
+    padding: 10px; /* Reduced padding */
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    width: 50px; /* Further reduced width */
+    font-size: smaller;
+  }
+
+  .sidebar-button {
+    font-size: 10px; /* Smaller font size */
+    padding: 4px 8px; /* Reduced padding */
+  }
+
+  .content {
+    margin-left: 140px; /* Adjust margin for even smaller sidebar */
+    max-width: 95%; /* Max width adjustments */
+    padding: 5px; /* Further reduced padding */
+  }
 }
