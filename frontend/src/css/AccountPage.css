@@ -49,6 +49,7 @@
 }
 
 .content {
+  margin-left: 50px;
   width: 100%;
   max-width: 50%;
   border-radius: 8px;
@@ -75,8 +76,7 @@
 
 @media (max-width: 480px) {
   .sidebar {
-    width: 50px; /* Further reduced width */
-    font-size: smaller;
+    width: 120px; /* Further reduced width */
   }
 
   .sidebar-button {
