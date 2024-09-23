@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { FaUserCircle, FaBell, FaChevronDown, FaHome, FaDonate, FaInfoCircle, FaChevronUp } from "react-icons/fa";
+import {
+  FaUserCircle,
+  FaBell,
+  FaChevronDown,
+  FaHome,
+  FaDonate,
+  FaInfoCircle,
+  FaChevronUp,
+} from "react-icons/fa";
 import NotificationModal from "./NotificationModal";
 import "../css/Navbar.css";
 import logo from "../images/logo.jpg";
@@ -93,7 +101,11 @@ const Navbar = () => {
           {/* Top Navbar */}
           <div className="nav-brand">
             <Link to="/" className="nav-brand-link">
-              <img src={logo} alt="Logo" style={{ width: "70px", height: "50px" }} />
+              <img
+                src={logo}
+                alt="Logo"
+                style={{ width: "70px", height: "50px" }}
+              />
             </Link>
           </div>
           <div className="nav-links">
@@ -129,21 +141,19 @@ const Navbar = () => {
                       <Link to="/account" className="dropdown-item">
                         Account
                       </Link>
-                      <button
-                        onClick={handleLogout}
-                        className="dropdown-item"
-                      >
+                      <button onClick={handleLogout} className="dropdown-item">
                         Logout
                       </button>
                     </div>
                   )}
                 </div>
-                <div className="notification-icon" onClick={toggleNotifications}>
+                <div
+                  className="notification-icon"
+                  onClick={toggleNotifications}
+                >
                   <FaBell />
                   {unreadCount > 0 && (
-                    <span className="notification-badge">
-                      {unreadCount}
-                    </span>
+                    <span className="notification-badge">{unreadCount}</span>
                   )}
                 </div>
                 {modalOpen && (
@@ -177,27 +187,31 @@ const Navbar = () => {
           <NavLink to="/about" className="nav-icon">
             <FaInfoCircle />
           </NavLink>
+          <NavLink to="/blogs" className="nav-link">
+            Blog
+          </NavLink>
           {token ? (
             <div className="nav-icon" onClick={toggleDropdown}>
               {profile && profile.profilePicture ? (
-                <img src={profile.profilePicture} alt="Profile" className="profile-image" />
+                <img
+                  src={profile.profilePicture}
+                  alt="Profile"
+                  className="profile-image"
+                />
               ) : (
                 <FaUserCircle />
               )}
               <FaChevronUp className="dropdown-icon" />
-                  {activeDropdown === "profile" && (
-                    <div className="dropdown-menu">
-                      <Link to="/account" className="dropdown-item">
-                        Account
-                      </Link>
-                      <button
-                        onClick={handleLogout}
-                        className="dropdown-item"
-                      >
-                        Logout
-                      </button>
-                    </div>
-                  )}
+              {activeDropdown === "profile" && (
+                <div className="dropdown-menu">
+                  <Link to="/account" className="dropdown-item">
+                    Account
+                  </Link>
+                  <button onClick={handleLogout} className="dropdown-item">
+                    Logout
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <>

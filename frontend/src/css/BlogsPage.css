@@ -1,0 +1,49 @@
+.blogs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+
+.blog-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #fff;
+}
+
+.blog-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.blog-content {
+  padding: 20px;
+}
+
+.blog-title {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.blog-description {
+  margin-bottom: 10px;
+}
+
+.donate-link {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.blog-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.blog-actions span {
+  margin-right: 10px;
+}
