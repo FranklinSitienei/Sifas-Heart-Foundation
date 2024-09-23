@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { AiOutlineLike, AiFillLike } from 'react-icons/ai';
+import '../css/BlogDetails.css'
 
 const BlogDetails = () => {
   const { id } = useParams();
