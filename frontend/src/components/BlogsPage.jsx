@@ -43,6 +43,13 @@ const BlogsPage = () => {
     <div className="blogs-container">
       {blogs.map((blog) => (
         <div className="blog-card" key={blog._id}>
+          <div className="admin-info">
+            <img src={blog.admin.profileImage} alt={`${blog.admin.firstName} ${blog.admin.lastName}`} className="admin-image" />
+            <div className="admin-name">
+              {blog.admin.firstName} {blog.admin.lastName} <span className="verified-tick">✔️</span>
+            </div>
+          </div>
+          
           {/* Check if the blog has a video or image */}
           {blog.video ? (
             <iframe
@@ -52,7 +59,12 @@ const BlogsPage = () => {
               allowFullScreen
             ></iframe>
           ) : (
-            <img src={blog.image} alt={blog.title} className="blog-image" />
+            <div className="image-container">
+              <img src={blog.image} alt={blog.title} className="blog-image" />
+              <div className="image-overlay">
+                <Link to="/donations" className="donate-button">Donate</Link>
+              </div>
+            </div>
           )}
           
           <div className="blog-content">
@@ -66,11 +78,11 @@ const BlogsPage = () => {
                 {blog.isLiked ? <AiFillLike className="like-icon liked" /> : <AiOutlineLike className="like-icon" />}
               </span>
               <span>{blog.likeCount}</span>
+              <span className="comment-icon">💬 {blog.comments.length}</span>
             </div>
             <div className="blog-date">
               {new Date(blog.createdAt).toLocaleDateString()} {new Date(blog.createdAt).toLocaleTimeString()}
             </div>
-            <Link to="/donations" className="donate-link">Donate</Link>
           </div>
         </div>
       ))}
