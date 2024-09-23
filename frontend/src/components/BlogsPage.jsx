@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AiOutlineLike, AiFillLike } from 'react-icons/ai'; // Like icons
+import { AiOutlineLike, AiFillLike } from 'react-icons/ai';
 import axios from 'axios';
+import '../css/BlogsPage.css';
 
 const BlogsPage = () => {
   const [blogs, setBlogs] = useState([]);
 
   useEffect(() => {
-    // Fetch all blogs
     const fetchBlogs = async () => {
       try {
-        const response = await axios.get('/api/blogs');
+        const response = await axios.get('http://localhost:5000/api/blog/all');
         setBlogs(response.data);
       } catch (error) {
         console.error('Error fetching blogs:', error);
@@ -27,22 +27,37 @@ const BlogsPage = () => {
   const handleLikeToggle = async (blogId) => {
     try {
       await axios.post(`/api/blogs/${blogId}/like`);
-      setBlogs((prevBlogs) => prevBlogs.map(blog => 
-        blog._id === blogId ? { ...blog, isLiked: !blog.isLiked, likeCount: blog.isLiked ? blog.likeCount - 1 : blog.likeCount + 1 } : blog
-      ));
+      setBlogs((prevBlogs) =>
+        prevBlogs.map((blog) =>
+          blog._id === blogId
+            ? { ...blog, isLiked: !blog.isLiked, likeCount: blog.isLiked ? blog.likeCount - 1 : blog.likeCount + 1 }
+            : blog
+        )
+      );
     } catch (error) {
       console.error('Error toggling like:', error);
     }
   };
 
   return (
-    <div className="blog-page-container">
+    <div className="blogs-container">
       {blogs.map((blog) => (
         <div className="blog-card" key={blog._id}>
-          <img src={blog.imageUrl} alt={blog.title} className="blog-image" />
+          {/* Check if the blog has a video or image */}
+          {blog.video ? (
+            <iframe
+              className="blog-video"
+              src={blog.video}
+              title={blog.title}
+              allowFullScreen
+            ></iframe>
+          ) : (
+            <img src={blog.image} alt={blog.title} className="blog-image" />
+          )}
+          
           <div className="blog-content">
             <h2>{blog.title}</h2>
-            <p>{truncateText(blog.description, 100)}</p>
+            <p>{truncateText(blog.content, 100)}</p>
             <Link to={`/blogs/${blog._id}`}>Show more</Link>
           </div>
           <div className="blog-footer">

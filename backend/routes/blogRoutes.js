@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const Blog = require('../models/Blog');
-const { authMiddleware, adminMiddleware } = require('../middleware/authMiddleware');
 const multer = require('multer');
-const upload = multer({ storage: multer.memoryStorage() }); // Store file in memory for processing
+const upload = multer({ storage: multer.memoryStorage() });
+const { authMiddleware } = require('../middleware/authMiddleware');
+const { adminMiddleware } = require('../middleware/adminMiddleware');
 
 // Create a new blog (Admin only)
-router.post('/create', [authMiddleware, adminMiddleware, upload.single('media')], async (req, res) => {
+router.post('/create', [adminMiddleware, upload.single('media')], async (req, res) => {
     const { title, content } = req.body;
 
     try {
@@ -30,6 +31,7 @@ router.post('/create', [authMiddleware, adminMiddleware, upload.single('media')]
         await newBlog.save();
         res.status(201).json({ message: 'Blog created successfully', blog: newBlog });
     } catch (err) {
+        console.error('Error details:', err);  // Log the error details
         res.status(500).json({ message: 'Server error', error: err });
     }
 });
@@ -125,6 +127,28 @@ router.post('/:id/unlike', authMiddleware, async (req, res) => {
         await blog.save();
 
         res.status(200).json({ message: 'Blog unliked', blog });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err });
+    }
+});
+
+// Edit a blog (Admin only)
+router.put('/:id/edit', adminMiddleware, async (req, res) => {
+    const { title, content } = req.body;
+
+    try {
+        const blog = await Blog.findById(req.params.id);
+        if (!blog) return res.status(404).json({ message: 'Blog not found' });
+
+        if (req.user.id !== blog.admin.toString()) {
+            return res.status(403).json({ message: 'Forbidden: Only the admin can edit this blog' });
+        }
+
+        blog.title = title || blog.title;
+        blog.content = content || blog.content;
+
+        await blog.save();
+        res.status(200).json({ message: 'Blog updated', blog });
     } catch (err) {
         res.status(500).json({ message: 'Server error', error: err });
     }

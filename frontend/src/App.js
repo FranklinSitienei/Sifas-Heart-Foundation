@@ -51,8 +51,8 @@ function App() {
             <Route path="/donations" element={<Donations />} />
             <Route path="/campaigns" element={<Campaigns />} />
             <Route path="/about" element={<AboutUs />} />
-            <Route path="/blogs" component={BlogsPage} />
-            <Route path="/blog/:id" component={BlogDetails} />
+            <Route path="/blogs" element={<BlogsPage />} /> 
+            <Route path="/blog/:id" element={<BlogDetails />} />{" "}
           </Routes>
           <Footer />
           <ChatBox />

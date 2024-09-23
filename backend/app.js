@@ -12,6 +12,7 @@ const emojiRoutes = require('./routes/emojiRoutes');
 const leaderboardRoutes = require('./routes/leaderboardRoutes');
 const lipaRoute = require('./routes/lipaRoute');
 const chatRoutes = require('./routes/chatRoutes');
+const blogRoutes = require('./routes/blogRoutes')
 const path = require('path');
 require('./config/passport'); 
 
@@ -38,6 +39,7 @@ app.use('/api/emoji', emojiRoutes);
 app.use('/api/leaderboards', leaderboardRoutes);
 app.use('/api/lipa', lipaRoute);
 app.use('/api/chat', chatRoutes);
+app.use('/api/blog', blogRoutes);
 
 // Serve static files from the 'public' directory
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
