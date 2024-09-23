@@ -2,9 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AiOutlineLike, AiFillLike } from 'react-icons/ai'; // Like icons
 import axios from 'axios';
-import '../css/BlogPage.css'
 
-const BlogPage = () => {
+const BlogsPage = () => {
   const [blogs, setBlogs] = useState([]);
 
   useEffect(() => {
@@ -64,4 +63,4 @@ const BlogPage = () => {
   );
 };
 
-export default BlogPage;
+export default BlogsPage;
