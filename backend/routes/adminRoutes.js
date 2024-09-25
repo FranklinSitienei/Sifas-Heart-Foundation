@@ -110,7 +110,7 @@ router.get("/profile", adminMiddleware, async (req, res) => {
 });
 
 // Fetch all admins (publicly accessible)
-router.get("/admins", async (req, res) => {
+router.get("/profile", async (req, res) => {
   try {
     const admins = await Admin.find().select("firstName lastName role isOnline profilePicture");
     res.json(admins);

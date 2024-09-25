@@ -1,0 +1,102 @@
+.all-blogs-container {
+    padding: 20px;
+}
+
+.create-blog-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: gold;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.blogs-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.blog-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    position: relative;
+}
+
+.admin-info {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+}
+
+.admin-profile {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+}
+
+.verified-tick {
+    color: gold;
+    margin-left: 5px;
+}
+
+.blog-title {
+    padding: 10px;
+    font-size: 1.5em;
+}
+
+.blog-content {
+    padding: 0 10px;
+}
+
+.media-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.media {
+    width: 100%;
+    height: auto;
+}
+
+.video {
+    width: 100%;
+    height: 200px; /* Adjust as needed */
+}
+
+.donate-button {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    display: none; /* Initially hide */
+}
+
+.media-container:hover .donate-button {
+    display: block; /* Show on hover */
+}
+
+.blog-footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.date {
+    color: gray;
+    font-size: 0.8em;
+}
+
+.blog-actions {
+    display: flex;
+    gap: 10px;
+}

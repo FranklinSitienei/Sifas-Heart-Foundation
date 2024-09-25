@@ -15,7 +15,7 @@ const Login = () => {
         e.preventDefault();
         setLoading(true); // Start loading
 
-        const response = await fetch('https://sifas-heart-foundation-2.onrender.com/api/auth/login', {
+        const response = await fetch('http://localhost:5000/api/auth/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -26,7 +26,7 @@ const Login = () => {
         if (response.ok) {
             const data = await response.json();
             localStorage.setItem('token', data.token); // Store JWT token in local storage
-            window.location.href = '/account'; // Redirect to account page
+            window.location.href = '/donations'; // Redirect to account page
         } else {
             const error = await response.json();
             alert(`Login failed: ${error.msg}`);
@@ -38,7 +38,7 @@ const Login = () => {
     // Handle Google Login
     const handleGoogleLogin = async () => {
         try {
-            window.location.href = 'https://sifas-heart-foundation-2.onrender.com/api/auth/google';
+            window.location.href = 'http://localhost:5000/api/auth/google';
         } catch (error) {
             console.error('Error during Google login', error);
         }
