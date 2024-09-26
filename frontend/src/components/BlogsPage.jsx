@@ -1,125 +1,132 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AiOutlineLike, AiFillLike } from 'react-icons/ai';
+import { FaPlus, FaRegThumbsUp, FaComment, FaThumbsUp } from 'react-icons/fa'; // Import the filled thumbs up icon
 import { MdVerified } from "react-icons/md";
-import axios from 'axios';
 import '../css/BlogsPage.css';
 
 const BlogsPage = () => {
-  const [blogs, setBlogs] = useState([]);
+    const [blogs, setBlogs] = useState([]);
+    const [likedBlogs, setLikedBlogs] = useState(new Set());
 
-  useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/api/blog/all');
-        setBlogs(response.data);
-      } catch (error) {
-        console.error('Error fetching blogs:', error);
-      }
+    useEffect(() => {
+        const fetchBlogs = async () => {
+            try {
+                const response = await fetch('http://localhost:5000/api/blog/all');
+                const data = await response.json();
+                setBlogs(data);
+            } catch (error) {
+                console.error('Error fetching blogs:', error);
+            }
+        };
+
+        fetchBlogs();
+    }, []);
+
+    const handleLike = async (blogId) => {
+        if (!likedBlogs.has(blogId)) {
+            try {
+                await fetch(`http://localhost:5000/api/blog/${blogId}/like`, { method: 'POST', credentials: 'include' });
+                setLikedBlogs((prev) => new Set(prev).add(blogId));
+            } catch (error) {
+                console.error('Error liking blog:', error);
+            }
+        }
     };
 
-    fetchBlogs();
-  }, []);
+    const renderEmbeddedMedia = (url) => {
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+            return (
+                <iframe 
+                    src={`https://www.youtube.com/embed/${url.split('v=')[1]?.split('&')[0]}`} 
+                    title="YouTube video"
+                    className="video" 
+                    allowFullScreen 
+                />
+            );
+        } else if (url.includes('tiktok.com')) {
+            return (
+                <iframe 
+                    src={url.replace('tiktok.com', 't.tiktok.com')}
+                    title="TikTok video"
+                    className="video" 
+                    allowFullScreen 
+                />
+            );
+        } else if (url.includes('twitter.com')) {
+            return (
+                <blockquote className="twitter-tweet">
+                    <a href={url}>View Tweet</a>
+                </blockquote>
+            );
+        } else if (url.includes('instagram.com')) {
+            return (
+                <iframe 
+                    src={`https://instagram.com/p/${url.split('/p/')[1]}/embed`} 
+                    title="Instagram post"
+                    className="video" 
+                    allowFullScreen 
+                />
+            );
+        } else if (url.includes('gofundme.com')) {
+            return (
+                <iframe 
+                    src={url} 
+                    title="GoFundMe"
+                    className="video" 
+                    allowFullScreen 
+                />
+            );
+        }
+        return null; // Default case
+    };
 
-  const truncateText = (text, limit) => {
-    return text.length > limit ? `${text.substring(0, limit)}...` : text;
-  };
-
-  const handleLikeToggle = async (blogId) => {
-    try {
-      await axios.post(`http://localhost:5000/api/blogs/${blogId}/like`);
-      setBlogs((prevBlogs) =>
-        prevBlogs.map((blog) =>
-          blog._id === blogId
-            ? { ...blog, isLiked: !blog.isLiked, likeCount: blog.isLiked ? blog.likeCount - 1 : blog.likeCount + 1 }
-            : blog
-        )
-      );
-    } catch (error) {
-      console.error('Error toggling like:', error);
-    }
-  };
-
-  const renderMedia = (blog) => {
-    if (blog.video) {
-      // Use specialized logic to handle different media URLs
-      if (blog.video.includes('youtube.com')) {
-        return (
-          <iframe
-            className="blog-video"
-            src={`https://www.youtube.com/embed/${new URL(blog.video).searchParams.get('v')}`}
-            title={blog.title}
-            allowFullScreen
-          ></iframe>
-        );
-      } else if (blog.video.includes('tiktok.com')) {
-        // TikTok embed
-        return (
-          <blockquote className="tiktok-embed">
-            <a href={blog.video} target="_blank" rel="noopener noreferrer">
-              Watch on TikTok
-            </a>
-          </blockquote>
-        );
-      } else {
-        // Redirect to unsupported media types like Twitter, GoFundMe
-        return (
-          <a href={blog.video} target="_blank" rel="noopener noreferrer">
-            Watch Video
-          </a>
-        );
-      }
-    }
-
-    if (blog.image) {
-      return (
-        <div className="image-container">
-          <img src={blog.image} alt={blog.title} className="blog-image" />
-          <div className="image-overlay">
-            <Link to="/donations" className="donate-button">Donate</Link>
-          </div>
+    return (
+        <div className="all-blogs-container">
+            <h1>All Blogs</h1>
+            <div className="blogs-grid">
+                {blogs.map(blog => (
+                    <div key={blog._id} className="blog-card">
+                        <div className="admin-info">
+                            <img 
+                                src={blog.admin.profilePicture} 
+                                alt={`${blog.admin.firstName} ${blog.admin.lastName}`} 
+                                className="admin-profile" 
+                            />
+                            <span className="admin-name">
+                                {blog.admin.firstName} {blog.admin.lastName}
+                                <span className="verified-tick"><MdVerified /></span>
+                            </span>
+                        </div>
+                        <h2 className="blog-title">{blog.title}</h2>
+                        <p className="blog-content">{blog.content}</p>
+                        {blog.image && (
+                            <div className="media-container">
+                                <img src={blog.image} alt={blog.title} className="media" />
+                                <button className="donate-button">Donate</button>
+                            </div>
+                        )}
+                        {blog.video && (
+                            <div className="media-container">
+                                {renderEmbeddedMedia(blog.video)}
+                                <button className="donate-button">Donate</button>
+                            </div>
+                        )}
+                        <div className="blog-footer">
+                            <span className="date">{new Date(blog.date).toLocaleString()}</span>
+                            <div className="blog-actions">
+                                <span className="likes" onClick={() => handleLike(blog._id)}>
+                                    {likedBlogs.has(blog._id) ? <FaThumbsUp style={{ color: 'blue' }} /> : <FaRegThumbsUp />} {blog.likes.length}
+                                </span>
+                                <Link to={`/blog/${blog._id}`} className="comments">
+                                    <FaComment /> {blog.comments.length}
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
         </div>
-      );
-    }
-
-    return null;
-  };
-
-  return (
-    <div className="blogs-container">
-      {blogs.map((blog) => (
-        <div className="blog-card" key={blog._id}>
-          <div className="admin-info">
-            <img src={blog.admin.profilePicture} alt={`${blog.admin.firstName} ${blog.admin.lastName}`} className="admin-image" />
-            <div className="admin-name">
-              {blog.admin.firstName} {blog.admin.lastName} <span className="verified-tick"><MdVerified /></span>
-            </div>
-          </div>
-          
-          {/* Render image or video */}
-          {renderMedia(blog)}
-          
-          <div className="blog-content">
-            <h2>{blog.title}</h2>
-            <p>{truncateText(blog.content, 100)}</p>
-            <Link to={`/blogs/${blog._id}`}>Show more</Link>
-          </div>
-          <div className="blog-footer">
-            <div className="blog-actions">
-              <span onClick={() => handleLikeToggle(blog._id)}>
-                {blog.isLiked ? <AiFillLike className="like-icon liked" /> : <AiOutlineLike className="like-icon" />}
-              </span>
-              <span>{blog.likeCount}</span>
-              <span className="comment-icon">💬 {blog.comments.length}</span>
-            </div>
-            <div className="blog-date">
-              {new Date(blog.createdAt).toLocaleDateString()} {new Date(blog.createdAt).toLocaleTimeString()}
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+    );
 };
 
 export default BlogsPage;
