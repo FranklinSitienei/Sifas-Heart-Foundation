@@ -8,6 +8,7 @@ import CreateBlog from './components/CreateBlog';
 import AllBlogs from './components/AllBlogs';
 import Login from './components/Login';
 import './App.css';
+import Account from './components/Account';
 
 const ProtectedRoute = ({ children }) => {
     const navigate = useNavigate();
@@ -34,6 +35,7 @@ const App = () => {
                     <Route path="/donations" element={<ProtectedRoute><Donations /></ProtectedRoute>} />
                     <Route path="/create-blog" element={<ProtectedRoute><CreateBlog /></ProtectedRoute>} />
                     <Route path="/all-blogs" element={<ProtectedRoute><AllBlogs /></ProtectedRoute>} />
+                    <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
                 </Routes>
             </div>
         </Router>

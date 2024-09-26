@@ -128,4 +128,40 @@ router.get("/admins", async (req, res) => {
   }
 });
 
+// Update Profile
+router.put("/update_profile", upload.single("profilePicture"), adminMiddleware, async (req, res) => {
+  const { firstName, lastName, email, password, confirmPassword } = req.body;
+  const adminId = req.user.id; // Assuming req.user contains the admin ID after auth
+
+  if (!firstName || !lastName || !email) {
+    return res.status(400).json({ msg: "Please fill in all fields correctly." });
+  }
+
+  try {
+    const admin = await Admin.findById(adminId);
+    if (!admin) return res.status(404).json({ msg: "Admin not found." });
+
+    // Update fields
+    admin.firstName = firstName;
+    admin.lastName = lastName;
+    admin.email = email;
+
+    // Handle password change
+    if (password && password === confirmPassword) {
+      const salt = await bcrypt.genSalt(10);
+      admin.password = await bcrypt.hash(password, salt);
+    }
+
+    // Handle profile picture upload
+    if (req.file) {
+      admin.profilePicture = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+    }
+
+    await admin.save();
+    res.json(admin);
+  } catch (err) {
+    res.status(500).send("Server error");
+  }
+});
+
 module.exports = router;

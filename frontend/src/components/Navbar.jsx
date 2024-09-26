@@ -8,6 +8,7 @@ import {
   FaDonate,
   FaInfoCircle,
   FaChevronUp,
+  FaBlog,
 } from "react-icons/fa";
 import NotificationModal from "./NotificationModal";
 import "../css/Navbar.css";
@@ -191,7 +192,7 @@ const Navbar = () => {
             <FaInfoCircle />
           </NavLink>
           <NavLink to="/blogs" className="nav-link">
-            Blog
+            <FaBlog />
           </NavLink>
           {token ? (
             <div className="nav-icon" onClick={toggleDropdown}>
