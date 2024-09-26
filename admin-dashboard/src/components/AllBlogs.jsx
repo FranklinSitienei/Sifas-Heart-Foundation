@@ -9,7 +9,7 @@ const AllBlogs = () => {
     useEffect(() => {
         const fetchBlogs = async () => {
             try {
-                const response = await fetch('/api/blogs/all');
+                const response = await fetch('http://localhost:5000/api/blog/all');
                 const data = await response.json();
                 setBlogs(data);
             } catch (error) {

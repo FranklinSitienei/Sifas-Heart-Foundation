@@ -6,18 +6,25 @@ const upload = multer({ storage: multer.memoryStorage() });
 const { authMiddleware } = require('../middleware/authMiddleware');
 const { adminMiddleware } = require('../middleware/adminMiddleware');
 
+// Define the maximum media size (e.g., 16 MB)
+const MAX_MEDIA_SIZE = 16 * 1024 * 1024; // 16 MB
+
 // Create a new blog (Admin only)
 router.post('/create', [adminMiddleware, upload.single('media')], async (req, res) => {
     const { title, content } = req.body;
 
     try {
-        let mediaFile = req.file;
         let mediaPath = '';
 
         // Process uploaded media (image or video)
-        if (mediaFile) {
-            const base64Data = mediaFile.buffer.toString('base64');
-            mediaPath = `data:${mediaFile.mimetype};base64,${base64Data}`;
+        if (req.file) {
+            // Ensure the file size is within limits
+            if (req.file.size > MAX_MEDIA_SIZE) {
+                return res.status(400).json({ message: 'File size exceeds 16 MB limit' });
+            }
+
+            const base64Data = req.file.buffer.toString('base64');
+            mediaPath = `data:${req.file.mimetype};base64,${base64Data}`;
         }
 
         const newBlog = new Blog({
@@ -31,9 +38,12 @@ router.post('/create', [adminMiddleware, upload.single('media')], async (req, re
         await newBlog.save();
         res.status(201).json({ message: 'Blog created successfully', blog: newBlog });
     } catch (err) {
-        console.error('Error details:', err);  // Log the error details
+        console.error('Error details:', err);
+        console.log('Request body:', req.body);
+        console.log('Request file:', req.file);
         res.status(500).json({ message: 'Server error', error: err });
     }
+    
 });
 
 // View all blogs

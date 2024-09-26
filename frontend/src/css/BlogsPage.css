@@ -5,8 +5,7 @@
   padding: 20px;
   justify-content: center;
   align-items: center;
-  width: 40%;
-  margin-left: 400px;
+  width: 100%; /* Full width for better responsiveness */
 }
 
 .blog-card {
@@ -17,7 +16,8 @@
   overflow: hidden;
   background-color: #fff;
   color: black;
-  width: 100%;
+  width: 100%; /* Adjusted to be full width */
+  max-width: 600px; /* Limit maximum width */
   position: relative;
 }
 
@@ -44,7 +44,7 @@
 
 .blog-image, .blog-video {
   width: 100%;
-  height: 300px;
+  height: 300px; /* Fixed height for consistency */
   object-fit: cover;
 }
 
