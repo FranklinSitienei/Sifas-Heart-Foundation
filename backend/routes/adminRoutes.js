@@ -103,13 +103,12 @@ router.get("/logout", adminMiddleware, async (req, res) => {
 });
 
 // Fetch Admin Profile by ID
-router.get("/profile/:id", adminMiddleware, async (req, res) => {
+router.get("/profile", adminMiddleware, async (req, res) => {
   try {
-    const admin = await Admin.findById(req.params.id).select("-password");
-    
-    if (!admin) {
-      return res.status(404).json({ msg: "Admin not found" });
-    }
+    const admin = await Admin.findById(req.admin.id)
+      .select("-password")
+
+    if (!admin) return res.status(404).json({ msg: "Admin not found" });
 
     res.json(admin);
   } catch (err) {

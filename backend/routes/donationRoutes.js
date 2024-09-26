@@ -20,10 +20,10 @@ router.get('/', async (req, res) => {
 router.get('/overview', adminMiddleware, getDonationsOverview);
 
 // Monthly donations for the bar chart
-router.get('/monthly-donations', adminMiddleware, getMonthlyDonations);
+router.get('/monthly', adminMiddleware, getMonthlyDonations);
 
 // Recent transactions
-router.get('/recent-transactions', adminMiddleware, getRecentTransactions);
+router.get('/recent', adminMiddleware, getRecentTransactions);
 
 // Ensure both routes have valid callback functions
 router.post('/donate', makeDonation);

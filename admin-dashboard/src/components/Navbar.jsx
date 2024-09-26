@@ -21,7 +21,7 @@ const Navbar = () => {
     
             try {
                 const response = await axios.get('http://localhost:5000/api/admin/profile', {
-                    headers: { Authorization: `Bearer ${token}` }, // Ensure token is passed correctly
+                    headers: { Authorization: `Bearer ${token}` },
                 });
                 setAdmin(response.data);
             } catch (error) {
