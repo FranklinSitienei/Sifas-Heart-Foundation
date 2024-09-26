@@ -102,7 +102,7 @@ const BlogsPage = () => {
                         {blog.image && (
                             <div className="media-container">
                                 <img src={blog.image} alt={blog.title} className="media" />
-                                <button className="donate-button">Donate</button>
+                                <button className="donate-button"><Link to="/donations">Donate</Link></button>
                             </div>
                         )}
                         {blog.video && (
