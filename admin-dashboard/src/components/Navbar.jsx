@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link, NavLink } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { FaSearch, FaBell, FaUserCircle, FaChevronUp } from 'react-icons/fa';
 import Sidebar from './Sidebar'; 
@@ -10,29 +10,29 @@ const Navbar = () => {
     const [admin, setAdmin] = useState(null);
     const [notificationCount, setNotificationCount] = useState(0);
     const navigate = useNavigate();
-    const [activeDropdown, setActiveDropdown] = useState(null);
+    const [activeDropdown, setActiveDropdown] = useState(false); // Changed to boolean
 
     useEffect(() => {
         const fetchAdminProfile = async () => {
             const token = localStorage.getItem('admin');
-            console.log('Retrieved token from localStorage:', token); // Debug log
+            console.log('Retrieved token from localStorage:', token);
             
             if (!token) {
                 console.log('No admin token found, redirecting to login');
-                return navigate('/login'); // Redirect to login if token is missing
+                return navigate('/login');
             }
     
             try {
                 const response = await axios.get('http://localhost:5000/api/admin/profile', {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                console.log('Admin profile fetched successfully:', response.data); // Debug log
+                console.log('Admin profile fetched successfully:', response.data);
                 setAdmin(response.data);
             } catch (error) {
                 if (error.response && error.response.status === 401) {
                     console.error('Unauthorized access, redirecting to login:', error);
-                    localStorage.removeItem('admin'); // Remove invalid token
-                    navigate('/login'); // Redirect to login if unauthorized
+                    localStorage.removeItem('admin');
+                    navigate('/login');
                 } else {
                     console.error('Failed to fetch admin profile:', error);
                 }
@@ -48,16 +48,16 @@ const Navbar = () => {
             await axios.get('http://localhost:5000/api/admin/logout', {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            localStorage.removeItem('admin'); // Clear the token from local storage
-            navigate('/login'); // Redirect to login page
+            localStorage.removeItem('admin');
+            navigate('/login');
         } catch (error) {
             console.error('Logout failed:', error);
         }
     };    
 
     const toggleDropdown = () => {
-        setActiveDropdown(activeDropdown === "admin" ? null : "admin");
-      };
+        setActiveDropdown(prev => !prev);
+    };
 
     return (
         <nav className="navbar">
@@ -71,31 +71,27 @@ const Navbar = () => {
                     <FaBell />
                     {notificationCount > 0 && <span className="notification-count">{notificationCount}</span>}
                 </div>
-                {admin ? (
-                    <div className="nav-icon" onClick={toggleDropdown}>
+                <div className="nav-icon" onClick={toggleDropdown}>
                     {admin && admin.profilePicture ? (
-                      <img
-                        src={admin.profilePicture}
-                        alt="Profile"
-                        className="profile-image"
-                      />
+                        <img
+                            src={admin.profilePicture}
+                            alt="Profile"
+                            className="profile-image"
+                        />
                     ) : (
-                        <FaUserCircle className="account-icon" onClick={() => console.log('Show login options')} />
+                        <FaUserCircle className="account-icon" />
                     )}
                     <FaChevronUp className="dropdown-icon" />
-                    {activeDropdown === "profile" && (
-                      <div className="dropdown-menu">
+                </div>
+                {activeDropdown && (
+                    <div className="dropdown-menu">
                         <Link to="/account" className="dropdown-item">
-                          Account
+                            Account
                         </Link>
                         <button onClick={handleLogout} className="dropdown-item">
-                          Logout
+                            Logout
                         </button>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                    <FaUserCircle className="account-icon" onClick={() => console.log('Show login options')} />
+                    </div>
                 )}
             </div>
         </nav>
