@@ -31,7 +31,8 @@ const CreateBlog = () => {
     const file = e.target.files[0];
     if (file) {
       setMediaFile(file);
-      setMediaPreview(URL.createObjectURL(file));
+      setMediaPreview(URL.createObjectURL(file)); // Show preview for uploaded file
+      setMediaUrl(''); // Clear URL if file is selected
     }
   };
 
@@ -40,12 +41,12 @@ const CreateBlog = () => {
     const formData = new FormData();
     formData.append('title', title);
     formData.append('content', content);
-    formData.append('mediaType', mediaType);
 
+    // Include media based on whether a file or URL is provided
     if (mediaFile) {
       formData.append('media', mediaFile);
     } else if (mediaUrl) {
-      formData.append('mediaUrl', mediaUrl);
+      formData.append('mediaUrl', mediaUrl); // Send mediaUrl if provided
     }
 
     try {
@@ -54,6 +55,13 @@ const CreateBlog = () => {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
       });
       alert('Blog created successfully!');
+      // Clear the form after successful submission
+      setTitle('');
+      setContent('');
+      setMediaType('image');
+      setMediaPreview('');
+      setMediaFile(null);
+      setMediaUrl('');
     } catch (error) {
       console.error('Failed to create blog:', error);
       alert('Error creating blog');
@@ -94,7 +102,11 @@ const CreateBlog = () => {
           type="text"
           placeholder="Paste media URL"
           value={mediaUrl}
-          onChange={(e) => setMediaUrl(e.target.value)}
+          onChange={(e) => {
+            setMediaUrl(e.target.value);
+            setMediaFile(null); // Clear file if URL is provided
+            setMediaPreview(''); // Clear preview if URL is provided
+          }}
         />
 
         {mediaPreview && mediaType === 'image' && (

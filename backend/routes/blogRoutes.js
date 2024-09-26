@@ -11,12 +11,12 @@ const MAX_MEDIA_SIZE = 16 * 1024 * 1024; // 16 MB
 
 // Create a new blog (Admin only)
 router.post('/create', [adminMiddleware, upload.single('media')], async (req, res) => {
-    const { title, content } = req.body;
+    const { title, content, mediaUrl } = req.body;
 
     try {
         let mediaPath = '';
 
-        // Process uploaded media (image or video)
+        // Check if a media file was uploaded
         if (req.file) {
             // Ensure the file size is within limits
             if (req.file.size > MAX_MEDIA_SIZE) {
@@ -25,6 +25,9 @@ router.post('/create', [adminMiddleware, upload.single('media')], async (req, re
 
             const base64Data = req.file.buffer.toString('base64');
             mediaPath = `data:${req.file.mimetype};base64,${base64Data}`;
+        } else if (mediaUrl) {
+            // Check if a media URL is provided
+            mediaPath = mediaUrl;
         }
 
         const newBlog = new Blog({
@@ -43,7 +46,6 @@ router.post('/create', [adminMiddleware, upload.single('media')], async (req, re
         console.log('Request file:', req.file);
         res.status(500).json({ message: 'Server error', error: err });
     }
-    
 });
 
 // View all blogs
