@@ -93,7 +93,7 @@
   
   .show-hide-icon {
     position: absolute;
-    top: 50%;
+    top: 0;
     right: 10px;
     transform: translateY(-50%);
     cursor: pointer;
