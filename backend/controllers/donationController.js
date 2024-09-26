@@ -96,3 +96,96 @@ exports.makeDonation = async (req, res) => {
         res.status(500).send('Server error');
     }
 };
+
+// Overview: Total donations today, this month, this year
+exports.getDonationsOverview = async (req, res) => {
+    try {
+      const now = new Date();
+      const startOfDay = new Date(now.setHours(0, 0, 0, 0));
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const startOfYear = new Date(now.getFullYear(), 0, 1);
+  
+      const totalToday = await Donation.aggregate([
+        { $match: { createdAt: { $gte: startOfDay } } },
+        { $group: { _id: null, total: { $sum: "$amount" } } }
+      ]);
+  
+      const totalThisMonth = await Donation.aggregate([
+        { $match: { createdAt: { $gte: startOfMonth } } },
+        { $group: { _id: null, total: { $sum: "$amount" } } }
+      ]);
+  
+      const totalThisYear = await Donation.aggregate([
+        { $match: { createdAt: { $gte: startOfYear } } },
+        { $group: { _id: null, total: { $sum: "$amount" } } }
+      ]);
+  
+      res.json({
+        totalToday: totalToday[0]?.total || 0,
+        totalThisMonth: totalThisMonth[0]?.total || 0,
+        totalThisYear: totalThisYear[0]?.total || 0
+      });
+    } catch (error) {
+      console.error("Error fetching donations overview:", error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  };
+  
+  // Monthly donations for bar chart (current year)
+  exports.getMonthlyDonations = async (req, res) => {
+    try {
+      const currentYear = new Date().getFullYear();
+      const monthlyDonations = await Donation.aggregate([
+        {
+          $match: {
+            createdAt: {
+              $gte: new Date(`${currentYear}-01-01`),
+              $lte: new Date(`${currentYear}-12-31`)
+            }
+          }
+        },
+        {
+          $group: {
+            _id: { month: { $month: "$createdAt" } },
+            total: { $sum: "$amount" }
+          }
+        },
+        { $sort: { "_id.month": 1 } }
+      ]);
+  
+      res.json(monthlyDonations);
+    } catch (error) {
+      console.error("Error fetching monthly donations:", error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  };
+  
+  // Recent transactions
+  exports.getRecentTransactions = async (req, res) => {
+    try {
+      const recentTransactions = await Donation.find()
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .populate('userId', 'firstName lastName email');
+        
+      res.json(recentTransactions);
+    } catch (error) {
+      console.error('Error fetching recent transactions:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  };
+
+  // donationController.js
+exports.getPaymentMethodBreakdown = async (req, res) => {
+    try {
+      const paymentMethods = await Donation.aggregate([
+        { $group: { _id: "$paymentMethod", total: { $sum: "$amount" } } }
+      ]);
+  
+      res.json(paymentMethods);
+    } catch (error) {
+      console.error('Error fetching payment method breakdown:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  };
+  

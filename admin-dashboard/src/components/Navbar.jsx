@@ -14,23 +14,34 @@ const Navbar = () => {
     useEffect(() => {
         const fetchAdminProfile = async () => {
             const token = localStorage.getItem('admin');
+            if (!token) {
+                console.log('No admin token found, redirecting to login');
+                return navigate('/login'); // Redirect to login if token is missing
+            }
+    
             try {
-                const response = await axios.get('/api/admin/profile', {
-                    headers: { Authorization: `Bearer ${token}` },
+                const response = await axios.get('http://localhost:5000/api/admin/profile', {
+                    headers: { Authorization: `Bearer ${token}` }, // Ensure token is passed correctly
                 });
                 setAdmin(response.data);
             } catch (error) {
-                console.error('Failed to fetch admin profile:', error);
+                if (error.response && error.response.status === 401) {
+                    console.error('Unauthorized access, redirecting to login:', error);
+                    localStorage.removeItem('admin'); // Remove invalid token
+                    navigate('/login'); // Redirect to login if unauthorized
+                } else {
+                    console.error('Failed to fetch admin profile:', error);
+                }
             }
         };
-        
+    
         fetchAdminProfile();
-    }, []);
-
+    }, [navigate]);
+    
     const handleLogout = async () => {
         const token = localStorage.getItem('admin');
         try {
-            await axios.get('/api/admin/logout', {
+            await axios.get('http://localhost:5000/api/admin/logout', {
                 headers: { Authorization: `Bearer ${token}` },
             });
             localStorage.removeItem('admin'); // Clear the token from local storage
@@ -38,7 +49,7 @@ const Navbar = () => {
         } catch (error) {
             console.error('Logout failed:', error);
         }
-    };
+    };    
 
     return (
         <nav className="navbar">

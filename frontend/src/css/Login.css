@@ -5,6 +5,7 @@
   height: 100vh;
   padding: 2rem;
   color: black;
+  overflow: hidden;
 }
 
 .login-card {
@@ -21,16 +22,51 @@
 }
 
 .input-group {
-  width: calc(100% - 2rem);
+  position: relative;
+  width: 100%;
+  margin-bottom: 1.5rem;
 }
 
-.social-login {
-  margin-top: 1rem;
+.input-group input {
+  width: 85%;
+  padding: 10px;
+  padding-right: 40px; /* Space for the icon */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.password-input {
+  position: relative;
+  width: 100%;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #666;
+}
+
+.toggle-password:hover {
+  color: #007bff;
 }
 
 .login-button {
   display: block;
   margin: 0.5rem auto;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.login-button:hover {
+  background-color: #0056b3;
 }
 
 /* Google and Apple login buttons */
@@ -98,7 +134,7 @@
   background-color: #5a6268;
 }
 
-.button{
+.button {
   background: none;
   color: #007bff;
 }

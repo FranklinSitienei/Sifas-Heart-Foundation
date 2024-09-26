@@ -15,7 +15,7 @@ const CreateBlog = () => {
     const fetchAdminProfile = async () => {
       const token = localStorage.getItem('admin');
       try {
-        const response = await axios.get('/api/admin/profile', {
+        const response = await axios.get('http://localhost:5000/api/admin/profile', {
           headers: { Authorization: `Bearer ${token}` },
         });
         setAdmin(response.data);

@@ -193,3 +193,17 @@ exports.handleComplexMessage = async (req, res) => {
     res.status(500).json({ msg: "Server error" });
   }
 };
+
+exports.getUserChats = async (req, res) => {
+  try {
+    const userChats = await Chat.find()
+      .sort({ lastActive: -1 })
+      .limit(10)
+      .populate('userId', 'firstName lastName');
+    
+    res.json(userChats);
+  } catch (error) {
+    console.error('Error fetching user chats:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};

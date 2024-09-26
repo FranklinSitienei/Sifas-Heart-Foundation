@@ -21,17 +21,17 @@ const adminSchema = new Schema({
   profilePicture: {
     type: String,
   },
-  role: {
-    type: String,
-    enum: ['secretary', 'admin'],
-    default: 'secretary',
-  },
   googleId: {
-    type: String, // To handle Google OAuth
+    type: String,
   },
   isOnline: {
     type: Boolean,
-    default: false, // To track whether admin is online
+    default: false,
+  },
+  role: {
+    type: String,
+    enum: ['admin', 'secretary'],
+    default: 'admin',
   },
 });
 

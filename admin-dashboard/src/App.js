@@ -1,15 +1,26 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
 import Navbar from './components/Navbar'; 
 import Sidebar from './components/Sidebar'; 
 import Dashboard from './components/Dashboard'; 
 import Donations from './components/Donations';
 import CreateBlog from './components/CreateBlog';
 import AllBlogs from './components/AllBlogs';
-// import EditBlog from './components/EditBlog';
-// import DonationCharts from './components/DonationCharts';
-// import TransactionTable from './components/TransactionTable';
+import Login from './components/Login';
 import './App.css';
+
+const ProtectedRoute = ({ children }) => {
+    const navigate = useNavigate();
+    
+    useEffect(() => {
+        const token = localStorage.getItem('admin');
+        if (!token) {
+            navigate('/login');
+        }
+    }, [navigate]);
+
+    return children;
+};
 
 const App = () => {
     return (
@@ -18,13 +29,11 @@ const App = () => {
             <Sidebar />
             <div className="content">
                 <Routes>
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/donations" element={<Donations />} />
-                    <Route path="/create-blog" element={<CreateBlog />} />
-                    <Route path="/all-blogs" element={<AllBlogs />} />
-                    {/* <Route path="/edit-blog" element={<EditBlog />} /> */}
-                    {/* <Route path="/donation-charts" element={<DonationCharts />} /> */}
-                    {/* <Route path="/transactions" element={<TransactionTable />} /> */}
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                    <Route path="/donations" element={<ProtectedRoute><Donations /></ProtectedRoute>} />
+                    <Route path="/create-blog" element={<ProtectedRoute><CreateBlog /></ProtectedRoute>} />
+                    <Route path="/all-blogs" element={<ProtectedRoute><AllBlogs /></ProtectedRoute>} />
                 </Routes>
             </div>
         </Router>

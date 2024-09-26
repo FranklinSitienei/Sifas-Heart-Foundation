@@ -22,7 +22,10 @@ router.get(
   async (req, res) => {
     const token = generateToken(req.user, true); // Ensure admin is marked true
     await Admin.findOneAndUpdate({ email: req.user.email }, { isOnline: true });
-    res.redirect(`http://localhost:3000/admin?token=${token}`);
+    
+    // Use the referring request's base URL to avoid hardcoding
+    const redirectUrl = `${req.protocol}://${req.get('host')}/admin?token=${token}`;
+    res.redirect(redirectUrl);
   }
 );
 
@@ -99,10 +102,15 @@ router.get("/logout", adminMiddleware, async (req, res) => {
   }
 });
 
-// Fetch Admin Profile
-router.get("/profile", adminMiddleware, async (req, res) => {
+// Fetch Admin Profile by ID
+router.get("/profile/:id", adminMiddleware, async (req, res) => {
   try {
-    const admin = await Admin.findById(req.admin.id).select("-password");
+    const admin = await Admin.findById(req.params.id).select("-password");
+    
+    if (!admin) {
+      return res.status(404).json({ msg: "Admin not found" });
+    }
+
     res.json(admin);
   } catch (err) {
     res.status(500).send("Server error");
@@ -110,7 +118,7 @@ router.get("/profile", adminMiddleware, async (req, res) => {
 });
 
 // Fetch all admins (publicly accessible)
-router.get("/profile", async (req, res) => {
+router.get("/admins", async (req, res) => {
   try {
     const admins = await Admin.find().select("firstName lastName role isOnline profilePicture");
     res.json(admins);

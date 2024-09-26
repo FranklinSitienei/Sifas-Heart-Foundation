@@ -466,4 +466,15 @@ router.post('/password-reset', async (req, res) => {
     }
 });
 
+// Total users
+router.get('/total', async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    res.json({ totalUsers });
+  } catch (error) {
+    console.error('Error fetching total users:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 module.exports = router;
