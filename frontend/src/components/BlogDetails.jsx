@@ -9,12 +9,12 @@ const BlogDetails = () => {
   const [blog, setBlog] = useState(null);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
-  
+
   useEffect(() => {
     // Fetch blog details and comments
     const fetchBlogDetails = async () => {
       try {
-        const response = await axios.get(`/api/blogs/${id}`);
+        const response = await axios.get(`http://localhost:5000/api/blog/${id}`);
         setBlog(response.data);
         setComments(response.data.comments);
       } catch (error) {
@@ -27,7 +27,7 @@ const BlogDetails = () => {
 
   const handleLikeToggle = async () => {
     try {
-      await axios.post(`/api/blogs/${id}/like`);
+      await axios.post(`http://localhost:5000/api/blog/${id}/like`);
       setBlog((prevBlog) => ({
         ...prevBlog,
         isLiked: !prevBlog.isLiked,
@@ -40,7 +40,7 @@ const BlogDetails = () => {
 
   const handleCommentSubmit = async () => {
     try {
-      const response = await axios.post(`/api/blogs/${id}/comment`, { content: newComment });
+      const response = await axios.post(`http://localhost:5000/api/blog/${id}/comment`, { content: newComment });
       setComments((prevComments) => [...prevComments, response.data]);
       setNewComment('');
     } catch (error) {
@@ -76,6 +76,18 @@ const BlogDetails = () => {
               <span>{blog.likeCount} Likes</span>
               <span>{new Date(blog.date).toLocaleDateString()} {new Date(blog.date).toLocaleTimeString()}</span>
             </div>
+          </div>
+
+          {/* Popular Links Section */}
+          <div className="popular-links">
+            <h3>Popular Links</h3>
+            <ul>
+              <li><a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer">YouTube</a></li>
+              <li><a href="https://www.tiktok.com" target="_blank" rel="noopener noreferrer">TikTok</a></li>
+              <li><a href="https://www.twitter.com" target="_blank" rel="noopener noreferrer">Twitter</a></li>
+              <li><a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+              <li><a href="https://www.gofundme.com" target="_blank" rel="noopener noreferrer">GoFundMe</a></li>
+            </ul>
           </div>
 
           <div className="comments-section">

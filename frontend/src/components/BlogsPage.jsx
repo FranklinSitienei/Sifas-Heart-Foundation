@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AiOutlineLike, AiFillLike } from 'react-icons/ai';
+import { MdVerified } from "react-icons/md";
 import axios from 'axios';
 import '../css/BlogsPage.css';
 
@@ -26,7 +27,7 @@ const BlogsPage = () => {
 
   const handleLikeToggle = async (blogId) => {
     try {
-      await axios.post(`/api/blogs/${blogId}/like`);
+      await axios.post(`http://localhost:5000/api/blogs/${blogId}/like`);
       setBlogs((prevBlogs) =>
         prevBlogs.map((blog) =>
           blog._id === blogId
@@ -39,6 +40,51 @@ const BlogsPage = () => {
     }
   };
 
+  const renderMedia = (blog) => {
+    if (blog.video) {
+      // Use specialized logic to handle different media URLs
+      if (blog.video.includes('youtube.com')) {
+        return (
+          <iframe
+            className="blog-video"
+            src={`https://www.youtube.com/embed/${new URL(blog.video).searchParams.get('v')}`}
+            title={blog.title}
+            allowFullScreen
+          ></iframe>
+        );
+      } else if (blog.video.includes('tiktok.com')) {
+        // TikTok embed
+        return (
+          <blockquote className="tiktok-embed">
+            <a href={blog.video} target="_blank" rel="noopener noreferrer">
+              Watch on TikTok
+            </a>
+          </blockquote>
+        );
+      } else {
+        // Redirect to unsupported media types like Twitter, GoFundMe
+        return (
+          <a href={blog.video} target="_blank" rel="noopener noreferrer">
+            Watch Video
+          </a>
+        );
+      }
+    }
+
+    if (blog.image) {
+      return (
+        <div className="image-container">
+          <img src={blog.image} alt={blog.title} className="blog-image" />
+          <div className="image-overlay">
+            <Link to="/donations" className="donate-button">Donate</Link>
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div className="blogs-container">
       {blogs.map((blog) => (
@@ -46,26 +92,12 @@ const BlogsPage = () => {
           <div className="admin-info">
             <img src={blog.admin.profileImage} alt={`${blog.admin.firstName} ${blog.admin.lastName}`} className="admin-image" />
             <div className="admin-name">
-              {blog.admin.firstName} {blog.admin.lastName} <span className="verified-tick">✔️</span>
+              {blog.admin.firstName} {blog.admin.lastName} <span className="verified-tick"><MdVerified /></span>
             </div>
           </div>
           
-          {/* Check if the blog has a video or image */}
-          {blog.video ? (
-            <iframe
-              className="blog-video"
-              src={blog.video}
-              title={blog.title}
-              allowFullScreen
-            ></iframe>
-          ) : (
-            <div className="image-container">
-              <img src={blog.image} alt={blog.title} className="blog-image" />
-              <div className="image-overlay">
-                <Link to="/donations" className="donate-button">Donate</Link>
-              </div>
-            </div>
-          )}
+          {/* Render image or video */}
+          {renderMedia(blog)}
           
           <div className="blog-content">
             <h2>{blog.title}</h2>

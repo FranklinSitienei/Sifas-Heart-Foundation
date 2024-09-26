@@ -10,6 +10,7 @@ const CreateBlog = () => {
   const [mediaPreview, setMediaPreview] = useState('');
   const [mediaFile, setMediaFile] = useState(null);
   const [mediaUrl, setMediaUrl] = useState('');
+  const [embedCode, setEmbedCode] = useState(''); // Embed code for social media
 
   useEffect(() => {
     const fetchAdminProfile = async () => {
@@ -34,6 +35,49 @@ const CreateBlog = () => {
       setMediaPreview(URL.createObjectURL(file)); // Show preview for uploaded file
       setMediaUrl(''); // Clear URL if file is selected
     }
+  };
+
+  // Helper to check if a URL is a YouTube link
+  const isYouTubeUrl = (url) => /youtube\.com|youtu\.be/.test(url);
+
+  // Helper to check if a URL is a TikTok link
+  const isTikTokUrl = (url) => /tiktok\.com/.test(url);
+
+  // Helper to check if a URL is a Twitter link
+  const isTwitterUrl = (url) => /twitter\.com/.test(url);
+
+  // Helper to check if a URL is an Instagram link
+  const isInstagramUrl = (url) => /instagram\.com/.test(url);
+
+  // Helper to check if a URL is a GoFundMe link
+  const isGoFundMeUrl = (url) => /gofundme\.com/.test(url);
+
+  // Function to generate the proper embed code based on the URL
+  const generateEmbedCode = (url) => {
+    if (isYouTubeUrl(url)) {
+      const videoId = url.split('v=')[1]?.split('&')[0];
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : '';
+    } else if (isTikTokUrl(url)) {
+      return url;
+    } else if (isTwitterUrl(url)) {
+      return url;
+    } else if (isInstagramUrl(url)) {
+      return url;
+    } else if (isGoFundMeUrl(url)) {
+      return url;
+    }
+    return '';
+  };
+
+  const handleMediaUrlChange = (e) => {
+    const url = e.target.value;
+    setMediaUrl(url);
+    setMediaFile(null); // Clear file if URL is provided
+    setMediaPreview(''); // Clear preview if URL is provided
+
+    // Set embed code based on the provided URL
+    const embed = generateEmbedCode(url);
+    setEmbedCode(embed);
   };
 
   const handleSubmit = async (e) => {
@@ -62,6 +106,7 @@ const CreateBlog = () => {
       setMediaPreview('');
       setMediaFile(null);
       setMediaUrl('');
+      setEmbedCode(''); // Clear embed code
     } catch (error) {
       console.error('Failed to create blog:', error);
       alert('Error creating blog');
@@ -102,19 +147,15 @@ const CreateBlog = () => {
           type="text"
           placeholder="Paste media URL"
           value={mediaUrl}
-          onChange={(e) => {
-            setMediaUrl(e.target.value);
-            setMediaFile(null); // Clear file if URL is provided
-            setMediaPreview(''); // Clear preview if URL is provided
-          }}
+          onChange={handleMediaUrlChange}
         />
 
         {mediaPreview && mediaType === 'image' && (
           <img src={mediaPreview} alt="Preview" className="media-preview" />
         )}
-        {mediaType === 'video' && mediaUrl && (
+        {mediaType === 'video' && mediaUrl && embedCode && (
           <iframe
-            src={mediaUrl}
+            src={embedCode}
             title="Video Preview"
             className="media-preview"
             frameBorder="0"
