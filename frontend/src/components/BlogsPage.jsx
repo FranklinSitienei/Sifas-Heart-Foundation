@@ -90,7 +90,7 @@ const BlogsPage = () => {
       {blogs.map((blog) => (
         <div className="blog-card" key={blog._id}>
           <div className="admin-info">
-            <img src={blog.admin.profileImage} alt={`${blog.admin.firstName} ${blog.admin.lastName}`} className="admin-image" />
+            <img src={blog.admin.profilePicture} alt={`${blog.admin.firstName} ${blog.admin.lastName}`} className="admin-image" />
             <div className="admin-name">
               {blog.admin.firstName} {blog.admin.lastName} <span className="verified-tick"><MdVerified /></span>
             </div>

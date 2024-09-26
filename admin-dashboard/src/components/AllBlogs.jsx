@@ -20,6 +20,54 @@ const AllBlogs = () => {
         fetchBlogs();
     }, []);
 
+    const renderEmbeddedMedia = (url) => {
+        // Check the URL and return an iframe based on the platform
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+            return (
+                <iframe 
+                    src={`https://www.youtube.com/embed/${url.split('v=')[1]?.split('&')[0]}`} 
+                    title="YouTube video"
+                    className="video" 
+                    allowFullScreen 
+                />
+            );
+        } else if (url.includes('tiktok.com')) {
+            return (
+                <iframe 
+                    src={url.replace('tiktok.com', 't.tiktok.com')}
+                    title="TikTok video"
+                    className="video" 
+                    allowFullScreen 
+                />
+            );
+        } else if (url.includes('twitter.com')) {
+            return (
+                <blockquote className="twitter-tweet">
+                    <a href={url}>View Tweet</a>
+                </blockquote>
+            );
+        } else if (url.includes('instagram.com')) {
+            return (
+                <iframe 
+                    src={`https://instagram.com/p/${url.split('/p/')[1]}/embed`} 
+                    title="Instagram post"
+                    className="video" 
+                    allowFullScreen 
+                />
+            );
+        } else if (url.includes('gofundme.com')) {
+            return (
+                <iframe 
+                    src={url} 
+                    title="GoFundMe"
+                    className="video" 
+                    allowFullScreen 
+                />
+            );
+        }
+        return null; // Default case
+    };
+
     return (
         <div className="all-blogs-container">
             <Link to="/create" className="create-blog-button">
@@ -30,7 +78,11 @@ const AllBlogs = () => {
                 {blogs.map(blog => (
                     <div key={blog._id} className="blog-card">
                         <div className="admin-info">
-                            <img src={blog.admin.profileImage} alt={`${blog.admin.firstName} ${blog.admin.lastName}`} className="admin-profile" />
+                            <img 
+                                src={blog.admin.profilePicture} 
+                                alt={`${blog.admin.firstName} ${blog.admin.lastName}`} 
+                                className="admin-profile" 
+                            />
                             <span className="admin-name">
                                 {blog.admin.firstName} {blog.admin.lastName}
                                 <span className="verified-tick">✔️</span>
@@ -46,12 +98,7 @@ const AllBlogs = () => {
                         )}
                         {blog.video && (
                             <div className="media-container">
-                                <iframe 
-                                    src={blog.video} 
-                                    title={blog.title} 
-                                    className="video" 
-                                    allowFullScreen 
-                                />
+                                {renderEmbeddedMedia(blog.video)}
                                 <button className="donate-button">Donate</button>
                             </div>
                         )}
