@@ -50,7 +50,7 @@ const CreateBlog = () => {
 
     try {
       const token = localStorage.getItem('admin');
-      await axios.post('/api/blogs/create', formData, {
+      await axios.post('http://localhost:5000/api/blog/create', formData, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
       });
       alert('Blog created successfully!');

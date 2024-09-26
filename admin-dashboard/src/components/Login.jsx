@@ -34,7 +34,10 @@ const Login = () => {
                 const data = await response.json();
                 localStorage.setItem('admin', data.token);
                 console.log('Admin token:', data.token);
-                window.location.href = '/dashboard';
+                // Instead of immediate redirection, use a timeout
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 100); // 100 ms delay
             } else {
                 const error = await response.json();
                 alert(`Login failed: ${error.msg}`);

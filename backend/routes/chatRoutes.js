@@ -32,6 +32,6 @@ router.post("/edit", authMiddleware, editMessage);
 router.post("/delete", authMiddleware, deleteMessage);
 
 // Fetch user chats and questions
-router.get("/all", adminMiddleware, getUserChats);
+router.get("/all", getUserChats);
 
 module.exports = router;

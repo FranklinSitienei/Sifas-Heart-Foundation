@@ -14,6 +14,8 @@ const Navbar = () => {
     useEffect(() => {
         const fetchAdminProfile = async () => {
             const token = localStorage.getItem('admin');
+            console.log('Retrieved token from localStorage:', token); // Debug log
+            
             if (!token) {
                 console.log('No admin token found, redirecting to login');
                 return navigate('/login'); // Redirect to login if token is missing
@@ -23,6 +25,7 @@ const Navbar = () => {
                 const response = await axios.get('http://localhost:5000/api/admin/profile', {
                     headers: { Authorization: `Bearer ${token}` },
                 });
+                console.log('Admin profile fetched successfully:', response.data); // Debug log
                 setAdmin(response.data);
             } catch (error) {
                 if (error.response && error.response.status === 401) {
@@ -36,7 +39,7 @@ const Navbar = () => {
         };
     
         fetchAdminProfile();
-    }, [navigate]);
+    }, [navigate]);    
     
     const handleLogout = async () => {
         const token = localStorage.getItem('admin');
@@ -53,9 +56,6 @@ const Navbar = () => {
 
     return (
         <nav className="navbar">
-            {/* <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="toggle-sidebar">
-                {isSidebarOpen ? 'Close' : 'Open'} Sidebar
-            </button> */}
             {isSidebarOpen && <Sidebar />}
             <div className="search-bar">
                 <input type="text" placeholder="Search..." />

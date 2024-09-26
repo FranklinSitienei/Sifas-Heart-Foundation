@@ -17,13 +17,13 @@ router.get('/', async (req, res) => {
 
 
 // Overview data: Total donations (today, month, year)
-router.get('/overview', adminMiddleware, getDonationsOverview);
+router.get('/overview', getDonationsOverview);
 
 // Monthly donations for the bar chart
-router.get('/monthly', adminMiddleware, getMonthlyDonations);
+router.get('/monthly', getMonthlyDonations);
 
 // Recent transactions
-router.get('/recent', adminMiddleware, getRecentTransactions);
+router.get('/recent', getRecentTransactions);
 
 // Ensure both routes have valid callback functions
 router.post('/donate', makeDonation);
@@ -31,7 +31,7 @@ router.post('/donate', makeDonation);
 // router.post('/mpesa/success', handleMpesaSuccess);
 
 // DonationRoutes.js
-router.get('/payment-methods', adminMiddleware, getPaymentMethodBreakdown);
+router.get('/payment-methods', getPaymentMethodBreakdown);
 
 
 router.post('/send-payslip', async (req, res) => {
