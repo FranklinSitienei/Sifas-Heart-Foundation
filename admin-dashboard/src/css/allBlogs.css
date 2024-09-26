@@ -4,12 +4,11 @@
 
 .create-blog-button {
     position: absolute;
-    top: 90px;
-    right: 20px;
-    background: gold;
+    top: 130px;
+    right: 50px;
     border: none;
-    border-radius: 50%;
     cursor: pointer;
+    color: rgb(0, 110, 255);
 }
 
 .blogs-grid {
@@ -40,7 +39,7 @@
 }
 
 .verified-tick {
-    color: gold;
+    color: rgb(0, 110, 255);
     margin-left: 5px;
 }
 

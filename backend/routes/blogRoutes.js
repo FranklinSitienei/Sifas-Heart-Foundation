@@ -51,7 +51,7 @@ router.post('/create', [adminMiddleware, upload.single('media')], async (req, re
 // View all blogs
 router.get('/all', async (req, res) => {
     try {
-        const blogs = await Blog.find().populate('admin', 'firstName lastName').populate('comments.user', 'firstName lastName');
+        const blogs = await Blog.find().populate('admin', 'firstName lastName profilePicture').populate('comments.user', 'firstName lastName');
         res.status(200).json(blogs);
     } catch (err) {
         res.status(500).json({ message: 'Server error', error: err });

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaPlus, FaRegThumbsUp, FaComment } from 'react-icons/fa';
+import { MdVerified } from "react-icons/md";
 import '../css/allBlogs.css';
 
 const AllBlogs = () => {
@@ -70,7 +71,7 @@ const AllBlogs = () => {
 
     return (
         <div className="all-blogs-container">
-            <Link to="/create" className="create-blog-button">
+            <Link to="/create-blog" className="create-blog-button">
                 <FaPlus size={24} />
             </Link>
             <h1>All Blogs</h1>
@@ -85,7 +86,7 @@ const AllBlogs = () => {
                             />
                             <span className="admin-name">
                                 {blog.admin.firstName} {blog.admin.lastName}
-                                <span className="verified-tick">✔️</span>
+                                <span className="verified-tick"><MdVerified /></span>
                             </span>
                         </div>
                         <h2 className="blog-title">{blog.title}</h2>
