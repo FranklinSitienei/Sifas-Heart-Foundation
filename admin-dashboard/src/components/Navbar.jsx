@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link, NavLink } from 'react-router-dom';
 import axios from 'axios';
-import { FaSearch, FaBell, FaUserCircle } from 'react-icons/fa';
+import { FaSearch, FaBell, FaUserCircle, FaChevronUp } from 'react-icons/fa';
 import Sidebar from './Sidebar'; 
 import '../css/Navbar.css';
 
@@ -10,6 +10,7 @@ const Navbar = () => {
     const [admin, setAdmin] = useState(null);
     const [notificationCount, setNotificationCount] = useState(0);
     const navigate = useNavigate();
+    const [activeDropdown, setActiveDropdown] = useState(null);
 
     useEffect(() => {
         const fetchAdminProfile = async () => {
@@ -54,6 +55,10 @@ const Navbar = () => {
         }
     };    
 
+    const toggleDropdown = () => {
+        setActiveDropdown(activeDropdown === "admin" ? null : "admin");
+      };
+
     return (
         <nav className="navbar">
             {isSidebarOpen && <Sidebar />}
@@ -67,16 +72,28 @@ const Navbar = () => {
                     {notificationCount > 0 && <span className="notification-count">{notificationCount}</span>}
                 </div>
                 {admin ? (
-                    <div className="profile">
-                        <img src={admin.profilePicture} alt="Profile" className="profile-picture" />
-                        <div className="dropdown">
-                            <button className="dropbtn">{admin.firstName}</button>
-                            <div className="dropdown-content">
-                                <a href="/account">Account</a>
-                                <button onClick={handleLogout}>Logout</button>
-                            </div>
-                        </div>
-                    </div>
+                    <div className="nav-icon" onClick={toggleDropdown}>
+                    {admin && admin.profilePicture ? (
+                      <img
+                        src={admin.profilePicture}
+                        alt="Profile"
+                        className="profile-image"
+                      />
+                    ) : (
+                        <FaUserCircle className="account-icon" onClick={() => console.log('Show login options')} />
+                    )}
+                    <FaChevronUp className="dropdown-icon" />
+                    {activeDropdown === "profile" && (
+                      <div className="dropdown-menu">
+                        <Link to="/account" className="dropdown-item">
+                          Account
+                        </Link>
+                        <button onClick={handleLogout} className="dropdown-item">
+                          Logout
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 ) : (
                     <FaUserCircle className="account-icon" onClick={() => console.log('Show login options')} />
                 )}
