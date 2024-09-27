@@ -2,12 +2,13 @@ const Chat = require("../models/Chat");
 const Admin = require("../models/Admin");
 const Notification = require("../models/Notification");
 const { handleAdminChatAchievements } = require("../utils/achievementUtils");
+const User = require("../models/User");
 
 // Send a message from the user or admin
 exports.sendMessage = async (req, res) => {
   const { message, emoji } = req.body;
   const userId = req.user.id;
-  const from = "user";
+  const from = req.user.role === 'admin' ? 'admin' : 'user'; // Check if the sender is admin
 
   try {
       let chat = await Chat.findOne({ userId });
@@ -22,11 +23,13 @@ exports.sendMessage = async (req, res) => {
       chat.lastActive = Date.now();
       await chat.save();
 
-      // Increment chat count for achievements
-      const user = await User.findById(userId);
-      if (user) {
-          user.chatCount = user.chatCount ? user.chatCount + 1 : 1; // Initialize if undefined
-          await user.save();
+      // Increment chat count for achievements if the sender is a user
+      if (from === 'user') {
+          const user = await User.findById(userId);
+          if (user) {
+              user.chatCount = user.chatCount ? user.chatCount + 1 : 1;
+              await user.save();
+          }
       }
 
       // Automated responses
@@ -44,7 +47,7 @@ exports.sendMessage = async (req, res) => {
               createdAt: new Date(),
           });
           await chat.save();
-          await handleAdminChatAchievements(userId); // Correctly call achievements after sending a message
+          await handleAdminChatAchievements(userId);
       }
 
       // Handle complex messages
@@ -54,7 +57,6 @@ exports.sendMessage = async (req, res) => {
       ) {
           chat.isComplex = true;
           await chat.save();
-          // Notify the admin
           const admin = await Admin.findOne({ isOnline: true });
           if (admin) {
               await Notification.create({
@@ -71,7 +73,6 @@ exports.sendMessage = async (req, res) => {
       res.status(500).send("Server error");
   }
 };
-
 
 // Edit a message
 exports.editMessage = async (req, res) => {
