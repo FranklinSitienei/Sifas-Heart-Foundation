@@ -111,3 +111,11 @@
   align-items: center;
 }
 
+.animate-like {
+  animation: likeAnimation 0.5s forwards;
+}
+
+/* @keyframes likeAnimation {
+  transform: translateY(-5px);
+  color: blue;
+} */

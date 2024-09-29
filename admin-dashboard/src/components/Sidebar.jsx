@@ -27,7 +27,7 @@ const Sidebar = () => {
         <aside className="sidebar">
             <div className="sidebar-section">
                 <h2>Dashboard</h2>
-                <NavLink to="/dashboard" className="sidebar-link">
+                <NavLink to="/" className="sidebar-link">
                     <FaTachometerAlt /> Dashboard
                 </NavLink>
             </div>

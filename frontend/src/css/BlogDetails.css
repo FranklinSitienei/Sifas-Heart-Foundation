@@ -1,9 +1,27 @@
 .blog-details-container {
   padding: 20px;
+  background-color: white;
+  width: 50%;
+  align-items: center;
+  justify-content: center;
+  margin-left: 250px;
+  height: auto;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  border-radius: 5px;
+  box-shadow: 2px 0 5px rgba(255, 255, 255, 0.1);
+  color: black;
 }
 
 .blog-details-header {
+  display: flex;
+  align-items: flex-start;
   margin-bottom: 20px;
+}
+
+.blog-image-container {
+  flex: 1;
+  cursor: pointer; /* Added cursor to indicate clickable area */
 }
 
 .blog-details-media {
@@ -13,8 +31,22 @@
   margin-bottom: 20px;
 }
 
-.blog-details-content {
-  margin-bottom: 20px;
+.blog-info {
+  flex: 2;
+  margin-left: 20px; /* Space between image and text */
+}
+
+.blog-title {
+  font-size: 24px;
+  margin: 0;
+}
+
+.blog-description {
+  margin: 10px 0;
+}
+
+.blog-tags {
+  margin: 10px 0;
 }
 
 .blog-details-actions {
@@ -39,11 +71,28 @@
 .comment {
   padding: 10px;
   border-bottom: 1px solid #e0e0e0;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  color: black;
 }
 
 .comment-header {
-  font-weight: bold;
+  display: flex;
+  align-items: center;
   margin-bottom: 5px;
+}
+
+.comment-user-picture {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.verified-icon {
+  color: #007bff;
+  margin-left: 5px;
 }
 
 .no-comments {
@@ -51,39 +100,32 @@
   color: #666;
 }
 
-.comment-form {
+.add-comment {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  align-items: center;
   margin-top: 20px;
 }
 
-.comment-form textarea {
+.add-comment img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.add-comment textarea {
   padding: 10px;
   font-size: 16px;
-  width: 100%;
+  flex: 1;
   resize: none;
 }
 
-.comment-form button {
-  padding: 10px;
+.send-button {
+  margin-left: 10px;
   background-color: #007bff;
   color: white;
   border: none;
+  border-radius: 5px;
   cursor: pointer;
-  font-size: 16px;
-}
-
-.replies {
-  margin-left: 20px;
-  border-left: 2px solid #ccc;
-  padding-left: 10px;
-}
-
-.reply {
-  margin-top: 5px;
-}
-
-.reply-user {
-  font-weight: bold;
+  padding: 10px;
 }

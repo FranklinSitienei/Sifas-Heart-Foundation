@@ -18,8 +18,9 @@ const BlogSchema = new Schema({
   admin: { type: mongoose.Schema.Types.ObjectId, ref: "Admin", required: true },
   title: { type: String, required: true },
   content: { type: String, required: true },
-  image: { type: String }, // URL or path for images uploaded via multer
-  video: { type: String }, // URL or path for videos uploaded via multer
+  image: { type: String },
+  video: { type: String }, 
+  tags: { type: String },
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   comments: [CommentSchema],
   date: { type: Date, default: Date.now },

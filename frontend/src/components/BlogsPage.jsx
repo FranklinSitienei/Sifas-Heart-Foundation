@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaPlus, FaRegThumbsUp, FaComment, FaThumbsUp } from 'react-icons/fa'; // Import the filled thumbs up icon
+import { FaPlus, FaRegThumbsUp, FaComment, FaThumbsUp } from 'react-icons/fa';
 import { MdVerified } from "react-icons/md";
 import '../css/BlogsPage.css';
 
@@ -25,8 +25,14 @@ const BlogsPage = () => {
     const handleLike = async (blogId) => {
         if (!likedBlogs.has(blogId)) {
             try {
-                await fetch(`http://localhost:5000/api/blog/${blogId}/like`, { method: 'POST', credentials: 'include' });
+                await fetch(`http://localhost:5000/api/blog/${blogId}/like`, { method: 'POST'});
                 setLikedBlogs((prev) => new Set(prev).add(blogId));
+                // Optional: Add animation class to the like icon
+                const likeElement = document.getElementById(`like-icon-${blogId}`);
+                likeElement.classList.add('animate-like');
+                setTimeout(() => {
+                    likeElement.classList.remove('animate-like');
+                }, 500); // Reset animation after 500ms
             } catch (error) {
                 console.error('Error liking blog:', error);
             }
@@ -114,8 +120,13 @@ const BlogsPage = () => {
                         <div className="blog-footer">
                             <span className="date">{new Date(blog.date).toLocaleString()}</span>
                             <div className="blog-actions">
-                                <span className="likes" onClick={() => handleLike(blog._id)}>
-                                    {likedBlogs.has(blog._id) ? <FaThumbsUp style={{ color: 'blue' }} /> : <FaRegThumbsUp />} {blog.likes.length}
+                                <span 
+                                    className="likes" 
+                                    id={`like-icon-${blog._id}`} 
+                                    onClick={() => handleLike(blog._id)}
+                                >
+                                    {likedBlogs.has(blog._id) ? <FaThumbsUp style={{ color: 'blue' }} /> : <FaRegThumbsUp />} 
+                                    {blog.likes.length}
                                 </span>
                                 <Link to={`/blog/${blog._id}`} className="comments">
                                     <FaComment /> {blog.comments.length}

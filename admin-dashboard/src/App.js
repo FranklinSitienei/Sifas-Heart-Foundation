@@ -10,6 +10,7 @@ import Login from './components/Login';
 import './App.css';
 import Account from './components/Account';
 import ChatMessages from './components/ChatMessages';
+import ChatDetails from './components/ChatDetails';
 
 const ProtectedRoute = ({ children }) => {
     const navigate = useNavigate();
@@ -32,12 +33,13 @@ const App = () => {
             <div className="content">
                 <Routes>
                     <Route path="/login" element={<Login />} />
-                    <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                    <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                     <Route path="/donations" element={<ProtectedRoute><Donations /></ProtectedRoute>} />
                     <Route path="/create-blog" element={<ProtectedRoute><CreateBlog /></ProtectedRoute>} />
                     <Route path="/all-blogs" element={<ProtectedRoute><AllBlogs /></ProtectedRoute>} />
                     <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
                     <Route path="/chat" element={<ProtectedRoute><ChatMessages /></ProtectedRoute>} />
+                    <Route path="/chat/details" element={<ProtectedRoute><ChatDetails /></ProtectedRoute>} />
                 </Routes>
             </div>
         </Router>
