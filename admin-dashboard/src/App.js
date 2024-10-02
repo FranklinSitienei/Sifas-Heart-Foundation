@@ -39,7 +39,7 @@ const App = () => {
                     <Route path="/all-blogs" element={<ProtectedRoute><AllBlogs /></ProtectedRoute>} />
                     <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
                     <Route path="/chat" element={<ProtectedRoute><ChatMessages /></ProtectedRoute>} />
-                    <Route path="/chat/details" element={<ProtectedRoute><ChatDetails /></ProtectedRoute>} />
+                    <Route path="/blog/:id" element={<ProtectedRoute><ChatDetails /></ProtectedRoute>} />
                 </Routes>
             </div>
         </Router>

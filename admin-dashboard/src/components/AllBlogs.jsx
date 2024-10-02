@@ -109,9 +109,9 @@ const AllBlogs = () => {
                                 <span className="likes">
                                     <FaRegThumbsUp /> {blog.likes.length}
                                 </span>
-                                <span className="comments">
+                                <Link to={`/blog/${blog._id}`} className="comments">
                                     <FaComment /> {blog.comments.length}
-                                </span>
+                                </Link>
                             </div>
                         </div>
                     </div>

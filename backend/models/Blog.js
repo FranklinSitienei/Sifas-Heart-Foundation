@@ -2,16 +2,18 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const CommentSchema = new Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   content: { type: String, required: true },
+  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   replies: [
     {
-      user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-      content: { type: String },
-      date: { type: Date, default: Date.now },
-    },
+      user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+      content: { type: String, required: true },
+      likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+      createdAt: { type: Date, default: Date.now }
+    }
   ],
-  date: { type: Date, default: Date.now },
+  createdAt: { type: Date, default: Date.now }
 });
 
 const BlogSchema = new Schema({

@@ -195,32 +195,32 @@ exports.handleComplexMessage = async (req, res) => {
   }
 };
 
+// Fetch all user chats (Admin)
 exports.getUserChats = async (req, res) => {
-  const userId = req.params.userId;
   try {
-    const userChats = await Chat.findOne(userId)
+    const userChats = await Chat.find()
       .sort({ lastActive: -1 })
       .populate('userId', 'firstName lastName profilePicture');
 
-    res.json(userChats);
+    res.json(userChats); // Ensure this is an array
   } catch (error) {
     console.error('Error fetching user chats:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
 
-// Fetch chat details for a specific user
+// Fetch chat details by chatId
 exports.fetchChatDetails = async (req, res) => {
-  const userId = req.params.userId;
+  const chatId = req.params.chatId; // Correctly extract chatId
 
   try {
-      const chat = await Chat.findOne({ userId }).populate('adminId');
-      if (!chat) return res.status(404).json({ msg: "No chat found" });
+    const chat = await Chat.findById(chatId).populate("userId");
+    if (!chat) return res.status(404).json({ msg: "Chat not found" });
 
-      res.json(chat.messages);
+    res.json(chat.messages);
   } catch (error) {
-      console.error("Error fetching chat details:", error);
-      res.status(500).json({ error: "Server error" });
+    console.error("Error fetching chat details:", error);
+    res.status(500).json({ error: "Server error" });
   }
 };
 

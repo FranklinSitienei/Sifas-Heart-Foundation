@@ -1,4 +1,3 @@
-// Dashboard.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Bar, Pie } from "react-chartjs-2";
@@ -50,7 +49,10 @@ const Dashboard = () => {
     // Fetch user chats/questions
     axios
       .get("http://localhost:5000/api/chat/admin/all", config)
-      .then((res) => setUserChats(res.data))
+      .then((res) => {
+        console.log("User Chats Response:", res.data);
+        setUserChats(res.data);
+      })
       .catch((error) => console.error("Error fetching user chats:", error));
 
     // Fetch payment method breakdown for pie chart
@@ -163,30 +165,34 @@ const Dashboard = () => {
         <div className="user-chats-section">
           <h3>User Chats and Questions</h3>
           <ul className="chat-list">
-            {userChats.map((chat) => (
-              <li key={chat._id} className="chat-item">
-                <div className="chat-header">
-                  <img
-                    src={chat.userId?.profilePicture || '/default-profile.png'}
-                    alt={`${chat.userId?.firstName || 'Unknown'} ${chat.userId?.lastName || ''}`}
-                    className="chat-user-picture"
-                  />
-                  <div>
-                    <strong>
-                      {chat.userId?.firstName || 'Unknown'}{' '}
-                      {chat.userId?.lastName || ''}
-                    </strong>
-                    <p>
-                      {chat.messages[chat.messages.length - 1]?.text ||
-                        "No messages yet."}
-                    </p>
-                    <small>
-                      {new Date(chat.lastActive).toLocaleString()}
-                    </small>
+            {Array.isArray(userChats) && userChats.length > 0 ? (
+              userChats.map((chat) => (
+                <li key={chat._id} className="chat-item">
+                  <div className="chat-header">
+                    <img
+                      src={chat.userId?.profilePicture || '/default-profile.png'}
+                      alt={`${chat.userId?.firstName || 'Unknown'} ${chat.userId?.lastName || ''}`}
+                      className="chat-user-picture"
+                    />
+                    <div>
+                      <strong>
+                        {chat.userId?.firstName || 'Unknown'}{' '}
+                        {chat.userId?.lastName || ''}
+                      </strong>
+                      <p>
+                        {chat.messages[chat.messages.length - 1]?.text ||
+                          "No messages yet."}
+                      </p>
+                      <small>
+                        {new Date(chat.lastActive).toLocaleString()}
+                      </small>
+                    </div>
                   </div>
-                </div>
-              </li>
-            ))}
+                </li>
+              ))
+            ) : (
+              <p>No user chats available.</p>
+            )}
           </ul>
         </div>
 
