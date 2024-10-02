@@ -11,6 +11,7 @@ import './App.css';
 import Account from './components/Account';
 import ChatMessages from './components/ChatMessages';
 import ChatDetails from './components/ChatDetails';
+import AdminBlogDetails from './components/AdminBlogDetails';
 
 const ProtectedRoute = ({ children }) => {
     const navigate = useNavigate();
@@ -39,7 +40,8 @@ const App = () => {
                     <Route path="/all-blogs" element={<ProtectedRoute><AllBlogs /></ProtectedRoute>} />
                     <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
                     <Route path="/chat" element={<ProtectedRoute><ChatMessages /></ProtectedRoute>} />
-                    <Route path="/blog/:id" element={<ProtectedRoute><ChatDetails /></ProtectedRoute>} />
+                    <Route path="/chat/details" element={<ProtectedRoute><ChatDetails /></ProtectedRoute>} />
+                    <Route path="/blog/:id" element={<ProtectedRoute><AdminBlogDetails /></ProtectedRoute>} />
                 </Routes>
             </div>
         </Router>

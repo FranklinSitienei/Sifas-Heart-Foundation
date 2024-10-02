@@ -1,169 +1,351 @@
-const express = require('express');
+// blogRoutes.js
+const express = require("express");
 const router = express.Router();
-const Blog = require('../models/Blog');
-const multer = require('multer');
+const Blog = require("../models/Blog");
+const multer = require("multer");
 const upload = multer({ storage: multer.memoryStorage() });
-const { authMiddleware } = require('../middleware/authMiddleware');
-const { adminMiddleware } = require('../middleware/adminMiddleware');
+const { authMiddleware } = require("../middleware/authMiddleware");
+const { adminMiddleware } = require("../middleware/adminMiddleware");
 
 // Define the maximum media size (e.g., 16 MB)
 const MAX_MEDIA_SIZE = 16 * 1024 * 1024; // 16 MB
 
+/* Admin Routes */
+
 // Create a new blog (Admin only)
-router.post('/create', [adminMiddleware, upload.single('media')], async (req, res) => {
-    const { title, content, mediaUrl } = req.body;
+router.post(
+  "/admin/create",
+  [adminMiddleware, upload.single("media")],
+  async (req, res) => {
+    const { title, content, mediaUrl, tags } = req.body;
 
     try {
-        let mediaPath = '';
+      let mediaPath = "";
 
-        // Check if a media file was uploaded
-        if (req.file) {
-            // Ensure the file size is within limits
-            if (req.file.size > MAX_MEDIA_SIZE) {
-                return res.status(400).json({ message: 'File size exceeds 16 MB limit' });
-            }
-
-            const base64Data = req.file.buffer.toString('base64');
-            mediaPath = `data:${req.file.mimetype};base64,${base64Data}`;
-        } else if (mediaUrl) {
-            // Check if a media URL is provided
-            mediaPath = mediaUrl;
+      // Check if a media file was uploaded
+      if (req.file) {
+        // Ensure the file size is within limits
+        if (req.file.size > MAX_MEDIA_SIZE) {
+          return res
+            .status(400)
+            .json({ message: "File size exceeds 16 MB limit" });
         }
 
-        const newBlog = new Blog({
-            admin: req.user.id, // Admin's ID
-            title,
-            content,
-            image: mediaPath.includes('image') ? mediaPath : '',
-            video: mediaPath.includes('video') ? mediaPath : ''
-        });
+        const base64Data = req.file.buffer.toString("base64");
+        mediaPath = `data:${req.file.mimetype};base64,${base64Data}`;
+      } else if (mediaUrl) {
+        // Check if a media URL is provided
+        mediaPath = mediaUrl;
+      }
 
-        await newBlog.save();
-        res.status(201).json({ message: 'Blog created successfully', blog: newBlog });
+      const newBlog = new Blog({
+        admin: req.user.id, // Admin's ID
+        title,
+        content,
+        tags: tags ? tags.split(",").map((tag) => tag.trim()) : [],
+        image: mediaPath.includes("image") ? mediaPath : "",
+        video: mediaPath.includes("video") ? mediaPath : "",
+      });
+
+      await newBlog.save();
+      res
+        .status(201)
+        .json({ message: "Blog created successfully", blog: newBlog });
     } catch (err) {
-        console.error('Error details:', err);
-        console.log('Request body:', req.body);
-        console.log('Request file:', req.file);
-        res.status(500).json({ message: 'Server error', error: err });
+      console.error("Error details:", err);
+      res.status(500).json({ message: "Server error", error: err });
     }
+  }
+);
+
+// Edit a blog (Admin only)
+router.put("/admin/:id/edit", adminMiddleware, async (req, res) => {
+  const { title, content, tags } = req.body;
+
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    if (req.user.id !== blog.admin.toString()) {
+      return res
+        .status(403)
+        .json({ message: "Forbidden: Only the admin can edit this blog" });
+    }
+
+    blog.title = title || blog.title;
+    blog.content = content || blog.content;
+    blog.tags = tags ? tags.split(",").map((tag) => tag.trim()) : blog.tags;
+
+    await blog.save();
+    res.status(200).json({ message: "Blog updated", blog });
+  } catch (err) {
+    console.error("Error editing blog:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
 });
 
-// View all blogs
-router.get('/all', async (req, res) => {
-    try {
-        const blogs = await Blog.find().populate('admin', 'firstName lastName profilePicture').populate('comments.user', 'firstName lastName');
-        res.status(200).json(blogs);
-    } catch (err) {
-        res.status(500).json({ message: 'Server error', error: err });
+// Delete a blog (Admin only)
+router.delete("/admin/:id/delete", adminMiddleware, async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    if (req.user.id !== blog.admin.toString()) {
+      return res
+        .status(403)
+        .json({ message: "Forbidden: Only the admin can delete this blog" });
     }
+
+    await Blog.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: "Blog deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting blog:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
 });
 
-// View a single blog by ID
-router.get('/:id', async (req, res) => {
-    try {
-        const blog = await Blog.findById(req.params.id)
-            .populate('admin', 'firstName lastName')
-            .populate('comments.user', 'firstName lastName')
-            .populate('comments.replies.user', 'firstName lastName');
-        
-        if (!blog) return res.status(404).json({ message: 'Blog not found' });
-        res.status(200).json(blog);
-    } catch (err) {
-        res.status(500).json({ message: 'Server error', error: err });
-    }
+/* User Routes */
+
+// View all blogs (Public or authenticated users based on your requirement)
+router.get("/all", async (req, res) => {
+  try {
+    const blogs = await Blog.find()
+      .populate("admin", "firstName lastName profilePicture")
+      .populate("comments.user", "firstName lastName profilePicture")
+      .populate("comments.replies.user", "firstName lastName profilePicture");
+    res.status(200).json(blogs);
+  } catch (err) {
+    console.error("Error fetching all blogs:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
 });
+
+// View a single blog by ID (Public or authenticated users based on your requirement)
+router.get("/:id", async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id)
+      .populate("admin", "firstName lastName profilePicture")
+      .populate("comments.user", "firstName lastName profilePicture")
+      .populate("comments.replies.user", "firstName lastName profilePicture");
+
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+    res.status(200).json(blog);
+  } catch (err) {
+    console.error("Error fetching blog details:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+});
+
+/* User Comment Routes */
 
 // Comment on a blog (Users)
-router.post('/:id/comment', authMiddleware, async (req, res) => {
+router.post("/user/:id/comment", authMiddleware, async (req, res) => {
+  const { content } = req.body;
+
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    blog.comments.push({ user: req.user.id, content });
+    await blog.save();
+
+    const newComment = blog.comments[blog.comments.length - 1].populate(
+      "user",
+      "firstName lastName profilePicture"
+    );
+    res.status(201).json(newComment);
+  } catch (err) {
+    console.error("Error adding comment:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+});
+
+// Reply to a comment (Users)
+router.post(
+  "/user/:blogId/comment/:commentId/reply",
+  authMiddleware,
+  async (req, res) => {
     const { content } = req.body;
 
     try {
-        const blog = await Blog.findById(req.params.id);
-        if (!blog) return res.status(404).json({ message: 'Blog not found' });
+      const blog = await Blog.findById(req.params.blogId);
+      if (!blog) return res.status(404).json({ message: "Blog not found" });
 
-        blog.comments.push({ user: req.user.id, content });
-        await blog.save();
+      const comment = blog.comments.id(req.params.commentId);
+      if (!comment)
+        return res.status(404).json({ message: "Comment not found" });
 
-        res.status(201).json({ message: 'Comment added', blog });
+      comment.replies.push({ user: req.user.id, content });
+      await blog.save();
+
+      const newReply = comment.replies[comment.replies.length - 1].populate(
+        "user",
+        "firstName lastName profilePicture"
+      );
+      res.status(201).json(newReply);
     } catch (err) {
-        res.status(500).json({ message: 'Server error', error: err });
+      console.error("Error adding reply:", err);
+      res.status(500).json({ message: "Server error", error: err });
     }
-});
-
-// Reply to a comment (User or Admin)
-router.post('/:blogId/comment/:commentId/reply', authMiddleware, async (req, res) => {
-    const { content } = req.body;
-
-    try {
-        const blog = await Blog.findById(req.params.blogId);
-        if (!blog) return res.status(404).json({ message: 'Blog not found' });
-
-        const comment = blog.comments.id(req.params.commentId);
-        if (!comment) return res.status(404).json({ message: 'Comment not found' });
-
-        comment.replies.push({ user: req.user.id, content });
-        await blog.save();
-
-        res.status(201).json({ message: 'Reply added', blog });
-    } catch (err) {
-        res.status(500).json({ message: 'Server error', error: err });
-    }
-});
+  }
+);
 
 // Like a blog (Users)
-router.post('/:id/like', authMiddleware, async (req, res) => {
-    try {
-        const blog = await Blog.findById(req.params.id);
-        if (!blog) return res.status(404).json({ message: 'Blog not found' });
+router.post("/user/:id/like", authMiddleware, async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
 
-        if (blog.likes.includes(req.user.id)) {
-            return res.status(400).json({ message: 'Already liked' });
-        }
-
-        blog.likes.push(req.user.id);
-        await blog.save();
-
-        res.status(200).json({ message: 'Blog liked', blog });
-    } catch (err) {
-        res.status(500).json({ message: 'Server error', error: err });
+    if (blog.likes.includes(req.user.id)) {
+      return res.status(400).json({ message: "Already liked" });
     }
+
+    blog.likes.push(req.user.id);
+    await blog.save();
+
+    res
+      .status(200)
+      .json({ message: "Blog liked", likeCount: blog.likes.length });
+  } catch (err) {
+    console.error("Error liking blog:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
 });
 
 // Unlike a blog (Users)
-router.post('/:id/unlike', authMiddleware, async (req, res) => {
-    try {
-        const blog = await Blog.findById(req.params.id);
-        if (!blog) return res.status(404).json({ message: 'Blog not found' });
+router.post("/user/:id/unlike", authMiddleware, async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
 
-        blog.likes = blog.likes.filter(like => like.toString() !== req.user.id.toString());
-        await blog.save();
+    blog.likes = blog.likes.filter(
+      (like) => like.toString() !== req.user.id.toString()
+    );
+    await blog.save();
 
-        res.status(200).json({ message: 'Blog unliked', blog });
-    } catch (err) {
-        res.status(500).json({ message: 'Server error', error: err });
-    }
+    res
+      .status(200)
+      .json({ message: "Blog unliked", likeCount: blog.likes.length });
+  } catch (err) {
+    console.error("Error unliking blog:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
 });
 
-// Edit a blog (Admin only)
-router.put('/:id/edit', adminMiddleware, async (req, res) => {
-    const { title, content } = req.body;
+/* Admin Comment Routes */
+
+// Admin can delete any reported comment or reply
+router.delete(
+  "/admin/:blogId/comment/:commentId/delete",
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      const blog = await Blog.findById(req.params.blogId);
+      if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+      const comment = blog.comments.id(req.params.commentId);
+      if (!comment)
+        return res.status(404).json({ message: "Comment not found" });
+
+      // Assuming you have a 'reported' flag on comments
+      if (!comment.reported) {
+        return res.status(400).json({ message: "Comment is not reported" });
+      }
+
+      comment.remove();
+      await blog.save();
+
+      res.status(200).json({ message: "Comment deleted successfully" });
+    } catch (err) {
+      console.error("Error deleting comment:", err);
+      res.status(500).json({ message: "Server error", error: err });
+    }
+  }
+);
+
+// Admin can delete a reply
+router.delete(
+  "/admin/:blogId/comment/:commentId/reply/:replyId/delete",
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      const { blogId, commentId, replyId } = req.params;
+      const blog = await Blog.findById(blogId);
+      if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+      const comment = blog.comments.id(commentId);
+      if (!comment)
+        return res.status(404).json({ message: "Comment not found" });
+
+      const reply = comment.replies.id(replyId);
+      if (!reply) return res.status(404).json({ message: "Reply not found" });
+
+      // Assuming you have a 'reported' flag on replies
+      if (!reply.reported) {
+        return res.status(400).json({ message: "Reply is not reported" });
+      }
+
+      reply.remove();
+      await blog.save();
+
+      res.status(200).json({ message: "Reply deleted successfully" });
+    } catch (err) {
+      console.error("Error deleting reply:", err);
+      res.status(500).json({ message: "Server error", error: err });
+    }
+  }
+);
+
+// Admin can edit their own comments
+router.put(
+  "/admin/:blogId/comment/:commentId/edit",
+  adminMiddleware,
+  async (req, res) => {
+    const { content } = req.body;
 
     try {
-        const blog = await Blog.findById(req.params.id);
-        if (!blog) return res.status(404).json({ message: 'Blog not found' });
+      const { blogId, commentId } = req.params;
+      const blog = await Blog.findById(blogId);
+      if (!blog) return res.status(404).json({ message: "Blog not found" });
 
-        if (req.user.id !== blog.admin.toString()) {
-            return res.status(403).json({ message: 'Forbidden: Only the admin can edit this blog' });
-        }
+      const comment = blog.comments.id(commentId);
+      if (!comment)
+        return res.status(404).json({ message: "Comment not found" });
 
-        blog.title = title || blog.title;
-        blog.content = content || blog.content;
+      // Only allow admin to edit their own comments
+      if (comment.user.toString() !== req.user.id) {
+        return res
+          .status(403)
+          .json({ message: "Forbidden: Can only edit your own comments" });
+      }
 
-        await blog.save();
-        res.status(200).json({ message: 'Blog updated', blog });
+      comment.content = content || comment.content;
+      await blog.save();
+
+      res.status(200).json({ message: "Comment edited successfully", comment });
     } catch (err) {
-        res.status(500).json({ message: 'Server error', error: err });
+      console.error("Error editing comment:", err);
+      res.status(500).json({ message: "Server error", error: err });
     }
+  }
+);
+
+router.post("/:id/comment/:commentId/report", authMiddleware, async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const comment = await Comment.findById(commentId);
+
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    comment.reported = true;
+    await comment.save();
+
+    res.status(200).json({ message: "Comment reported successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error reporting comment", error });
+  }
 });
 
 module.exports = router;
