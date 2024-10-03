@@ -12,7 +12,7 @@ const AdminBlogDetails = () => {
   const [newComment, setNewComment] = useState("");
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyContent, setReplyContent] = useState("");
-  const token = localStorage.getItem("adminToken");
+  const token = localStorage.getItem("admin");
 
   useEffect(() => {
     if (token) {
