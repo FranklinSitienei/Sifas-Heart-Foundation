@@ -9,7 +9,7 @@
 
 .blog-details-header {
   display: flex;
-  flex-wrap: nowrap; /* Ensure that content stays in one line */
+  flex-wrap: wrap;
   margin-bottom: 20px;
   flex-direction: column;
 }
@@ -51,12 +51,12 @@
 }
 
 .blog-title {
-  font-size: 2rem;
+  font-size: 20px;
   margin: 0 0 10px;
 }
 
 .blog-description {
-  font-size: 1rem;
+  font-size: 15px;
   margin-bottom: 20px;
 }
 
@@ -74,7 +74,7 @@
   margin-right: 10px;
   margin-bottom: 5px;
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 10px;
   transition: background-color 0.3s ease;
 }
 
@@ -94,6 +94,7 @@
   cursor: pointer;
   transition: transform 0.2s ease;
   margin-right: 10px;
+  font-size: 10px;
 }
 
 .like-button:hover {
@@ -101,7 +102,7 @@
 }
 
 .like-icon {
-  font-size: 1.5rem;
+  font-size: 15px;
   transition: color 0.3s ease, transform 0.3s ease;
 }
 
@@ -128,7 +129,7 @@
 
 .comments-section h2 {
   margin-bottom: 15px;
-  font-size: 1.5rem;
+  font-size: 12px;
   color: #333;
 }
 
@@ -139,6 +140,7 @@
   margin-bottom: 15px;
   background-color: #fafafa;
   position: relative;
+  font-size: 15px;
 }
 
 .comment-header {
@@ -148,8 +150,8 @@
 }
 
 .comment-user-picture {
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   margin-right: 10px;
   object-fit: cover;
@@ -160,7 +162,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 1rem;
+  font-size: 12px;
 }
 
 .verified-icon {
@@ -226,7 +228,7 @@
 
 .comment-content {
   margin: 10px 0;
-  font-size: 1rem;
+  font-size: 15px;
   color: #333;
 }
 
