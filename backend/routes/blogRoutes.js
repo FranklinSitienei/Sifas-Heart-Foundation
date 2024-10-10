@@ -162,37 +162,65 @@ router.post("/user/:id/comment", authMiddleware, async (req, res) => {
   }
 });
 
-// Reply to a comment (Users)
-router.post(
-  "/user/:blogId/comment/:commentId/reply",
-  authMiddleware,
-  async (req, res) => {
-    const { content } = req.body;
-
-    try {
-      const blog = await Blog.findById(req.params.blogId);
-      if (!blog) return res.status(404).json({ message: "Blog not found" });
-
-      const comment = blog.comments.id(req.params.commentId);
-      if (!comment)
-        return res.status(404).json({ message: "Comment not found" });
-
-      comment.replies.push({ user: req.user.id, content });
-      await blog.save();
-
-      // Populate the newly added reply's user details
-      const newReply = await comment.replies[comment.replies.length - 1].populate(
-        "user",
-        "firstName lastName profilePicture"
-      ).execPopulate();
-
-      res.status(201).json(newReply);
-    } catch (err) {
-      console.error("Error adding reply:", err);
-      res.status(500).json({ message: "Server error", error: err });
-    }
+// Route to search users by query for mentions
+router.get('/users/search', async (req, res) => {
+  const { query } = req.query;
+  try {
+    const users = await User.find({
+      $or: [
+        { firstName: { $regex: query, $options: 'i' } },
+        { lastName: { $regex: query, $options: 'i' } },
+      ],
+    }).select('firstName lastName _id'); // Select only necessary fields
+    res.status(200).json(users);
+  } catch (error) {
+    console.error('Error fetching users for mentions:', error);
+    res.status(500).json({ message: 'Server error' });
   }
-);
+});
+
+// Reply to a comment (Users)
+router.post("/user/:blogId/comment/:commentId/reply", authMiddleware, async (req, res) => {
+  const { blogId, commentId } = req.params;
+  const { content } = req.body;
+
+  // Check if content is provided
+  if (!content) {
+    return res.status(400).json({ message: "Reply content is required." });
+  }
+
+  try {
+    const blog = await Blog.findById(blogId);
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found." });
+    }
+
+    const comment = blog.comments.id(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found." });
+    }
+
+    // Create the reply object
+    const reply = {
+      user: req.user.id,
+      content,
+      createdAt: new Date(),
+    };
+
+    // Push the reply into the comment's replies array
+    comment.replies.push(reply);
+    await blog.save();
+
+    // Populate the reply with user details
+    const populatedReply = await blog.comments.id(commentId).replies.populated('user', 'firstName lastName profilePicture');
+
+    res.status(201).json(populatedReply);
+  } catch (error) {
+    console.error('Error replying to comment:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 
 // Like a blog (Users)
 router.post("/user/:id/like", authMiddleware, async (req, res) => {
@@ -340,7 +368,7 @@ router.put(
 router.post("/user/:blogId/comment/:commentId/like", authMiddleware, async (req, res) => {
   try {
     const { blogId, commentId } = req.params;
-    
+
     // Re-fetch the blog to get the latest version
     const blog = await Blog.findById(blogId);
     if (!blog) return res.status(404).json({ message: "Blog not found" });

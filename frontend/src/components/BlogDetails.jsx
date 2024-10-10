@@ -20,6 +20,8 @@ const BlogDetails = () => {
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyContent, setReplyContent] = useState("");
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [mentionSuggestions, setMentionSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const token = localStorage.getItem("token");
   const dropdownRef = useRef(null);
@@ -89,7 +91,7 @@ const BlogDetails = () => {
       if (likedBlogs[id]) {
         fetchedBlog.isLiked = true; // Set if blog was liked
       }
-      
+
       const likedComments = JSON.parse(localStorage.getItem('likedComments')) || {};
       const updatedComments = fetchedBlog.comments.map(comment => {
         comment.isLiked = likedComments[comment._id] || false; // Set liked state for each comment
@@ -159,11 +161,24 @@ const BlogDetails = () => {
       );
       setComments([...comments, response.data]);
       setNewComment("");
+      setShowSuggestions(false);
     } catch (error) {
       console.error(
         "Error submitting comment:",
         error.response?.data || error.message
       );
+    }
+  };
+
+  const handleReplyChange = (e) => {
+    const value = e.target.value;
+    setReplyContent(value);
+    const lastAtIndex = value.lastIndexOf("@");
+    if (lastAtIndex !== -1) {
+      const mention = value.substring(lastAtIndex + 1);
+      fetchMentionSuggestions(mention);
+    } else {
+      setShowSuggestions(false);
     }
   };
 
@@ -185,16 +200,17 @@ const BlogDetails = () => {
         comments.map((comment) =>
           comment._id === replyingTo
             ? {
-                ...comment,
-                replies: Array.isArray(comment.replies)
-                  ? [...comment.replies, response.data]
-                  : [response.data],
-              }
+              ...comment,
+              replies: Array.isArray(comment.replies)
+                ? [...comment.replies, response.data]
+                : [response.data],
+            }
             : comment
         )
       );
 
       setReplyingTo(null);
+      setShowSuggestions(false);
       setReplyContent("");
     } catch (error) {
       console.error(
@@ -420,6 +436,55 @@ const BlogDetails = () => {
     setActiveDropdown((prev) => (prev === commentId ? null : commentId));
   };
 
+  const fetchMentionSuggestions = async (query) => {
+    if (query.trim().length > 1) {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/blog/users/search?query=${query}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setMentionSuggestions(response.data);
+        setShowSuggestions(true);
+      } catch (error) {
+        console.error("Error fetching mention suggestions:", error);
+      }
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleCommentChange = (e) => {
+    const value = e.target.value;
+    setNewComment(value);
+
+    // Detecting '@' and fetching suggestions
+    const lastAtIndex = value.lastIndexOf("@");
+    if (lastAtIndex !== -1) {
+      const mention = value.substring(lastAtIndex + 1);
+      fetchMentionSuggestions(mention);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+  const selectMention = (user) => {
+    if (replyingTo) {
+      const lastAtIndex = replyContent.lastIndexOf("@");
+      const beforeMention = replyContent.substring(0, lastAtIndex);
+      const afterMention = replyContent.substring(lastAtIndex + 1);
+      const newReplyValue = `${beforeMention}@${user.firstName} ${user.lastName} ${afterMention}`;
+      setReplyContent(newReplyValue);
+    } else {
+      const lastAtIndex = newComment.lastIndexOf("@");
+      const beforeMention = newComment.substring(0, lastAtIndex);
+      const afterMention = newComment.substring(lastAtIndex + 1);
+      const newCommentValue = `${beforeMention}@${user.firstName} ${user.lastName} ${afterMention}`;
+      setNewComment(newCommentValue);
+    }
+    setShowSuggestions(false);
+  };
+
   return (
     <div className="blog-details-container">
       {blog && (
@@ -537,9 +602,18 @@ const BlogDetails = () => {
                         <div className="reply-input">
                           <textarea
                             value={replyContent}
-                            onChange={(e) => setReplyContent(e.target.value)}
+                            onChange={handleReplyChange}
                             placeholder="Write a reply..."
                           />
+                          {showSuggestions && (
+                            <div className="suggestion-list">
+                              {mentionSuggestions.map((user) => (
+                                <div key={user._id} className="suggestion-item" onClick={() => selectMention(user)}>
+                                  {user.firstName} {user.lastName}
+                                </div>
+                              ))}
+                            </div>
+                          )}
                           <div className="reply-buttons">
                             <button
                               className="cancel-button"
@@ -580,7 +654,7 @@ const BlogDetails = () => {
                                 <span className="reply-timestamp">
                                   {new Date(reply.createdAt).toLocaleString()}
                                 </span>
-                                <p className="reply-content">{reply.content}</p>
+                                <div className="reply-content">{reply.content}</div>
                                 <div className="reply-actions">
                                   {reply.isLiked ? (
                                     <AiFillLike
@@ -630,10 +704,21 @@ const BlogDetails = () => {
                     />
                     <textarea
                       value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
+                      onChange={handleCommentChange}
                       placeholder="Add a comment..."
                       className="add-comment-input"
                     />
+
+                    {showSuggestions && (
+                      <div className="suggestion-list">
+                        {mentionSuggestions.map((user) => (
+                          <div key={user._id} className="suggestion-item" onClick={() => selectMention(user)}>
+                            {user.firstName} {user.lastName}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
                     <button className="send-comment-button" onClick={handleCommentSubmit}>
                       <AiOutlineSend />
                     </button>
