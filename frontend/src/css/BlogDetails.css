@@ -11,7 +11,7 @@
   display: flex;
   flex-wrap: nowrap; /* Ensure that content stays in one line */
   margin-bottom: 20px;
-  justify-content: space-between; /* Make space between image and info */
+  flex-direction: column;
 }
 
 .blog-image-container {
@@ -23,15 +23,6 @@
   justify-content: center;
   align-items: center;
   max-width: 50%; /* Ensure the image takes up 50% of the width */
-}
-
-.blog-info-container {
-  flex: 1.5; /* This gives it more space compared to the image */
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  background-color: white;
-  max-width: 50%; /* Ensure the info container also takes 50% */
 }
 
 .blog-details-media {
@@ -51,12 +42,12 @@
 }
 
 .blog-info-container {
-  flex: 2.5;
+  flex: 1.5; /* This gives it more space compared to the image */
   padding: 20px;
   display: flex;
   flex-direction: column;
-  width: 50%;
   background-color: white;
+  max-width: 50%; /* Ensure the info container also takes 50% */
 }
 
 .blog-title {
