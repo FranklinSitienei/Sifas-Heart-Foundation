@@ -9,6 +9,8 @@ import {
   AiOutlineEllipsis,
 } from "react-icons/ai";
 import { MdVerified } from "react-icons/md";
+import { HiOutlineEllipsisVertical } from "react-icons/hi2";
+import { HiOutlineArrowDown, HiOutlineArrowUp } from "react-icons/hi";
 import "../css/BlogDetails.css";
 
 const BlogDetails = () => {
@@ -22,6 +24,9 @@ const BlogDetails = () => {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [mentionSuggestions, setMentionSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [expandedReplies, setExpandedReplies] = useState({});
+  const [replyLimit, setReplyLimit] = useState(2);
 
   const token = localStorage.getItem("token");
   const dropdownRef = useRef(null);
@@ -66,12 +71,25 @@ const BlogDetails = () => {
       );
 
       setUserProfile(response.data);
+      // Sort comments: user's comments first
+      const sortedComments = sortComments(response.data.comments || [], token.id);
+      setComments(sortedComments);
     } catch (error) {
       console.error(
         "Error fetching user profile:",
         error.response?.data || error.message
       );
     }
+  };
+
+  const sortComments = (commentsList, currentUserId) => {
+    if (!currentUserId) return commentsList;
+    const sorted = [...commentsList].sort((a, b) => {
+      if (a.user._id === currentUserId && b.user._id !== currentUserId) return -1;
+      if (a.user._id !== currentUserId && b.user._id === currentUserId) return 1;
+      return new Date(b.createdAt) - new Date(a.createdAt); // Newer comments first
+    });
+    return sorted;
   };
 
   const fetchBlogDetails = async () => {
@@ -599,6 +617,27 @@ const BlogDetails = () => {
     setShowSuggestions(false);
   };
 
+  const toggleReplies = (commentId) => {
+    setExpandedReplies((prev) => ({
+      ...prev,
+      [commentId]: !prev[commentId],
+    }));
+  };
+
+  const showMoreReplies = (commentId) => {
+    setReplyLimit((prev) => ({
+      ...prev,
+      [commentId]: prev[commentId] ? prev[commentId] + 5 : 5,
+    }));
+  };
+
+  const showLessReplies = (commentId) => {
+    setReplyLimit((prev) => ({
+      ...prev,
+      [commentId]: 2,
+    }));
+  };
+
   return (
     <div className="blog-details-container">
       {blog && (
@@ -651,198 +690,285 @@ const BlogDetails = () => {
               <div className="comments-section">
                 <h2>Comments</h2>
                 {Array.isArray(comments) && comments.length > 0 ? (
-                  comments.map((comment) => (
-                    <div className="comment" key={comment._id}>
-                      <div className="comment-header">
-                        <img
-                          src={comment.user.profilePicture || "/default-user.png"}
-                          alt={`${comment.user.firstName} ${comment.user.lastName}`}
-                          className="comment-user-picture"
-                        />
-                        <span className="comment-user-name">
-                          {comment.user.firstName} {comment.user.lastName}
-                          {comment.user.role === "admin" && (
-                            <MdVerified className="verified-icon" />
-                          )}
-                        </span>
-                        <span className="comment-timestamp">
-                          {new Date(comment.createdAt).toLocaleString()}
-                        </span>
-                        {/* Three-Dot Icon for Options */}
-                        <div className="options-dropdown" ref={dropdownRef}>
-                          <AiOutlineEllipsis
-                            className="options-icon"
-                            onClick={() => toggleDropdown(comment._id)}
+                  comments
+                    .sort((a, b) => {
+                      const loggedInUser = JSON.parse(localStorage.getItem('profile'));
+                      if (a.user._id === loggedInUser?._id) return -1;
+                      if (b.user._id === loggedInUser?._id) return 1;
+                      return 0;
+                    })
+                    .map((comment) => (
+                      <div className="comment" key={comment._id}>
+                        <div className="comment-header">
+                          <img
+                            src={comment.user.profilePicture || "/default-user.png"}
+                            alt={`${comment.user.firstName} ${comment.user.lastName}`}
+                            className="comment-user-picture"
                           />
-                          {activeDropdown === comment._id && (
-                            <div className="dropdown-menu">
-                              <button
-                                className="dropdown-item"
-                                onClick={() => handleEditComment(comment)}
-                              >
-                                Edit
-                              </button>
-                              <button
-                                className="dropdown-item"
-                                onClick={() => handleDeleteComment(comment._id)}
-                              >
-                                Delete
-                              </button>
-                              <button
-                                className="dropdown-item"
-                                onClick={() => handleReportComment(comment._id)}
-                              >
-                                Report
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <p className="comment-content">{comment.content}</p>
-                      <div className="comment-actions">
-                        <button
-                          className="reply-button"
-                          onClick={() => {
-                            setReplyingTo(comment._id);
-                          }}
-                        >
-                          Reply
-                        </button>
-                        {comment.isLiked ? (
-                          <AiFillLike
-                            className="like-icon liked"
-                            onClick={() => handleUnlikeComment(comment._id)}
-                          />
-                        ) : (
-                          <AiOutlineLike
-                            className="like-icon"
-                            onClick={() => handleLikeComment(comment._id)}
-                          />
-                        )}
-                        <span className="like-count">{comment.likeCount || 0}</span>
-                      </div>
-
-                      {/* Reply Input */}
-                      {replyingTo === comment._id && (
-                        <div className="reply-input">
-                          <textarea
-                            value={replyContent}
-                            onChange={handleReplyChange}
-                            placeholder="Write a reply..."
-                          />
-                          {showSuggestions && (
-                            <div className="suggestion-list">
-                              {mentionSuggestions.map((user) => (
-                                <div
-                                  key={user._id}
-                                  className="suggestion-item"
-                                  onClick={() => selectMention(user)}
-                                  style={{ display: 'flex', alignItems: 'center', padding: '5px' }}
+                          <span className="comment-user-name">
+                            {comment.user.firstName} {comment.user.lastName}
+                            {comment.user.role === "admin" && (
+                              <MdVerified className="verified-icon" />
+                            )}
+                          </span>
+                          <span className="comment-timestamp">
+                            {new Date(comment.createdAt).toLocaleString()}
+                          </span>
+                          <div className="options-dropdown" ref={dropdownRef}>
+                            <HiOutlineEllipsisVertical
+                              className="options-icon"
+                              onClick={() => toggleDropdown(comment._id)}
+                            />
+                            {activeDropdown === comment._id && (
+                              <div className="dropdown-menu">
+                                <button
+                                  className="dropdown-item"
+                                  onClick={() => handleEditComment(comment)}
                                 >
-                                  <img
-                                    src={user.profilePicture || "/default-user.png"}
-                                    alt={`${user.firstName} ${user.lastName}`}
-                                    className="suggestion-user-picture"
-                                    style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }}
-                                  />
-                                  <span>{user.firstName} {user.lastName}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                          <div className="reply-buttons">
-                            <button
-                              className="cancel-button"
-                              onClick={() => {
-                                setReplyingTo(null);
-                                setReplyContent("");
-                              }}
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              className="send-reply-button"
-                              onClick={handleReplySubmit}
-                            >
-                              Send
-                            </button>
+                                  Edit
+                                </button>
+                                <button
+                                  className="dropdown-item"
+                                  onClick={() => handleDeleteComment(comment._id)}
+                                >
+                                  Delete
+                                </button>
+                                <button
+                                  className="dropdown-item"
+                                  onClick={() => handleReportComment(comment._id)}
+                                >
+                                  Report
+                                </button>
+                              </div>
+                            )}
                           </div>
                         </div>
-                      )}
+                        <p className="comment-content">
+                          {comment.content.split(/(\s+)/).map((word, i) =>
+                            word.startsWith('@') ? (
+                              <span key={i} style={{ color: 'blue' }}>
+                                {word}
+                              </span>
+                            ) : (
+                              word
+                            )
+                          )}
+                        </p>
 
-                      {/* Replies */}
-                      {Array.isArray(comment.replies) && comment.replies.length > 0 && (
-                        <div className="replies">
-                          {comment.replies.map((reply) => (
-                            <div className="reply" key={reply._id}>
-                              <img
-                                src={reply.user.profilePicture || "/default-user.png"}
-                                alt={`${reply.user.firstName} ${reply.user.lastName}`}
-                                className="reply-user-picture"
-                              />
-                              <div className="reply-info">
-                                <span className="reply-user-name">
-                                  {reply.user.firstName} {reply.user.lastName}
-                                  {reply.user.role === "admin" && (
-                                    <MdVerified className="verified-icon" />
-                                  )}
-                                </span>
-                                <span className="reply-timestamp">
-                                  {new Date(reply.createdAt).toLocaleString()}
-                                </span>
-                                <div className="reply-content">{reply.content}</div>
-                                <div className="reply-actions">
-                                  {reply.isLiked ? (
-                                    <AiFillLike
-                                      className="like-icon liked"
-                                      onClick={() => handleUnlikeReply(comment._id, reply._id)}
-                                    />
-                                  ) : (
-                                    <AiOutlineLike
-                                      className="like-icon"
-                                      onClick={() => handleLikeReply(comment._id, reply._id)}
-                                    />
-                                  )}
-                                  <span className="like-count">{reply.likeCount || 0}</span>
-                                  <AiOutlineEllipsis
-                                    className="options-icon"
-                                    onClick={() => toggleDropdown(reply._id)}
-                                  />
-                                  {activeDropdown === reply._id && (
-                                    <div className="dropdown-menu">
-                                      <button
-                                        className="dropdown-item"
-                                        onClick={() => handleReportReply(comment._id, reply._id)}
-                                      >
-                                        Report Reply
-                                      </button>
-                                      <button
-                                        className="dropdown-item"
-                                        onClick={() => handleEditReply(reply, comment._id)}
-                                      >
-                                        Edit
-                                      </button>
-                                      <button
-                                        className="dropdown-item"
-                                        onClick={() => handleDeleteReply(comment._id, reply._id)}
-                                      >
-                                        Delete
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
+                        <div className="comment-actions">
+                          <button
+                            className="reply-button"
+                            onClick={() => {
+                              setReplyingTo(comment._id);
+                            }}
+                          >
+                            Reply
+                          </button>
+                          {comment.isLiked ? (
+                            <AiFillLike
+                              className="like-icon liked"
+                              onClick={() => handleUnlikeComment(comment._id)}
+                            />
+                          ) : (
+                            <AiOutlineLike
+                              className="like-icon"
+                              onClick={() => handleLikeComment(comment._id)}
+                            />
+                          )}
+                          <span className="like-count">{comment.likeCount || 0}</span>
+
+                          {/* Toggle Replies Button */}
+                          {comment.replies.length > 0 && (
+                            <button
+                              className="toggle-replies-button"
+                              onClick={() => toggleReplies(comment._id)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                marginLeft: '10px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                fontSize: '14px',
+                                color: '#3897f0'
+                              }}
+                            >
+                              {expandedReplies[comment._id] ? (
+                                <>
+                                  Hide Replies <HiOutlineArrowUp style={{ marginLeft: '5px' }} />
+                                </>
+                              ) : (
+                                <>
+                                  Show Replies ({comment.replies.length}) <HiOutlineArrowDown style={{ marginLeft: '5px' }} />
+                                </>
+                              )}
+                            </button>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  ))
+
+                        {/* Reply Input */}
+                        {replyingTo === comment._id && (
+                          <div className="reply-input">
+                            <textarea
+                              value={replyContent}
+                              onChange={handleReplyChange}
+                              placeholder="Write a reply..."
+                            />
+                            {showSuggestions && (
+                              <div className="suggestion-list">
+                                {mentionSuggestions.map((user) => (
+                                  <div
+                                    key={user._id}
+                                    className="suggestion-item"
+                                    onClick={() => selectMention(user)}
+                                    style={{ display: 'flex', alignItems: 'center', padding: '5px' }}
+                                  >
+                                    <img
+                                      src={user.profilePicture || "/default-user.png"}
+                                      alt={`${user.firstName} ${user.lastName}`}
+                                      className="suggestion-user-picture"
+                                      style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }}
+                                    />
+                                    <span>{user.firstName} {user.lastName}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            <div className="reply-buttons">
+                              <button
+                                className="cancel-button"
+                                onClick={() => {
+                                  setReplyingTo(null);
+                                  setReplyContent("");
+                                }}
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                className="send-reply-button"
+                                onClick={handleReplySubmit}
+                              >
+                                Send
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Replies */}
+                        {expandedReplies[comment._id] && (
+                          <div className="replies">
+                            {Array.isArray(comment.replies) && comment.replies.length > 0 && (
+                              <>
+                                {comment.replies.slice(0, replyLimit[comment._id] || 2).map((reply) => (
+                                  <div className="reply" key={reply._id}>
+                                    <img
+                                      src={reply.user.profilePicture || "/default-user.png"}
+                                      alt={`${reply.user.firstName} ${reply.user.lastName}`}
+                                      className="reply-user-picture"
+                                    />
+                                    <div className="reply-info">
+                                      <span className="reply-user-name">
+                                        {reply.user.firstName} {reply.user.lastName}
+                                        {reply.user.role === "admin" && (
+                                          <MdVerified className="verified-icon" />
+                                        )}
+                                      </span>
+                                      <span className="reply-timestamp">
+                                        {new Date(reply.createdAt).toLocaleString()}
+                                      </span>
+                                      <p className="comment-content">
+                                        {reply.content.split(/(\s+)/).map((word, i) =>
+                                          word.startsWith('@') ? (
+                                            <span key={i} style={{ color: 'blue' }}>
+                                              {word}
+                                            </span>
+                                          ) : (
+                                            word
+                                          )
+                                        )}
+                                      </p>
+                                      <div className="reply-actions">
+                                        {reply.isLiked ? (
+                                          <AiFillLike
+                                            className="like-icon liked"
+                                            onClick={() => handleUnlikeReply(comment._id, reply._id)}
+                                          />
+                                        ) : (
+                                          <AiOutlineLike
+                                            className="like-icon"
+                                            onClick={() => handleLikeReply(comment._id, reply._id)}
+                                          />
+                                        )}
+                                        <span className="like-count">{reply.likeCount || 0}</span>
+                                        <HiOutlineEllipsisVertical
+                                          className="options-icon"
+                                          onClick={() => toggleDropdown(reply._id)}
+                                        />
+                                        {activeDropdown === reply._id && (
+                                          <div className="dropdown-menu">
+                                            <button
+                                              className="dropdown-item"
+                                              onClick={() => handleReportReply(comment._id, reply._id)}
+                                            >
+                                              Report Reply
+                                            </button>
+                                            <button
+                                              className="dropdown-item"
+                                              onClick={() => handleEditReply(reply, comment._id)}
+                                            >
+                                              Edit
+                                            </button>
+                                            <button
+                                              className="dropdown-item"
+                                              onClick={() => handleDeleteReply(comment._id, reply._id)}
+                                            >
+                                              Delete
+                                            </button>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                                {/* Show More / Show Less Replies */}
+                                {comment.replies.length > (replyLimit[comment._id] || 2) && (
+                                  <div className="show-more-replies" style={{ marginTop: '10px' }}>
+                                    <button
+                                      onClick={() => showMoreReplies(comment._id)}
+                                      style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: '#3897f0',
+                                        cursor: 'pointer',
+                                        fontSize: '14px',
+                                      }}
+                                    >
+                                      Show More Replies
+                                    </button>
+                                    <button
+                                      onClick={() => showLessReplies(comment._id)}
+                                      style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: '#3897f0',
+                                        cursor: 'pointer',
+                                        fontSize: '14px',
+                                      }}
+                                    >
+                                      Show Less Replies
+                                    </button>
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))
                 ) : (
                   <p>No comments yet. Be the first to comment!</p>
                 )}
-
               </div>
               {/* Add Comment */}
               {userProfile && (
