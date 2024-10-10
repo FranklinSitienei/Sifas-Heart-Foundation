@@ -132,6 +132,23 @@
   overflow-y: auto; /* Enable vertical scrolling */
 }
 
+/* Hide scrollbar for WebKit browsers (Chrome, Safari) */
+.comments-section::-webkit-scrollbar {
+  width: 0; /* Hide scrollbar width */
+  background: transparent; /* Hide scrollbar background */
+}
+
+/* Hide scrollbar for Firefox */
+.comments-section {
+  scrollbar-width: thin; /* Set scrollbar width */
+  scrollbar-color: transparent transparent; /* Hide scrollbar */
+}
+
+/* Hide scrollbar for Internet Explorer and Edge */
+.comments-section {
+  -ms-overflow-style: none; /* Hide scrollbar */
+}
+
 .comments-section h2 {
   margin-bottom: 15px;
   font-size: 12px;
