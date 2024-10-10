@@ -13,7 +13,7 @@ const Login = () => {
     useEffect(() => {        
         const token = localStorage.getItem('admin');
         if (token) {
-            window.location.href = '/dashboard';
+            window.location.href = '/';
         }
     }, []);
     
@@ -36,7 +36,7 @@ const Login = () => {
                 console.log('Admin token:', data.token);
                 // Instead of immediate redirection, use a timeout
                 setTimeout(() => {
-                    window.location.href = '/dashboard';
+                    window.location.href = '/';
                 }, 100); // 100 ms delay
             } else {
                 const error = await response.json();

@@ -1,4 +1,4 @@
-// blogRoutes.js
+// routes/blogRoutes.js
 const express = require("express");
 const router = express.Router();
 const Blog = require("../models/Blog");
@@ -149,10 +149,12 @@ router.post("/user/:id/comment", authMiddleware, async (req, res) => {
     blog.comments.push({ user: req.user.id, content });
     await blog.save();
 
-    const newComment = blog.comments[blog.comments.length - 1].populate(
+    // Populate the newly added comment's user details
+    const newComment = await blog.comments[blog.comments.length - 1].populate(
       "user",
       "firstName lastName profilePicture"
-    );
+    ).execPopulate();
+
     res.status(201).json(newComment);
   } catch (err) {
     console.error("Error adding comment:", err);
@@ -178,10 +180,12 @@ router.post(
       comment.replies.push({ user: req.user.id, content });
       await blog.save();
 
-      const newReply = comment.replies[comment.replies.length - 1].populate(
+      // Populate the newly added reply's user details
+      const newReply = await comment.replies[comment.replies.length - 1].populate(
         "user",
         "firstName lastName profilePicture"
-      );
+      ).execPopulate();
+
       res.status(201).json(newReply);
     } catch (err) {
       console.error("Error adding reply:", err);
@@ -330,21 +334,156 @@ router.put(
   }
 );
 
-router.post("/:id/comment/:commentId/report", authMiddleware, async (req, res) => {
-  try {
-    const { commentId } = req.params;
-    const comment = await Comment.findById(commentId);
+/* Like/Unlike Comment Routes */
 
-    if (!comment) {
-      return res.status(404).json({ message: "Comment not found" });
+// Like a comment (Users)
+router.post("/user/:blogId/comment/:commentId/like", authMiddleware, async (req, res) => {
+  try {
+    const { blogId, commentId } = req.params;
+    const blog = await Blog.findById(blogId);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    const comment = blog.comments.id(commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+    if (comment.likes.includes(req.user.id)) {
+      return res.status(400).json({ message: "Already liked this comment" });
     }
 
+    comment.likes.push(req.user.id);
+    await blog.save();
+
+    res.status(200).json({ message: "Comment liked", likeCount: comment.likes.length });
+  } catch (err) {
+    console.error("Error liking comment:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+});
+
+// Unlike a comment (Users)
+router.post("/user/:blogId/comment/:commentId/unlike", authMiddleware, async (req, res) => {
+  try {
+    const { blogId, commentId } = req.params;
+    const blog = await Blog.findById(blogId);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    const comment = blog.comments.id(commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+    if (!comment.likes.includes(req.user.id)) {
+      return res.status(400).json({ message: "You haven't liked this comment" });
+    }
+
+    comment.likes = comment.likes.filter(
+      (like) => like.toString() !== req.user.id.toString()
+    );
+    await blog.save();
+
+    res.status(200).json({ message: "Comment unliked", likeCount: comment.likes.length });
+  } catch (err) {
+    console.error("Error unliking comment:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+});
+
+// Like a reply (Users)
+router.post("/user/:blogId/comment/:commentId/reply/:replyId/like", authMiddleware, async (req, res) => {
+  try {
+    const { blogId, commentId, replyId } = req.params;
+    const blog = await Blog.findById(blogId);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    const comment = blog.comments.id(commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+    const reply = comment.replies.id(replyId);
+    if (!reply) return res.status(404).json({ message: "Reply not found" });
+
+    if (reply.likes.includes(req.user.id)) {
+      return res.status(400).json({ message: "Already liked this reply" });
+    }
+
+    reply.likes.push(req.user.id);
+    await blog.save();
+
+    res.status(200).json({ message: "Reply liked", likeCount: reply.likes.length });
+  } catch (err) {
+    console.error("Error liking reply:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+});
+
+// Unlike a reply (Users)
+router.post("/user/:blogId/comment/:commentId/reply/:replyId/unlike", authMiddleware, async (req, res) => {
+  try {
+    const { blogId, commentId, replyId } = req.params;
+    const blog = await Blog.findById(blogId);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    const comment = blog.comments.id(commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+    const reply = comment.replies.id(replyId);
+    if (!reply) return res.status(404).json({ message: "Reply not found" });
+
+    if (!reply.likes.includes(req.user.id)) {
+      return res.status(400).json({ message: "You haven't liked this reply" });
+    }
+
+    reply.likes = reply.likes.filter(
+      (like) => like.toString() !== req.user.id.toString()
+    );
+    await blog.save();
+
+    res.status(200).json({ message: "Reply unliked", likeCount: reply.likes.length });
+  } catch (err) {
+    console.error("Error unliking reply:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+});
+
+/* Report Functionality */
+
+// Report a comment (Users)
+router.post("/:blogId/comment/:commentId/report", authMiddleware, async (req, res) => {
+  try {
+    const { blogId, commentId } = req.params;
+    const blog = await Blog.findById(blogId);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    const comment = blog.comments.id(commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
     comment.reported = true;
-    await comment.save();
+    await blog.save();
 
     res.status(200).json({ message: "Comment reported successfully" });
   } catch (error) {
+    console.error("Error reporting comment:", error);
     res.status(500).json({ message: "Error reporting comment", error });
+  }
+});
+
+// Report a reply (Users)
+router.post("/:blogId/comment/:commentId/reply/:replyId/report", authMiddleware, async (req, res) => {
+  try {
+    const { blogId, commentId, replyId } = req.params;
+    const blog = await Blog.findById(blogId);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    const comment = blog.comments.id(commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+    const reply = comment.replies.id(replyId);
+    if (!reply) return res.status(404).json({ message: "Reply not found" });
+
+    reply.reported = true;
+    await blog.save();
+
+    res.status(200).json({ message: "Reply reported successfully" });
+  } catch (error) {
+    console.error("Error reporting reply:", error);
+    res.status(500).json({ message: "Error reporting reply", error });
   }
 });
 
