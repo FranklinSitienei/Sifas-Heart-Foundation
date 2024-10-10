@@ -2,6 +2,8 @@
 const express = require("express");
 const router = express.Router();
 const Blog = require("../models/Blog");
+const User = require("../models/User");
+const Admin = require("../models/Admin");
 const multer = require("multer");
 const upload = multer({ storage: multer.memoryStorage() });
 const { authMiddleware } = require("../middleware/authMiddleware");
@@ -142,18 +144,30 @@ router.get("/:id", async (req, res) => {
 router.post("/user/:id/comment", authMiddleware, async (req, res) => {
   const { content } = req.body;
 
+  // Use regex to find mentioned admins
+  const mentionRegex = /@(\w+)/g; // Modify this regex based on your mention format
+  const mentions = [...content.matchAll(mentionRegex)].map(match => match[1]);
+
   try {
     const blog = await Blog.findById(req.params.id);
     if (!blog) return res.status(404).json({ message: "Blog not found" });
 
-    blog.comments.push({ user: req.user.id, content });
-    await blog.save();
+    // Find mentioned admins
+    const mentionedAdmins = await Admin.find({
+      $or: mentions.map(mention => ({
+        firstName: { $regex: mention, $options: 'i' },
+        lastName: { $regex: mention, $options: 'i' },
+      })),
+    });
 
-    // Populate the newly added comment's user details
-    const newComment = await blog.comments[blog.comments.length - 1].populate(
-      "user",
-      "firstName lastName profilePicture"
-    ).execPopulate();
+    const newComment = {
+      user: req.user.id,
+      content,
+      mentions: mentionedAdmins.map(admin => admin._id), // Store the IDs of mentioned admins
+    };
+
+    blog.comments.push(newComment);
+    await blog.save();
 
     res.status(201).json(newComment);
   } catch (err) {
@@ -184,43 +198,40 @@ router.post("/user/:blogId/comment/:commentId/reply", authMiddleware, async (req
   const { blogId, commentId } = req.params;
   const { content } = req.body;
 
-  // Check if content is provided
-  if (!content) {
-    return res.status(400).json({ message: "Reply content is required." });
-  }
+  const mentionRegex = /@(\w+)/g; // Modify this regex based on your mention format
+  const mentions = [...content.matchAll(mentionRegex)].map(match => match[1]);
 
   try {
     const blog = await Blog.findById(blogId);
-    if (!blog) {
-      return res.status(404).json({ message: "Blog not found." });
-    }
+    if (!blog) return res.status(404).json({ message: "Blog not found." });
 
     const comment = blog.comments.id(commentId);
-    if (!comment) {
-      return res.status(404).json({ message: "Comment not found." });
-    }
+    if (!comment) return res.status(404).json({ message: "Comment not found." });
 
-    // Create the reply object
+    // Find mentioned admins
+    const mentionedAdmins = await Admin.find({
+      $or: mentions.map(mention => ({
+        firstName: { $regex: mention, $options: 'i' },
+        lastName: { $regex: mention, $options: 'i' },
+      })),
+    });
+
     const reply = {
       user: req.user.id,
       content,
+      mentions: mentionedAdmins.map(admin => admin._id), // Store the IDs of mentioned admins
       createdAt: new Date(),
     };
 
-    // Push the reply into the comment's replies array
     comment.replies.push(reply);
     await blog.save();
 
-    // Populate the reply with user details
-    const populatedReply = await blog.comments.id(commentId).replies.populated('user', 'firstName lastName profilePicture');
-
-    res.status(201).json(populatedReply);
+    res.status(201).json(reply);
   } catch (error) {
     console.error('Error replying to comment:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
-
 
 // Like a blog (Users)
 router.post("/user/:id/like", authMiddleware, async (req, res) => {

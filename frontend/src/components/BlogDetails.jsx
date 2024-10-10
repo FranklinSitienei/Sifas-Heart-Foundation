@@ -608,12 +608,24 @@ const BlogDetails = () => {
                           {showSuggestions && (
                             <div className="suggestion-list">
                               {mentionSuggestions.map((user) => (
-                                <div key={user._id} className="suggestion-item" onClick={() => selectMention(user)}>
-                                  {user.firstName} {user.lastName}
+                                <div
+                                  key={user._id}
+                                  className="suggestion-item"
+                                  onClick={() => selectMention(user)}
+                                  style={{ display: 'flex', alignItems: 'center', padding: '5px' }} // Flex layout for suggestions
+                                >
+                                  <img
+                                    src={user.profilePicture || "/default-user.png"}
+                                    alt={`${user.firstName} ${user.lastName}`}
+                                    className="suggestion-user-picture" // Add a class for styling
+                                    style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }} // Profile picture style
+                                  />
+                                  <span>{user.firstName} {user.lastName}</span>
                                 </div>
                               ))}
                             </div>
                           )}
+
                           <div className="reply-buttons">
                             <button
                               className="cancel-button"
@@ -712,8 +724,19 @@ const BlogDetails = () => {
                     {showSuggestions && (
                       <div className="suggestion-list">
                         {mentionSuggestions.map((user) => (
-                          <div key={user._id} className="suggestion-item" onClick={() => selectMention(user)}>
-                            {user.firstName} {user.lastName}
+                          <div
+                            key={user._id}
+                            className="suggestion-item"
+                            onClick={() => selectMention(user)}
+                            style={{ display: 'flex', alignItems: 'center', padding: '5px' }} // Flex layout for suggestions
+                          >
+                            <img
+                              src={user.profilePicture || "/default-user.png"}
+                              alt={`${user.firstName} ${user.lastName}`}
+                              className="suggestion-user-picture" // Add a class for styling
+                              style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }} // Profile picture style
+                            />
+                            <span>{user.firstName} {user.lastName}</span>
                           </div>
                         ))}
                       </div>
@@ -724,6 +747,7 @@ const BlogDetails = () => {
                     </button>
                   </div>
                 )}
+
               </div>
             </div>
           </div>

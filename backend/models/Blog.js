@@ -5,12 +5,14 @@ const CommentSchema = new Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   content: { type: String, required: true },
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  mentions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Admin' }],
   replies: [
     {
       user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
       content: { type: String, required: true },
       likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-      createdAt: { type: Date, default: Date.now }
+      createdAt: { type: Date, default: Date.now },
+      mentions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Admin' }],
     }
   ],
   createdAt: { type: Date, default: Date.now }

@@ -422,6 +422,33 @@
   margin-bottom: 20px;
 }
 
+.mentions {
+  color: blue; /* Set text color to blue */
+  text-decoration: none; /* Remove underline */
+  transition: background-color 0.3s ease; /* Smooth transition for background color */
+}
+
+.mentions:hover {
+  background: none;
+}
+
+.suggestion-list {
+  border: 1px solid #ccc; /* Optional: Add border for the suggestion list */
+  background-color: white; /* Background color for suggestions */
+  position: absolute; /* Position it below the input */
+  z-index: 1000; /* Ensure it appears above other elements */
+  max-height: 200px; /* Limit height for scrolling */
+  overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.suggestion-item {
+  cursor: pointer; /* Change cursor on hover */
+}
+
+.suggestion-item:hover {
+  background-color: #f0f0f0; /* Highlight on hover */
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .blog-details-header {
