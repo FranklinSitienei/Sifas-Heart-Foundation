@@ -436,6 +436,120 @@ const BlogDetails = () => {
     setActiveDropdown((prev) => (prev === commentId ? null : commentId));
   };
 
+  const handleEditComment = (comment) => {
+    const newContent = prompt("Edit your comment:", comment.content);
+    if (newContent) {
+      // Call the API to update the comment
+      fetch(`/api/blog/${id}/comment/${comment._id}/edit`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content: newContent }),
+      })
+        .then((response) => {
+          if (response.ok) {
+            // Update state to reflect the edited comment
+            const updatedComments = comments.map((c) =>
+              c._id === comment._id ? { ...c, content: newContent } : c
+            );
+            setComments(updatedComments);
+          } else {
+            console.error("Failed to edit comment");
+          }
+        })
+        .catch((err) => console.error("Error editing comment:", err));
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this comment?");
+    if (confirmDelete) {
+      try {
+        const response = await fetch(`/api/blog/${id}/comment/${commentId}/delete`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.ok) {
+          // Update state to remove the comment from UI
+          setComments(comments.filter((comment) => comment._id !== commentId));
+        } else {
+          console.error("Failed to delete comment:", response.statusText);
+        }
+      } catch (err) {
+        console.error("Error deleting comment:", err);
+      }
+    }
+  };
+
+  const handleEditReply = (reply) => {
+    const newContent = prompt("Edit your reply:", reply.content);
+    if (newContent) {
+      fetch(`/api/blog/${id}/comment/${reply.commentId}/reply/${reply._id}/edit`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content: newContent }),
+      })
+        .then((response) => {
+          if (response.ok) {
+            const updatedComments = comments.map((c) => {
+              if (c._id === reply.commentId) {
+                return {
+                  ...c,
+                  replies: c.replies.map((r) =>
+                    r._id === reply._id ? { ...r, content: newContent } : r
+                  ),
+                };
+              }
+              return c;
+            });
+            setComments(updatedComments);
+          } else {
+            console.error("Failed to edit reply");
+          }
+        })
+        .catch((err) => console.error("Error editing reply:", err));
+    }
+  };
+
+  const handleDeleteReply = async (commentId, replyId) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this reply?");
+    if (confirmDelete) {
+      try {
+        const response = await fetch(`/api/blog/${id}/comment/${commentId}/reply/${replyId}/delete`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.ok) {
+          // Update state to remove the reply from the UI
+          setComments((prevComments) =>
+            prevComments.map((comment) => {
+              if (comment._id === commentId) {
+                return {
+                  ...comment,
+                  replies: comment.replies.filter((reply) => reply._id !== replyId),
+                };
+              }
+              return comment;
+            })
+          );
+        } else {
+          console.error("Failed to delete reply:", response.statusText);
+        }
+      } catch (err) {
+        console.error("Error deleting reply:", err);
+      }
+    }
+  };
+
   const fetchMentionSuggestions = async (query) => {
     if (query.trim().length > 1) {
       try {
@@ -554,14 +668,26 @@ const BlogDetails = () => {
                         <span className="comment-timestamp">
                           {new Date(comment.createdAt).toLocaleString()}
                         </span>
-                        {/* Three-Dot Icon for Report */}
-                        <div className="report-dropdown" ref={dropdownRef}>
+                        {/* Three-Dot Icon for Options */}
+                        <div className="options-dropdown" ref={dropdownRef}>
                           <AiOutlineEllipsis
-                            className="report-icon"
+                            className="options-icon"
                             onClick={() => toggleDropdown(comment._id)}
                           />
                           {activeDropdown === comment._id && (
                             <div className="dropdown-menu">
+                              <button
+                                className="dropdown-item"
+                                onClick={() => handleEditComment(comment)}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                className="dropdown-item"
+                                onClick={() => handleDeleteComment(comment._id)}
+                              >
+                                Delete
+                              </button>
                               <button
                                 className="dropdown-item"
                                 onClick={() => handleReportComment(comment._id)}
@@ -594,7 +720,6 @@ const BlogDetails = () => {
                           />
                         )}
                         <span className="like-count">{comment.likeCount || 0}</span>
-                        {/* Three-Dot Icon for Report (if needed on actions) */}
                       </div>
 
                       {/* Reply Input */}
@@ -612,13 +737,13 @@ const BlogDetails = () => {
                                   key={user._id}
                                   className="suggestion-item"
                                   onClick={() => selectMention(user)}
-                                  style={{ display: 'flex', alignItems: 'center', padding: '5px' }} // Flex layout for suggestions
+                                  style={{ display: 'flex', alignItems: 'center', padding: '5px' }}
                                 >
                                   <img
                                     src={user.profilePicture || "/default-user.png"}
                                     alt={`${user.firstName} ${user.lastName}`}
-                                    className="suggestion-user-picture" // Add a class for styling
-                                    style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }} // Profile picture style
+                                    className="suggestion-user-picture"
+                                    style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }}
                                   />
                                   <span>{user.firstName} {user.lastName}</span>
                                 </div>
@@ -681,7 +806,7 @@ const BlogDetails = () => {
                                   )}
                                   <span className="like-count">{reply.likeCount || 0}</span>
                                   <AiOutlineEllipsis
-                                    className="report-icon"
+                                    className="options-icon"
                                     onClick={() => toggleDropdown(reply._id)}
                                   />
                                   {activeDropdown === reply._id && (
@@ -691,6 +816,18 @@ const BlogDetails = () => {
                                         onClick={() => handleReportReply(comment._id, reply._id)}
                                       >
                                         Report Reply
+                                      </button>
+                                      <button
+                                        className="dropdown-item"
+                                        onClick={() => handleEditReply(reply, comment._id)}
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        className="dropdown-item"
+                                        onClick={() => handleDeleteReply(comment._id, reply._id)}
+                                      >
+                                        Delete
                                       </button>
                                     </div>
                                   )}
@@ -706,54 +843,55 @@ const BlogDetails = () => {
                   <p>No comments yet. Be the first to comment!</p>
                 )}
 
-                {/* Add Comment */}
-                {userProfile && (
-                  <div className="add-comment-section">
-                    <img
-                      src={userProfile.profilePicture || "/default-user.png"}
-                      alt={`${userProfile.firstName} ${userProfile.lastName}`}
-                      className="user-profile-picture"
-                    />
-                    <textarea
-                      value={newComment}
-                      onChange={handleCommentChange}
-                      placeholder="Add a comment..."
-                      className="add-comment-input"
-                    />
-
-                    {showSuggestions && (
-                      <div className="suggestion-list">
-                        {mentionSuggestions.map((user) => (
-                          <div
-                            key={user._id}
-                            className="suggestion-item"
-                            onClick={() => selectMention(user)}
-                            style={{ display: 'flex', alignItems: 'center', padding: '5px' }} // Flex layout for suggestions
-                          >
-                            <img
-                              src={user.profilePicture || "/default-user.png"}
-                              alt={`${user.firstName} ${user.lastName}`}
-                              className="suggestion-user-picture" // Add a class for styling
-                              style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }} // Profile picture style
-                            />
-                            <span>{user.firstName} {user.lastName}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    <button className="send-comment-button" onClick={handleCommentSubmit}>
-                      <AiOutlineSend />
-                    </button>
-                  </div>
-                )}
-
               </div>
+              {/* Add Comment */}
+              {userProfile && (
+                <div className="add-comment-section">
+                  <img
+                    src={userProfile.profilePicture || "/default-user.png"}
+                    alt={`${userProfile.firstName} ${userProfile.lastName}`}
+                    className="user-profile-picture"
+                  />
+                  <textarea
+                    value={newComment}
+                    onChange={handleCommentChange}
+                    placeholder="Add a comment..."
+                    className="add-comment-input"
+                  />
+
+                  {showSuggestions && (
+                    <div className="suggestion-list">
+                      {mentionSuggestions.map((user) => (
+                        <div
+                          key={user._id}
+                          className="suggestion-item"
+                          onClick={() => selectMention(user)}
+                          style={{ display: 'flex', alignItems: 'center', padding: '5px' }} // Flex layout for suggestions
+                        >
+                          <img
+                            src={user.profilePicture || "/default-user.png"}
+                            alt={`${user.firstName} ${user.lastName}`}
+                            className="suggestion-user-picture" // Add a class for styling
+                            style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }} // Profile picture style
+                          />
+                          <span>{user.firstName} {user.lastName}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <button className="send-comment-button" onClick={handleCommentSubmit}>
+                    <AiOutlineSend />
+                  </button>
+                </div>
+              )}
+
             </div>
           </div>
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 };
 

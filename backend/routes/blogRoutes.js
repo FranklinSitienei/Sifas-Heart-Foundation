@@ -275,6 +275,138 @@ router.post("/user/:id/unlike", authMiddleware, async (req, res) => {
   }
 });
 
+// User can delete their own comment
+router.delete(
+  "/user/:blogId/comment/:commentId/delete", authMiddleware,
+  async (req, res) => {
+    try {
+      const blog = await Blog.findById(req.params.blogId);
+      if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+      const comment = blog.comments.id(req.params.commentId);
+      if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+      // Check if the user is the owner of the comment
+      if (comment.user.toString() !== req.user.id) {
+        return res.status(403).json({ message: "Forbidden: Can only delete your own comments" });
+      }
+
+      comment.remove();
+      await blog.save();
+
+      res.status(200).json({ message: "Comment deleted successfully" });
+    } catch (err) {
+      console.error("Error deleting comment:", err);
+      res.status(500).json({ message: "Server error", error: err });
+    }
+  }
+);
+
+// User can edit their own comment within 1 minute
+router.put(
+  "/user/:blogId/comment/:commentId/edit", authMiddleware,
+  async (req, res) => {
+    const { content } = req.body;
+
+    try {
+      const { blogId, commentId } = req.params;
+      const blog = await Blog.findById(blogId);
+      if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+      const comment = blog.comments.id(commentId);
+      if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+      // Check if the user is the owner of the comment
+      if (comment.user.toString() !== req.user.id) {
+        return res.status(403).json({ message: "Forbidden: Can only edit your own comments" });
+      }
+
+      // Check if the comment was created within the last minute
+      const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+      if (new Date(comment.createdAt) < oneMinuteAgo) {
+        return res.status(400).json({ message: "You can only edit your comment within 1 minute" });
+      }
+
+      comment.content = content || comment.content;
+      await blog.save();
+
+      res.status(200).json({ message: "Comment edited successfully", comment });
+    } catch (err) {
+      console.error("Error editing comment:", err);
+      res.status(500).json({ message: "Server error", error: err });
+    }
+  }
+);
+
+// User can delete their own reply
+router.delete(
+  "/user/:blogId/comment/:commentId/reply/:replyId/delete", authMiddleware,
+  async (req, res) => {
+    try {
+      const blog = await Blog.findById(req.params.blogId);
+      if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+      const comment = blog.comments.id(req.params.commentId);
+      if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+      const reply = comment.replies.id(req.params.replyId);
+      if (!reply) return res.status(404).json({ message: "Reply not found" });
+
+      // Check if the user is the owner of the reply
+      if (reply.user.toString() !== req.user.id) {
+        return res.status(403).json({ message: "Forbidden: Can only delete your own replies" });
+      }
+
+      reply.remove();
+      await blog.save();
+
+      res.status(200).json({ message: "Reply deleted successfully" });
+    } catch (err) {
+      console.error("Error deleting reply:", err);
+      res.status(500).json({ message: "Server error", error: err });
+    }
+  }
+);
+
+// User can edit their own reply within 1 minute
+router.put(
+  "/user/:blogId/comment/:commentId/reply/:replyId/edit", authMiddleware,
+  async (req, res) => {
+    const { content } = req.body;
+
+    try {
+      const { blogId, commentId, replyId } = req.params;
+      const blog = await Blog.findById(blogId);
+      if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+      const comment = blog.comments.id(commentId);
+      if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+      const reply = comment.replies.id(replyId);
+      if (!reply) return res.status(404).json({ message: "Reply not found" });
+
+      // Check if the user is the owner of the reply
+      if (reply.user.toString() !== req.user.id) {
+        return res.status(403).json({ message: "Forbidden: Can only edit your own replies" });
+      }
+
+      // Check if the reply was created within the last minute
+      const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+      if (new Date(reply.createdAt) < oneMinuteAgo) {
+        return res.status(400).json({ message: "You can only edit your reply within 1 minute" });
+      }
+
+      reply.content = content || reply.content;
+      await blog.save();
+
+      res.status(200).json({ message: "Reply edited successfully", reply });
+    } catch (err) {
+      console.error("Error editing reply:", err);
+      res.status(500).json({ message: "Server error", error: err });
+    }
+  }
+);
+
 /* Admin Comment Routes */
 
 // Admin can delete any reported comment or reply
