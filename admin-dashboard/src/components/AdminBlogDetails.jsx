@@ -136,17 +136,17 @@ const AdminBlogDetails = () => {
           },
         }
       );
-
+  
       const newIsLiked = !blog.isLiked;
       const newLikeCount = newIsLiked ? blog.likeCount + 1 : blog.likeCount - 1;
-
+  
       // Update the blog state
       setBlog((prevBlog) => ({
         ...prevBlog,
         isLiked: newIsLiked,
         likeCount: newLikeCount,
       }));
-
+  
       // Update localStorage for blog likes
       const likedBlogs = JSON.parse(localStorage.getItem('likedBlogs')) || {};
       if (newIsLiked) {
@@ -155,7 +155,7 @@ const AdminBlogDetails = () => {
         delete likedBlogs[id]; // Remove from liked
       }
       localStorage.setItem('likedBlogs', JSON.stringify(likedBlogs));
-
+  
     } catch (error) {
       console.error(
         "Error toggling like:",
@@ -163,10 +163,10 @@ const AdminBlogDetails = () => {
       );
     }
   };
-
+  
   const handleCommentSubmit = async () => {
     if (!newComment.trim()) return;
-
+  
     try {
       const response = await axios.post(
         `http://localhost:5000/api/blog/admin/${id}/comment`,
@@ -187,7 +187,7 @@ const AdminBlogDetails = () => {
       );
     }
   };
-
+  
   const handleReplyChange = (e) => {
     const value = e.target.value;
     setReplyContent(value);
@@ -199,10 +199,10 @@ const AdminBlogDetails = () => {
       setShowSuggestions(false);
     }
   };
-
+  
   const handleReplySubmit = async () => {
     if (!replyContent.trim()) return;
-
+  
     try {
       const response = await axios.post(
         `http://localhost:5000/api/blog/admin/${id}/comment/${replyingTo}/reply`,
@@ -213,7 +213,7 @@ const AdminBlogDetails = () => {
           },
         }
       );
-
+  
       setComments(
         comments.map((comment) =>
           comment._id === replyingTo
@@ -226,7 +226,7 @@ const AdminBlogDetails = () => {
             : comment
         )
       );
-
+  
       setReplyingTo(null);
       setShowSuggestions(false);
       setReplyContent("");
@@ -237,7 +237,7 @@ const AdminBlogDetails = () => {
       );
     }
   };
-
+  
   const handleLikeComment = async (commentId) => {
     try {
       await axios.post(
@@ -249,7 +249,7 @@ const AdminBlogDetails = () => {
           },
         }
       );
-
+  
       setComments(
         comments.map((comment) => {
           if (comment._id === commentId) {
@@ -264,7 +264,7 @@ const AdminBlogDetails = () => {
           return comment;
         })
       );
-
+  
       // Update localStorage for comment likes
       const likedComments = JSON.parse(localStorage.getItem('likedComments')) || {};
       if (likedComments[commentId]) {
@@ -273,7 +273,7 @@ const AdminBlogDetails = () => {
         likedComments[commentId] = true; // Like if not liked
       }
       localStorage.setItem('likedComments', JSON.stringify(likedComments));
-
+  
     } catch (error) {
       console.error(
         "Error liking comment:",
@@ -281,7 +281,7 @@ const AdminBlogDetails = () => {
       );
     }
   };
-
+  
   const handleUnlikeComment = async (commentId) => {
     try {
       await axios.post(
@@ -293,7 +293,7 @@ const AdminBlogDetails = () => {
           },
         }
       );
-
+  
       setComments(
         comments.map((comment) => {
           if (comment._id === commentId) {
@@ -308,14 +308,14 @@ const AdminBlogDetails = () => {
           return comment;
         })
       );
-
+  
       // Update localStorage for comment unlikes
       const likedComments = JSON.parse(localStorage.getItem('likedComments')) || {};
       if (likedComments[commentId]) {
         delete likedComments[commentId]; // Unlike if already liked
       }
       localStorage.setItem('likedComments', JSON.stringify(likedComments));
-
+  
     } catch (error) {
       console.error(
         "Error unliking comment:",
@@ -323,7 +323,7 @@ const AdminBlogDetails = () => {
       );
     }
   };
-
+  
   const handleLikeReply = async (commentId, replyId) => {
     try {
       await axios.post(
@@ -335,7 +335,7 @@ const AdminBlogDetails = () => {
           },
         }
       );
-
+  
       setComments(
         comments.map((comment) => {
           if (comment._id === commentId) {
@@ -358,7 +358,7 @@ const AdminBlogDetails = () => {
           return comment;
         })
       );
-
+  
     } catch (error) {
       console.error(
         "Error liking reply:",
@@ -366,7 +366,7 @@ const AdminBlogDetails = () => {
       );
     }
   };
-
+  
   const handleUnlikeReply = async (commentId, replyId) => {
     try {
       await axios.post(
@@ -378,7 +378,7 @@ const AdminBlogDetails = () => {
           },
         }
       );
-
+  
       setComments(
         comments.map((comment) => {
           if (comment._id === commentId) {
@@ -401,7 +401,7 @@ const AdminBlogDetails = () => {
           return comment;
         })
       );
-
+  
     } catch (error) {
       console.error(
         "Error unliking reply:",
@@ -409,11 +409,11 @@ const AdminBlogDetails = () => {
       );
     }
   };
-
-  const handleReportComment = async (commentId) => {
+  
+  const handleApproveReply = async (commentId, replyId) => { // Changed function name
     try {
       await axios.post(
-        `http://localhost:5000/api/blog/admin/${id}/comment/${commentId}/report`,
+        `http://localhost:5000/api/blog/admin/${id}/comment/${commentId}/reply/${replyId}/approve`, // Updated route to 'approve'
         {},
         {
           headers: {
@@ -421,44 +421,24 @@ const AdminBlogDetails = () => {
           },
         }
       );
-      alert("Comment reported successfully.");
+      alert("Reply approved successfully.");
     } catch (error) {
       console.error(
-        "Error reporting comment:",
+        "Error approving reply:",
         error.response?.data || error.message
       );
     }
   };
-
-  const handleReportReply = async (commentId, replyId) => {
-    try {
-      await axios.post(
-        `http://localhost:5000/api/blog/admin/${id}/comment/${commentId}/reply/${replyId}/report`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      alert("Reply reported successfully.");
-    } catch (error) {
-      console.error(
-        "Error reporting reply:",
-        error.response?.data || error.message
-      );
-    }
-  };
-
+  
   const toggleDropdown = (commentId) => {
     setActiveDropdown((prev) => (prev === commentId ? null : commentId));
   };
-
+  
   const handleEditComment = (comment) => {
     const newContent = prompt("Edit your comment:", comment.content);
     if (newContent) {
       // Call the API to update the comment
-      fetch(`/api/blog/${id}/comment/${comment._id}/edit`, {
+      fetch(`http://localhost:5000/api/blog/${id}/comment/${comment._id}/edit`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -473,11 +453,11 @@ const AdminBlogDetails = () => {
               c._id === comment._id ? { ...c, content: newContent } : c
             );
             setComments(updatedComments);
-          } else {
-            console.error("Failed to edit comment");
           }
         })
-        .catch((err) => console.error("Error editing comment:", err));
+        .catch((error) => {
+          console.error("Error editing comment:", error);
+        });
     }
   };
 
@@ -485,7 +465,7 @@ const AdminBlogDetails = () => {
     const confirmDelete = window.confirm("Are you sure you want to delete this comment?");
     if (confirmDelete) {
       try {
-        const response = await fetch(`/api/blog/admin/${id}/comment/${commentId}/delete`, {
+        const response = await fetch(`http://localhost:5000/api/blog/admin/${id}/comment/${commentId}/delete`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -506,7 +486,7 @@ const AdminBlogDetails = () => {
   const handleEditReply = (reply) => {
     const newContent = prompt("Edit your reply:", reply.content);
     if (newContent) {
-      fetch(`/api/blog/admin/${id}/comment/${reply.commentId}/reply/${reply._id}/edit`, {
+      fetch(`http://localhost:5000/api/blog/admin/${id}/comment/${reply.commentId}/reply/${reply._id}/edit`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -540,7 +520,7 @@ const AdminBlogDetails = () => {
     const confirmDelete = window.confirm("Are you sure you want to delete this reply?");
     if (confirmDelete) {
       try {
-        const response = await fetch(`/api/blog/admin/${id}/comment/${commentId}/reply/${replyId}/delete`, {
+        const response = await fetch(`http://localhost:5000/api/blog/admin/${id}/comment/${commentId}/reply/${replyId}/delete`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -733,12 +713,6 @@ const AdminBlogDetails = () => {
                                 >
                                   Delete
                                 </button>
-                                <button
-                                  className="dropdown-item"
-                                  onClick={() => handleReportComment(comment._id)}
-                                >
-                                  Report
-                                </button>
                               </div>
                             )}
                           </div>
@@ -907,12 +881,6 @@ const AdminBlogDetails = () => {
                                         />
                                         {activeDropdown === reply._id && (
                                           <div className="dropdown-menu">
-                                            <button
-                                              className="dropdown-item"
-                                              onClick={() => handleReportReply(comment._id, reply._id)}
-                                            >
-                                              Report Reply
-                                            </button>
                                             <button
                                               className="dropdown-item"
                                               onClick={() => handleEditReply(reply, comment._id)}

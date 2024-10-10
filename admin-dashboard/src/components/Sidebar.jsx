@@ -6,6 +6,7 @@ import { BiChart, BiTable } from 'react-icons/bi';
 import { MdCreate, MdEdit, MdViewList, MdChat } from 'react-icons/md'; // Importing the chat icon
 import '../css/Sidebar.css';
 import axios from 'axios';
+const token = localStorage.getItem("admin");
 
 const Sidebar = () => {
     const [messageCount, setMessageCount] = useState(0);
@@ -13,7 +14,13 @@ const Sidebar = () => {
     useEffect(() => {
         const fetchMessageCount = async () => {
             try {
-                const response = await axios.get('/api/chat/all');
+                const response = await axios.get('http://localhost:5000/api/chat/admin/all',
+                    {
+                        headers: {
+                          Authorization: `Bearer ${token}`,
+                        },
+                      }
+                );
                 setMessageCount(response.data.length); // Set the message count
             } catch (error) {
                 console.error('Error fetching message count:', error);

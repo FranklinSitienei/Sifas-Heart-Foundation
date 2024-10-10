@@ -106,6 +106,180 @@ router.delete("/admin/:id/delete", adminMiddleware, async (req, res) => {
   }
 });
 
+// Admin can add a comment on a blog
+router.post('/admin/:blogId/comment', adminMiddleware, async (req, res) => {
+  const { content } = req.body;
+
+  const mentionRegex = /@(\w+)/g; // Regex for mentions
+  const mentions = [...content.matchAll(mentionRegex)].map(match => match[1]);
+
+  try {
+    const blog = await Blog.findById(req.params.blogId);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    // Find mentioned users
+    const mentionedUsers = await User.find({
+      $or: mentions.map(mention => ({
+        firstName: { $regex: mention, $options: 'i' },
+        lastName: { $regex: mention, $options: 'i' },
+      })),
+    });
+
+    const newComment = {
+      user: req.user.id,
+      content,
+      mentions: mentionedUsers.map(user => user._id), // Store IDs of mentioned users
+    };
+
+    blog.comments.push(newComment);
+    await blog.save();
+
+    res.status(201).json(newComment);
+  } catch (err) {
+    console.error("Error adding comment:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+});
+
+// Admin can reply to a comment
+router.post('/admin/:blogId/comment/:commentId/reply', adminMiddleware, async (req, res) => {
+  const { blogId, commentId } = req.params;
+  const { content } = req.body;
+
+  const mentionRegex = /@(\w+)/g; // Regex for mentions
+  const mentions = [...content.matchAll(mentionRegex)].map(match => match[1]);
+
+  try {
+    const blog = await Blog.findById(blogId);
+    if (!blog) return res.status(404).json({ message: "Blog not found." });
+
+    const comment = blog.comments.id(commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found." });
+
+    // Find mentioned users
+    const mentionedUsers = await User.find({
+      $or: mentions.map(mention => ({
+        firstName: { $regex: mention, $options: 'i' },
+        lastName: { $regex: mention, $options: 'i' },
+      })),
+    });
+
+    const reply = {
+      user: req.user.id,
+      content,
+      mentions: mentionedUsers.map(user => user._id), // Store IDs of mentioned users
+      createdAt: new Date(),
+    };
+
+    comment.replies.push(reply);
+    await blog.save();
+
+    res.status(201).json(reply);
+  } catch (error) {
+    console.error('Error replying to comment:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Admin can delete any reported comment
+router.delete('/admin/:blogId/comment/:commentId/delete', adminMiddleware, async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.blogId);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    const comment = blog.comments.id(req.params.commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+    // Check if the comment is reported
+    if (!comment.reported) {
+      return res.status(400).json({ message: "Comment is not reported" });
+    }
+
+    comment.remove();
+    await blog.save();
+
+    res.status(200).json({ message: "Comment deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting comment:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+});
+
+// Admin can edit any comment
+router.put('/admin/:blogId/comment/:commentId/edit', adminMiddleware, async (req, res) => {
+  const { content } = req.body;
+
+  try {
+    const { blogId, commentId } = req.params;
+    const blog = await Blog.findById(blogId);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    const comment = blog.comments.id(commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+    comment.content = content || comment.content; // Update content
+    await blog.save();
+
+    res.status(200).json({ message: "Comment edited successfully", comment });
+  } catch (err) {
+    console.error("Error editing comment:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+});
+
+// Admin can delete any reported reply
+router.delete('/admin/:blogId/comment/:commentId/reply/:replyId/delete', adminMiddleware, async (req, res) => {
+  try {
+    const { blogId, commentId, replyId } = req.params;
+    const blog = await Blog.findById(blogId);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    const comment = blog.comments.id(commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+    const reply = comment.replies.id(replyId);
+    if (!reply) return res.status(404).json({ message: "Reply not found" });
+
+    // Check if the reply is reported
+    if (!reply.reported) {
+      return res.status(400).json({ message: "Reply is not reported" });
+    }
+
+    reply.remove();
+    await blog.save();
+
+    res.status(200).json({ message: "Reply deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting reply:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+});
+
+// Admin can edit any reply
+router.put('/admin/:blogId/comment/:commentId/reply/:replyId/edit', adminMiddleware, async (req, res) => {
+  const { content } = req.body;
+
+  try {
+    const { blogId, commentId, replyId } = req.params;
+    const blog = await Blog.findById(blogId);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    const comment = blog.comments.id(commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+    const reply = comment.replies.id(replyId);
+    if (!reply) return res.status(404).json({ message: "Reply not found" });
+
+    reply.content = content || reply.content; // Update content
+    await blog.save();
+
+    res.status(200).json({ message: "Reply edited successfully", reply });
+  } catch (err) {
+    console.error("Error editing reply:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+});
+
 /* User Routes */
 
 // View all blogs (Public or authenticated users based on your requirement)
@@ -504,6 +678,185 @@ router.put(
     }
   }
 );
+
+// Like a comment (Admin)
+router.post("/admin/:blogId/comment/:commentId/like", adminMiddleware, async (req, res) => {
+  try {
+    const { blogId, commentId } = req.params;
+
+    const blog = await Blog.findById(blogId);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    const comment = blog.comments.id(commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+    // Check if the admin already liked the comment
+    if (comment.likes.includes(req.user.id)) {
+      return res.status(400).json({ message: "Already liked this comment" });
+    }
+
+    // Use findOneAndUpdate to update the likes array directly
+    await Blog.findOneAndUpdate(
+      { _id: blogId, "comments._id": commentId },
+      { $addToSet: { "comments.$.likes": req.user.id } }, // Use $addToSet to prevent duplicates
+      { new: true }
+    );
+
+    res.status(200).json({ message: "Comment liked", likeCount: comment.likes.length + 1 });
+  } catch (err) {
+    console.error("Error liking comment:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+});
+
+// Unlike a comment (Admin)
+router.post("/admin/:blogId/comment/:commentId/unlike", adminMiddleware, async (req, res) => {
+  try {
+    const { blogId, commentId } = req.params;
+
+    const blog = await Blog.findById(blogId);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    const comment = blog.comments.id(commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+    if (!comment.likes.includes(req.user.id)) {
+      return res.status(400).json({ message: "You haven't liked this comment" });
+    }
+
+    // Use findOneAndUpdate to update the likes array directly
+    await Blog.findOneAndUpdate(
+      { _id: blogId, "comments._id": commentId },
+      { $pull: { "comments.$.likes": req.user.id } }, // Use $pull to remove the like
+      { new: true }
+    );
+
+    res.status(200).json({ message: "Comment unliked", likeCount: comment.likes.length - 1 });
+  } catch (err) {
+    console.error("Error unliking comment:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+});
+
+// Like a reply (Admin)
+router.post("/admin/:blogId/comment/:commentId/reply/:replyId/like", adminMiddleware, async (req, res) => {
+  try {
+    const { blogId, commentId, replyId } = req.params;
+
+    // Fetch the blog with all comments and replies
+    const blog = await Blog.findById(blogId);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    // Find the comment
+    const comment = blog.comments.id(commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+    // Find the reply
+    const reply = comment.replies.id(replyId);
+    if (!reply) return res.status(404).json({ message: "Reply not found" });
+
+    // Check if the admin already liked the reply
+    if (reply.likes.includes(req.user.id)) {
+      return res.status(400).json({ message: "Already liked this reply" });
+    }
+
+    // Add the user's ID to the likes array of the reply
+    reply.likes.push(req.user.id);
+
+    // Save the blog document
+    await blog.save();
+
+    res.status(200).json({ message: "Reply liked", likeCount: reply.likes.length });
+  } catch (err) {
+    console.error("Error liking reply:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+});
+
+// Unlike a reply (Admin)
+router.post("/admin/:blogId/comment/:commentId/reply/:replyId/unlike", adminMiddleware, async (req, res) => {
+  try {
+    const { blogId, commentId, replyId } = req.params;
+
+    const blog = await Blog.findById(blogId);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    const comment = blog.comments.id(commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+    const reply = comment.replies.id(replyId);
+    if (!reply) return res.status(404).json({ message: "Reply not found" });
+
+    if (!reply.likes.includes(req.user.id)) {
+      return res.status(400).json({ message: "You haven't liked this reply" });
+    }
+
+    // Use findOneAndUpdate to update the likes array directly
+    await Blog.findOneAndUpdate(
+      { _id: blogId, "comments._id": commentId, "comments.replies._id": replyId },
+      { $pull: { "comments.$.replies.$.likes": req.user.id } }, // Use $pull to remove the like
+      { new: true }
+    );
+
+    res.status(200).json({ message: "Reply unliked", likeCount: reply.likes.length - 1 });
+  } catch (err) {
+    console.error("Error unliking reply:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+});
+
+// Like a blog (Admin)
+router.post("/admin/blog/:blogId/like", adminMiddleware, async (req, res) => {
+  try {
+    const { blogId } = req.params;
+
+    const blog = await Blog.findById(blogId);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    // Check if the admin already liked the blog
+    if (blog.likes.includes(req.user.id)) {
+      return res.status(400).json({ message: "Already liked this blog" });
+    }
+
+    // Use findOneAndUpdate to update the likes array directly
+    await Blog.findOneAndUpdate(
+      { _id: blogId },
+      { $addToSet: { likes: req.user.id } }, // Use $addToSet to prevent duplicates
+      { new: true }
+    );
+
+    res.status(200).json({ message: "Blog liked", likeCount: blog.likes.length + 1 });
+  } catch (err) {
+    console.error("Error liking blog:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+});
+
+// Unlike a blog (Admin)
+router.post("/admin/blog/:blogId/unlike", adminMiddleware, async (req, res) => {
+  try {
+    const { blogId } = req.params;
+
+    const blog = await Blog.findById(blogId);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    if (!blog.likes.includes(req.user.id)) {
+      return res.status(400).json({ message: "You haven't liked this blog" });
+    }
+
+    // Use findOneAndUpdate to update the likes array directly
+    await Blog.findOneAndUpdate(
+      { _id: blogId },
+      { $pull: { likes: req.user.id } }, // Use $pull to remove the like
+      { new: true }
+    );
+
+    res.status(200).json({ message: "Blog unliked", likeCount: blog.likes.length - 1 });
+  } catch (err) {
+    console.error("Error unliking blog:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+});
 
 /* Like/Unlike Comment Routes */
 
