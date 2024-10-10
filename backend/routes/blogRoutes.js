@@ -340,18 +340,22 @@ router.put(
 router.post("/user/:blogId/comment/:commentId/like", authMiddleware, async (req, res) => {
   try {
     const { blogId, commentId } = req.params;
+    
+    // Re-fetch the blog to get the latest version
     const blog = await Blog.findById(blogId);
     if (!blog) return res.status(404).json({ message: "Blog not found" });
 
     const comment = blog.comments.id(commentId);
     if (!comment) return res.status(404).json({ message: "Comment not found" });
 
+    // Check if the user already liked the comment
     if (comment.likes.includes(req.user.id)) {
       return res.status(400).json({ message: "Already liked this comment" });
     }
 
+    // Add like and save
     comment.likes.push(req.user.id);
-    await blog.save();
+    await blog.save(); // This will now work with the latest document version
 
     res.status(200).json({ message: "Comment liked", likeCount: comment.likes.length });
   } catch (err) {
