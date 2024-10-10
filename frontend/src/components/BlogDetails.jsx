@@ -80,8 +80,23 @@ const BlogDetails = () => {
         },
       });
 
-      setBlog(response.data);
-      setComments(Array.isArray(response.data.comments) ? response.data.comments : []);
+      const fetchedBlog = response.data;
+      setBlog(fetchedBlog);
+      setComments(Array.isArray(fetchedBlog.comments) ? fetchedBlog.comments : []);
+
+      // Load liked states from localStorage
+      const likedBlogs = JSON.parse(localStorage.getItem('likedBlogs')) || {};
+      if (likedBlogs[id]) {
+        fetchedBlog.isLiked = true; // Set if blog was liked
+      }
+      
+      const likedComments = JSON.parse(localStorage.getItem('likedComments')) || {};
+      const updatedComments = fetchedBlog.comments.map(comment => {
+        comment.isLiked = likedComments[comment._id] || false; // Set liked state for each comment
+        return comment;
+      });
+      setComments(updatedComments);
+
     } catch (error) {
       console.error(
         "Error fetching blog details:",
@@ -93,7 +108,7 @@ const BlogDetails = () => {
   const handleLikeToggle = async () => {
     try {
       await axios.post(
-        `http://localhost:5000/api/user/${id}/like`,
+        `http://localhost:5000/api/blog/user/${id}/like`,
         {},
         {
           headers: {
@@ -102,13 +117,25 @@ const BlogDetails = () => {
         }
       );
 
+      const newIsLiked = !blog.isLiked;
+      const newLikeCount = newIsLiked ? blog.likeCount + 1 : blog.likeCount - 1;
+
+      // Update the blog state
       setBlog((prevBlog) => ({
         ...prevBlog,
-        isLiked: !prevBlog.isLiked,
-        likeCount: prevBlog.isLiked
-          ? prevBlog.likeCount - 1
-          : prevBlog.likeCount + 1,
+        isLiked: newIsLiked,
+        likeCount: newLikeCount,
       }));
+
+      // Update localStorage for blog likes
+      const likedBlogs = JSON.parse(localStorage.getItem('likedBlogs')) || {};
+      if (newIsLiked) {
+        likedBlogs[id] = true; // Mark as liked
+      } else {
+        delete likedBlogs[id]; // Remove from liked
+      }
+      localStorage.setItem('likedBlogs', JSON.stringify(likedBlogs));
+
     } catch (error) {
       console.error(
         "Error toggling like:",
@@ -122,7 +149,7 @@ const BlogDetails = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/user/${id}/comment`,
+        `http://localhost:5000/api/blog/user/${id}/comment`,
         { content: newComment },
         {
           headers: {
@@ -145,7 +172,7 @@ const BlogDetails = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/user/${id}/comment/${replyingTo}/reply`,
+        `http://localhost:5000/api/blog/user/${id}/comment/${replyingTo}/reply`,
         { content: replyContent },
         {
           headers: {
@@ -180,7 +207,7 @@ const BlogDetails = () => {
   const handleLikeComment = async (commentId) => {
     try {
       await axios.post(
-        `http://localhost:5000/api/user/${id}/comment/${commentId}/like`,
+        `http://localhost:5000/api/blog/user/${id}/comment/${commentId}/like`,
         {},
         {
           headers: {
@@ -203,6 +230,16 @@ const BlogDetails = () => {
           return comment;
         })
       );
+
+      // Update localStorage for comment likes
+      const likedComments = JSON.parse(localStorage.getItem('likedComments')) || {};
+      if (likedComments[commentId]) {
+        delete likedComments[commentId]; // Unlike if already liked
+      } else {
+        likedComments[commentId] = true; // Like if not liked
+      }
+      localStorage.setItem('likedComments', JSON.stringify(likedComments));
+
     } catch (error) {
       console.error(
         "Error liking comment:",
@@ -214,7 +251,7 @@ const BlogDetails = () => {
   const handleUnlikeComment = async (commentId) => {
     try {
       await axios.post(
-        `http://localhost:5000/api/user/${id}/comment/${commentId}/unlike`,
+        `http://localhost:5000/api/blog/user/${id}/comment/${commentId}/unlike`,
         {},
         {
           headers: {
@@ -237,6 +274,14 @@ const BlogDetails = () => {
           return comment;
         })
       );
+
+      // Update localStorage for comment unlikes
+      const likedComments = JSON.parse(localStorage.getItem('likedComments')) || {};
+      if (likedComments[commentId]) {
+        delete likedComments[commentId]; // Unlike if already liked
+      }
+      localStorage.setItem('likedComments', JSON.stringify(likedComments));
+
     } catch (error) {
       console.error(
         "Error unliking comment:",
@@ -248,7 +293,7 @@ const BlogDetails = () => {
   const handleLikeReply = async (commentId, replyId) => {
     try {
       await axios.post(
-        `http://localhost:5000/api/user/${id}/comment/${commentId}/reply/${replyId}/like`,
+        `http://localhost:5000/api/blog/user/${id}/comment/${commentId}/reply/${replyId}/like`,
         {},
         {
           headers: {
@@ -279,6 +324,7 @@ const BlogDetails = () => {
           return comment;
         })
       );
+
     } catch (error) {
       console.error(
         "Error liking reply:",
@@ -290,7 +336,7 @@ const BlogDetails = () => {
   const handleUnlikeReply = async (commentId, replyId) => {
     try {
       await axios.post(
-        `http://localhost:5000/api/user/${id}/comment/${commentId}/reply/${replyId}/unlike`,
+        `http://localhost:5000/api/blog/user/${id}/comment/${commentId}/reply/${replyId}/unlike`,
         {},
         {
           headers: {
@@ -321,6 +367,7 @@ const BlogDetails = () => {
           return comment;
         })
       );
+
     } catch (error) {
       console.error(
         "Error unliking reply:",
@@ -332,7 +379,7 @@ const BlogDetails = () => {
   const handleReportComment = async (commentId) => {
     try {
       await axios.post(
-        `http://localhost:5000/api/user/${id}/comment/${commentId}/report`,
+        `http://localhost:5000/api/blog/user/${id}/comment/${commentId}/report`,
         {},
         {
           headers: {
@@ -352,7 +399,7 @@ const BlogDetails = () => {
   const handleReportReply = async (commentId, replyId) => {
     try {
       await axios.post(
-        `http://localhost:5000/api/user/${id}/comment/${commentId}/reply/${replyId}/report`,
+        `http://localhost:5000/api/blog/user/${id}/comment/${commentId}/reply/${replyId}/report`,
         {},
         {
           headers: {
@@ -414,7 +461,7 @@ const BlogDetails = () => {
                     <AiOutlineLike className="like-icon" />
                   )}
                 </span>
-                <span className="like-count">{blog.likeCount} Likes</span>
+                <span className="like-count">{blog.likeCount || 0} Likes</span>
                 <span className="blog-date">
                   {new Date(blog.date).toLocaleDateString()}{" "}
                   {new Date(blog.date).toLocaleTimeString()}

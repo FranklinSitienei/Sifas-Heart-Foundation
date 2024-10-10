@@ -3,12 +3,15 @@
   margin: 0 auto;
   padding: 20px;
   color: black;
+  width: 100%;
+  flex-direction: column;
 }
 
 .blog-details-header {
   display: flex;
-  flex-wrap: nowrap; /* Ensures elements stay in one line */
+  flex-wrap: nowrap; /* Ensure that content stays in one line */
   margin-bottom: 20px;
+  justify-content: space-between; /* Make space between image and info */
 }
 
 .blog-image-container {
@@ -16,27 +19,26 @@
   background-color: black;
   border-top-left-radius: 10px;
   border-bottom-left-radius: 10px;
-  max-width: 50%; /* Adjusts the width, but ensures flexibility */
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  max-width: 50%; /* Ensure the image takes up 50% of the width */
 }
 
 .blog-info-container {
-  flex: 1.5; /* Increase this to give it more space than the image container */
+  flex: 1.5; /* This gives it more space compared to the image */
   padding: 20px;
   display: flex;
   flex-direction: column;
   background-color: white;
+  max-width: 50%; /* Ensure the info container also takes 50% */
 }
 
 .blog-details-media {
   width: 100%;
   height: auto;
-  align-items: center;
-  justify-content: center;
+  object-fit: cover;
 }
-
 
 .placeholder-media {
   width: 100%;
@@ -388,7 +390,7 @@
   font-size: 0.9rem;
   outline: none;
   transition: border-color 0.3s ease;
-  height: 40px;
+  height: 20px;
 }
 
 .add-comment-input:focus {
@@ -422,17 +424,12 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .blog-details-content {
-    flex-direction: column;
+  .blog-details-header {
+    flex-direction: column; /* Stack image and info on small screens */
   }
 
-  .blog-image-container {
-    width: 100%;
-    height: 300px;
-  }
-
-  .blog-details-media {
-    height: 100%;
+  .blog-image-container, .blog-info-container {
+    max-width: 100%; /* Ensure both containers go full width on mobile */
   }
 
   .replies {
