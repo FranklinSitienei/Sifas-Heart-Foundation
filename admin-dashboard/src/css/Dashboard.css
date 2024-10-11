@@ -8,7 +8,7 @@ body {
 
 .dashboard-container {
   padding: 20px;
-  background-color: #1d2634;
+  background-color: #ffffff;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -32,7 +32,7 @@ body {
 }
 
 .overview-card {
-  background-color: #263043;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
   border-radius: 8px;
   flex: 1;
@@ -54,7 +54,7 @@ body {
 
 /* Monthly Donations Bar Chart */
 .monthly-donations-chart {
-  background-color: #263043;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
   border-radius: 8px;
   flex: 1;
@@ -69,7 +69,7 @@ body {
 
 /* Middle Section: Recent Transactions */
 .recent-transactions {
-  background-color: #263043;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
   border-radius: 8px;
   color: #ffffff;
@@ -93,15 +93,18 @@ body {
 }
 
 .transactions-table th {
-  background-color: #1d2634;
+  background: linear-gradient(to bottom, #1e3c72, #2a5298);
+  color: rgb(255, 255, 255);
 }
 
 .transactions-table td {
-  background-color: #1d2634;
+  background-color: #ffffff;
+  color: black;
 }
 
 .transactions-table tr:nth-child(even) td {
-  background-color: #2a3440;
+  background-color: #ffffff;
+  color: black;
 }
 
 /* Bottom Section: User Chats and Payment Methods Pie Chart */
@@ -114,7 +117,7 @@ body {
 
 /* User Chats */
 .user-chats-section {
-  background-color: #263043;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
   border-radius: 8px;
   flex: 2;
@@ -137,7 +140,7 @@ body {
   align-items: center;
   gap: 15px;
   padding: 10px;
-  background-color: #1d2634;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border-radius: 5px;
   margin-bottom: 10px;
 }
@@ -163,7 +166,7 @@ body {
 
 /* Payment Methods Pie Chart */
 .pie-chart-section {
-  background-color: #263043;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
   border-radius: 8px;
   flex: 1;
