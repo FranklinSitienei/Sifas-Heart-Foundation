@@ -258,7 +258,7 @@
 .comment-actions {
   display: flex;
   align-items: center;
-  margin-top: 10px;
+  margin-top: 5px;
 }
 
 .reply-button {
@@ -380,6 +380,16 @@
   display: flex;
   align-items: center;
   margin-top: 5px;
+}
+
+.admin-reply-dot {
+  color: green; /* Adjust color as needed */
+  margin: 0 5px;
+}
+
+.admin-label {
+  color: gray; /* Adjust color as needed */
+  font-size: 14px; /* Adjust size as needed */
 }
 
 .add-comment-section {
