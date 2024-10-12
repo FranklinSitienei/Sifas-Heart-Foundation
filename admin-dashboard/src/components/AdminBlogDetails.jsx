@@ -638,6 +638,22 @@ const AdminBlogDetails = () => {
 
           {/* Blog Info and Comments */}
           <div className="blog-info-container">
+            {/* Admin Details with Profile Picture */}
+            <div className="admin-info">
+              <img
+                src={blog.admin.profilePicture || "/default-user.png"}
+                alt={`${blog.admin.firstName} ${blog.admin.lastName}`}
+                className="admin-profile-picture"
+              />
+              <div className="admin-details">
+                <span className="admin-name">
+                  {blog.admin.firstName} {blog.admin.lastName}
+                  <MdVerified className="verified-icon" />
+                </span>
+                <span className="admin-role">Creator</span>
+              </div>
+            </div>
+
             <div className="blog-info">
               <h1 className="blog-title">{blog.title}</h1>
               <p className="blog-description">{blog.content}</p>
@@ -667,183 +683,62 @@ const AdminBlogDetails = () => {
               </div>
 
               {/* Comments Section */}
-<div className="comments-section">
-  <h2>Comments</h2>
-  {Array.isArray(comments) && comments.length > 0 ? (
-    comments
-      .sort((a, b) => {
-        const loggedInUser = localStorage.getItem('admin');
-        if (a.user?._id === loggedInUser?._id) return -1;
-        if (b.user?._id === loggedInUser?._id) return 1;
-        return 0;
-      })
-      .map((comment) => (
-        <div className="comment" key={comment._id}>
-          <div className="comment-header">
-            <img
-              src={comment.user?.profilePicture || "/default-user.png"}
-              alt={`${comment.user?.firstName || 'Unknown'} ${comment.user?.lastName || ''}`}
-              className="comment-user-picture"
-            />
-            <span className="comment-user-name">
-              {comment.user?.firstName} {comment.user?.lastName}
-              {comment.user?.role === "admin" && (
-                <MdVerified className="verified-icon" />
-              )}
-            </span>
-            <span className="comment-timestamp">
-              {new Date(comment.createdAt).toLocaleString()}
-            </span>
-            <div className="options-dropdown" ref={dropdownRef}>
-              <HiOutlineEllipsisVertical
-                className="options-icon"
-                onClick={() => toggleDropdown(comment._id)}
-              />
-              {activeDropdown === comment._id && (
-                <div className="dropdown-menu">
-                  <button
-                    className="dropdown-item"
-                    onClick={() => handleEditComment(comment)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="dropdown-item"
-                    onClick={() => handleDeleteComment(comment._id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-          <p className="comment-content">
-            {comment.content.split(/(\s+)/).map((word, i) =>
-              word.startsWith('@') ? (
-                <span key={i} style={{ color: 'blue' }}>
-                  {word}
-                </span>
-              ) : (
-                word
-              )
-            )}
-          </p>
-
-          <div className="comment-actions">
-            <button
-              className="reply-button"
-              onClick={() => {
-                setReplyingTo(comment._id);
-              }}
-            >
-              Reply
-            </button>
-            {comment.isLiked ? (
-              <AiFillLike
-                className="like-icon liked"
-                onClick={() => handleUnlikeComment(comment._id)}
-              />
-            ) : (
-              <AiOutlineLike
-                className="like-icon"
-                onClick={() => handleLikeComment(comment._id)}
-              />
-            )}
-            <span className="like-count">{comment.likeCount || 0}</span>
-
-            {/* Toggle Replies Button */}
-            {comment.replies.length > 0 && (
-              <button
-                className="toggle-replies-button"
-                onClick={() => toggleReplies(comment._id)}
-              >
-                {expandedReplies[comment._id] ? (
-                  <>
-                    Hide Replies <HiOutlineArrowUp />
-                  </>
-                ) : (
-                  <>
-                    Show Replies ({comment.replies.length}) <HiOutlineArrowDown />
-                  </>
-                )}
-              </button>
-            )}
-          </div>
-
-          {/* Reply Input */}
-          {replyingTo === comment._id && (
-            <div className="reply-input">
-              <textarea
-                value={replyContent}
-                onChange={handleReplyChange}
-                placeholder="Write a reply..."
-              />
-              {showSuggestions && (
-                <div className="suggestion-list">
-                  {mentionSuggestions.map((user) => (
-                    <div
-                      key={user._id}
-                      className="suggestion-item"
-                      onClick={() => selectMention(user)}
-                    >
-                      <img
-                        src={user.profilePicture || "/default-user.png"}
-                        alt={`${user.firstName} ${user.lastName}`}
-                        className="suggestion-user-picture"
-                      />
-                      <span>{user.firstName} {user.lastName}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="reply-buttons">
-                <button
-                  className="cancel-button"
-                  onClick={() => {
-                    setReplyingTo(null);
-                    setReplyContent("");
-                  }}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="send-reply-button"
-                  onClick={handleReplySubmit}
-                >
-                  Send
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Replies */}
-          {expandedReplies[comment._id] && (
-            <div className="replies">
-              {Array.isArray(comment.replies) && comment.replies.length > 0 && (
-                <>
-                  {comment.replies.slice(0, replyLimit[comment._id] || 2).map((reply) => (
-                    <div className="reply" key={reply._id}>
-                      <img
-                        src={reply.user?.profilePicture || "/default-user.png"}
-                        alt={`${reply.user?.firstName || 'Unknown'} ${reply.user?.lastName || ''}`}
-                        className="reply-user-picture"
-                      />
-                      <div className="reply-info">
-                        <span className="reply-user-name">
-                          {reply.user?.firstName} {reply.user?.lastName}
-                          {reply.user?.role === "admin" && (
-                            <>
-                              <span className="admin-reply-dot">•</span>
-                              <span className="admin-label">Creator</span>
-                            </>
-                          )}
-                        </span>
-                        <span className="reply-timestamp">
-                          {new Date(reply.createdAt).toLocaleString()}
-                        </span>
+              <div className="comments-section">
+                <h2>Comments</h2>
+                {Array.isArray(comments) && comments.length > 0 ? (
+                  comments
+                    .sort((a, b) => {
+                      const loggedInUser = localStorage.getItem('admin');
+                      if (a.user?._id === loggedInUser?._id) return -1;
+                      if (b.user?._id === loggedInUser?._id) return 1;
+                      return 0;
+                    })
+                    .map((comment) => (
+                      <div className="comment" key={comment._id}>
+                        <div className="comment-header">
+                          <img
+                            src={comment.user?.profilePicture || comment.admin?.profilePicture || "/default-user.png"}
+                            alt={`${comment.user?.firstName || comment.admin?.firstName || 'Unknown'} ${comment.user?.lastName || comment.admin?.lastName || ''}`}
+                            className="comment-user-picture"
+                          />
+                          <span className="comment-user-name">
+                            {comment.user?.firstName} {comment.user?.lastName}
+                            {comment.admin?.firstName} {comment.admin?.lastName}
+                            {comment.admin && (
+                              <>
+                                <MdVerified className="verified-icon" />
+                                <span className="admin-label">Creator</span>
+                              </>
+                            )}
+                          </span>
+                          <span className="comment-timestamp">
+                            {new Date(comment.createdAt).toLocaleString()}
+                          </span>
+                          <div className="options-dropdown" ref={dropdownRef}>
+                            <HiOutlineEllipsisVertical
+                              className="options-icon"
+                              onClick={() => toggleDropdown(comment._id)}
+                            />
+                            {activeDropdown === comment._id && (
+                              <div className="dropdown-menu">
+                                <button
+                                  className="dropdown-item"
+                                  onClick={() => handleEditComment(comment)}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  className="dropdown-item"
+                                  onClick={() => handleDeleteComment(comment._id)}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                         <p className="comment-content">
-                          {reply.content.split(/(\s+)/).map((word, i) =>
+                          {comment.content.split(/(\s+)/).map((word, i) =>
                             word.startsWith('@') ? (
                               <span key={i} style={{ color: 'blue' }}>
                                 {word}
@@ -853,64 +748,191 @@ const AdminBlogDetails = () => {
                             )
                           )}
                         </p>
-                        <div className="reply-actions">
-                          {reply.isLiked ? (
+
+                        <div className="comment-actions">
+                          <button
+                            className="reply-button"
+                            onClick={() => {
+                              setReplyingTo(comment._id);
+                            }}
+                          >
+                            Reply
+                          </button>
+                          {comment.isLiked ? (
                             <AiFillLike
                               className="like-icon liked"
-                              onClick={() => handleUnlikeReply(comment._id, reply._id)}
+                              onClick={() => handleUnlikeComment(comment._id)}
                             />
                           ) : (
                             <AiOutlineLike
                               className="like-icon"
-                              onClick={() => handleLikeReply(comment._id, reply._id)}
+                              onClick={() => handleLikeComment(comment._id)}
                             />
                           )}
-                          <span className="like-count">{reply.likeCount || 0}</span>
-                          <HiOutlineEllipsisVertical
-                            className="options-icon"
-                            onClick={() => toggleDropdown(reply._id)}
-                          />
-                          {activeDropdown === reply._id && (
-                            <div className="dropdown-menu">
-                              <button
-                                className="dropdown-item"
-                                onClick={() => handleEditReply(reply, comment._id)}
-                              >
-                                Edit
-                              </button>
-                              <button
-                                className="dropdown-item"
-                                onClick={() => handleDeleteReply(comment._id, reply._id)}
-                              >
-                                Delete
-                              </button>
-                            </div>
+                          <span className="like-count">{comment.likeCount || 0}</span>
+
+                          {/* Toggle Replies Button */}
+                          {comment.replies.length > 0 && (
+                            <button
+                              className="toggle-replies-button"
+                              onClick={() => toggleReplies(comment._id)}
+                            >
+                              {expandedReplies[comment._id] ? (
+                                <>
+                                  Hide Replies <HiOutlineArrowUp />
+                                </>
+                              ) : (
+                                <>
+                                  Show Replies ({comment.replies.length}) <HiOutlineArrowDown />
+                                </>
+                              )}
+                            </button>
                           )}
                         </div>
+
+                        {/* Reply Input */}
+                        {replyingTo === comment._id && (
+                          <div className="reply-input">
+                            <textarea
+                              value={replyContent}
+                              onChange={handleReplyChange}
+                              placeholder="Write a reply..."
+                            />
+                            {showSuggestions && (
+                              <div className="suggestion-list">
+                                {mentionSuggestions.map((user) => (
+                                  <div
+                                    key={user._id}
+                                    className="suggestion-item"
+                                    onClick={() => selectMention(user)}
+                                  >
+                                    <img
+                                      src={user.profilePicture || "/default-user.png"}
+                                      alt={`${user.firstName} ${user.lastName}`}
+                                      className="suggestion-user-picture"
+                                    />
+                                    <span>{user.firstName} {user.lastName}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            <div className="reply-buttons">
+                              <button
+                                className="cancel-button"
+                                onClick={() => {
+                                  setReplyingTo(null);
+                                  setReplyContent("");
+                                }}
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                className="send-reply-button"
+                                onClick={handleReplySubmit}
+                              >
+                                Send
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Replies */}
+                        {expandedReplies[comment._id] && (
+                          <div className="replies">
+                            {Array.isArray(comment.replies) && comment.replies.length > 0 && (
+                              <>
+                                {comment.replies.slice(0, replyLimit[comment._id] || 5).map((reply) => (
+                                  <div className="reply" key={reply._id}>
+                                    <img
+                                      src={reply.user?.profilePicture || reply.admin?.profilePicture || "/default-user.png"}
+                                      alt={`${reply.user?.firstName || reply.admin?.firstName || 'Unknown'} ${reply.user?.lastName || reply.admin?.lastName || ''}`}
+                                      className="reply-user-picture"
+                                    />
+                                    <div className="reply-info">
+                                      <span className="reply-user-name">
+                                        {reply.user?.firstName} {reply.user?.lastName}
+                                        {reply.admin?.firstName} {reply.admin?.lastName}
+                                        {reply.admin && (
+                                          <>
+                                            <MdVerified className="verified-icon" />
+                                            <span className="admin-label">Creator</span>
+                                          </>
+                                        )}
+                                      </span>
+                                      <span className="reply-timestamp">
+                                        {new Date(reply.createdAt).toLocaleString()}
+                                      </span>
+                                      <p className="comment-content">
+                                        {reply.content.split(/(\s+)/).map((word, i) =>
+                                          word.startsWith('@') ? (
+                                            <span key={i} style={{ color: 'blue' }}>
+                                              {word}
+                                            </span>
+                                          ) : (
+                                            word
+                                          )
+                                        )}
+                                      </p>
+                                      <div className="reply-actions">
+                                        {reply.isLiked ? (
+                                          <AiFillLike
+                                            className="like-icon liked"
+                                            onClick={() => handleUnlikeReply(comment._id, reply._id)}
+                                          />
+                                        ) : (
+                                          <AiOutlineLike
+                                            className="like-icon"
+                                            onClick={() => handleLikeReply(comment._id, reply._id)}
+                                          />
+                                        )}
+                                        <span className="like-count">{reply.likeCount || 0}</span>
+                                        <HiOutlineEllipsisVertical
+                                          className="reply-options-icon"
+                                          onClick={() => toggleDropdown(reply._id)}
+                                        />
+                                        {activeDropdown === reply._id && (
+                                          <div className="reply-dropdown-menu">
+                                            <button
+                                              className="reply-dropdown-item"
+                                              onClick={() => handleEditReply(reply, comment._id)}
+                                            >
+                                              Edit
+                                            </button>
+                                            <button
+                                              className="reply-dropdown-item"
+                                              onClick={() => handleDeleteReply(comment._id, reply._id)}
+                                            >
+                                              Delete
+                                            </button>
+                                          </div>
+                                        )}
+                                      </div>
+
+                                    </div>
+                                  </div>
+                                ))}
+                                {/* Show More / Show Less Replies */}
+                                {comment.replies.length > (replyLimit[comment._id] || 5) && (
+                                  <div className="show-more-replies">
+                                    <button onClick={() => showMoreReplies(comment._id)}>
+                                      Show More Replies
+                                    </button>
+                                    <button onClick={() => showLessReplies(comment._id)}>
+                                      Show Less Replies
+                                    </button>
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
-                  {/* Show More / Show Less Replies */}
-                  {comment.replies.length > (replyLimit[comment._id] || 2) && (
-                    <div className="show-more-replies">
-                      <button onClick={() => showMoreReplies(comment._id)}>
-                        Show More Replies
-                      </button>
-                      <button onClick={() => showLessReplies(comment._id)}>
-                        Show Less Replies
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          )}
-        </div>
-      ))
-  ) : (
-    <p>No comments yet. Be the first to comment!</p>
-  )}
-</div>
+                    ))
+                ) : (
+                  <p>No comments yet. Be the first to comment!</p>
+                )}
+              </div>
 
 
               {/* Add Comment */}

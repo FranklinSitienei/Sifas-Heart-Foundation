@@ -1,15 +1,17 @@
+// chatRoutes.js
 const express = require("express");
 const { authMiddleware } = require("../middleware/authMiddleware");
 const { adminMiddleware } = require("../middleware/adminMiddleware");
 const {
-  fetchChatMessages,
-  sendMessage,
-  checkAdminStatus,
-  handleComplexMessage,
-  editMessage,
-  deleteMessage,
-  getUserChats,
-  fetchChatDetails,
+    fetchChatMessages,
+    sendMessage,
+    checkAdminStatus,
+    handleComplexMessage,
+    editMessage,
+    deleteMessage,
+    getUserChats,
+    fetchChatDetails,
+    replyMessage,
 } = require("../controllers/chatController");
 
 const router = express.Router();
@@ -29,6 +31,7 @@ router.get("/admin/messages", adminMiddleware, fetchChatMessages);
 router.post("/admin/edit", adminMiddleware, editMessage);
 router.post("/admin/delete", adminMiddleware, deleteMessage);
 router.get("/admin/all", adminMiddleware, getUserChats);
+router.post('/admin/reply/:chatId', adminMiddleware, replyMessage);
 
 // Generic admin route - Define last
 router.get('/admin/:chatId', adminMiddleware, fetchChatDetails);

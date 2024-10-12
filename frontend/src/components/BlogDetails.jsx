@@ -658,6 +658,22 @@ const BlogDetails = () => {
 
           {/* Blog Info and Comments */}
           <div className="blog-info-container">
+            {/* Admin Details with Profile Picture */}
+            <div className="admin-info">
+                <img
+                  src={blog.admin.profilePicture || "/default-user.png"}
+                  alt={`${blog.admin.firstName} ${blog.admin.lastName}`}
+                  className="admin-profile-picture"
+                />
+                <div className="admin-details">
+                  <span className="admin-name">
+                    {blog.admin.firstName} {blog.admin.lastName}
+                    <MdVerified className="verified-icon" />
+                  </span>
+                  <span className="admin-role">Creator</span>
+                </div>
+              </div>
+              
             <div className="blog-info">
               <h1 className="blog-title">{blog.title}</h1>
               <p className="blog-description">{blog.content}</p>

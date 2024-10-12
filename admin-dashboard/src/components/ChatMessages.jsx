@@ -1,4 +1,3 @@
-// ChatMessages.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import '../css/ChatMessages.css';
@@ -9,15 +8,15 @@ const ChatMessages = () => {
     const [newMessage, setNewMessage] = useState('');
     const [editingMessageId, setEditingMessageId] = useState(null);
     const [editingText, setEditingText] = useState('');
-    const [userProfile, setUserProfile] = useState(null); // State to hold admin profile
-    const history = useNavigate();
+    const [userProfile, setUserProfile] = useState(null);
+    const navigate = useNavigate(); // Changed from 'history' to 'navigate'
 
     useEffect(() => {
-        const token = localStorage.getItem('admin'); // Fetch the admin token from local storage
+        const token = localStorage.getItem('admin');
 
         if (token) {
-            fetchProfile(token); // Fetch the profile if the token exists
-            fetchChats(token); // Fetch chat messages with token
+            fetchProfile(token);
+            fetchChats(token);
         }
     }, []);
 
@@ -48,65 +47,15 @@ const ChatMessages = () => {
                     'Authorization': `Bearer ${token}`,
                 },
             });
-            console.log('Fetched chats:', response.data); // Debug log
+            console.log('Fetched chats:', response.data);
             setChats(response.data);
         } catch (error) {
             console.error('Error fetching chats:', error.response?.data || error.message);
         }
     };
 
-    const handleSendMessage = async () => {
-        if (!newMessage.trim()) return;
-
-        const token = localStorage.getItem('admin');
-
-        try {
-            await axios.post('http://localhost:5000/api/chat/admin/send', { message: newMessage }, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-            setNewMessage('');
-            fetchChats(token); // Refresh the chat messages
-        } catch (error) {
-            console.error('Error sending message:', error.response?.data || error.message);
-        }
-    };
-
-    const handleEditMessage = async (messageId) => {
-        const token = localStorage.getItem('admin');
-
-        try {
-            await axios.post('http://localhost:5000/api/chat/admin/edit', { messageId, newText: editingText }, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-            setEditingMessageId(null);
-            setEditingText('');
-            fetchChats(token); // Refresh the chat messages
-        } catch (error) {
-            console.error('Error editing message:', error.response?.data || error.message);
-        }
-    };
-
-    const handleDeleteMessage = async (messageId) => {
-        const token = localStorage.getItem('admin');
-
-        try {
-            await axios.post('http://localhost:5000/api/chat/admin/delete', { messageId }, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-            fetchChats(token); // Refresh the chat messages
-        } catch (error) {
-            console.error('Error deleting message:', error.response?.data || error.message);
-        }
-    };
-
     const navigateToChatView = (chatId) => {
-        history('/chat/details');
+        navigate(`/chat/details/${chatId}`);
     };
 
     return (
@@ -155,7 +104,6 @@ const ChatMessages = () => {
             </div>
         </div>
     );
-
 };
 
 export default ChatMessages;

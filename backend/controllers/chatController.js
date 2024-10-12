@@ -74,6 +74,30 @@ exports.sendMessage = async (req, res) => {
   }
 };
 
+// Send a reply from the admin to the user
+exports.replyMessage = async (req, res) => {
+  const { message } = req.body;
+  const userId = req.user.id; // Admin ID
+  const chatId = req.params.chatId; // Get chatId from request params
+
+  try {
+      const chat = await Chat.findById(chatId);
+      if (!chat) return res.status(404).json({ msg: "Chat not found" });
+
+      chat.messages.push({
+          from: "admin",
+          text: message,
+          createdAt: new Date(),
+      });
+      await chat.save();
+
+      res.json({ msg: "Reply sent successfully", message });
+  } catch (error) {
+      console.error("Error sending reply:", error);
+      res.status(500).send("Server error");
+  }
+};
+
 // Edit a message
 exports.editMessage = async (req, res) => {
   const { messageId, newText } = req.body;
@@ -213,14 +237,19 @@ exports.getUserChats = async (req, res) => {
 exports.fetchChatDetails = async (req, res) => {
   const chatId = req.params.chatId; // Correctly extract chatId
 
-  try {
-    const chat = await Chat.findById(chatId).populate("userId");
-    if (!chat) return res.status(404).json({ msg: "Chat not found" });
+    try {
+        const chat = await Chat.findById(chatId)
+            .populate('userId', 'firstName lastName profilePicture isOnline lastSeen'); // Populate user details
 
-    res.json(chat.messages);
-  } catch (error) {
-    console.error("Error fetching chat details:", error);
-    res.status(500).json({ error: "Server error" });
-  }
+        if (!chat) return res.status(404).json({ msg: "Chat not found" });
+
+        res.json({
+            messages: chat.messages,
+            user: chat.userId, // Send user details
+        });
+    } catch (error) {
+        console.error("Error fetching chat details:", error);
+        res.status(500).json({ error: "Server error" });
+    }
 };
 

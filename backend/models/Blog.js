@@ -2,17 +2,19 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const CommentSchema = new Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+  admin: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' }, // For admin users
   content: { type: String, required: true },
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   mentions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Admin' }],
   replies: [
     {
-      user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+      user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      admin: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
       content: { type: String, required: true },
-      likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+      likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' } || { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' }],
       createdAt: { type: Date, default: Date.now },
-      mentions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Admin' }],
+      mentions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Admin' }|| { type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     }
   ],
   createdAt: { type: Date, default: Date.now }
