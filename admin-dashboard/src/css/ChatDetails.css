@@ -31,12 +31,12 @@
 
 .user-info p {
     margin: 0;
-    font-size: 12px;
+    font-size: 15px;
     font-weight: bold;
 }
 
 .user-status {
-    font-size: 7px;
+    font-size: 5px;
     color: #666;
 }
 
