@@ -25,7 +25,7 @@ body {
 
 /* Donation Overview */
 .donation-overview {
-  display: flex;
+  display: block;
   gap: 20px;
   flex: 2;
   flex-wrap: wrap;
@@ -36,7 +36,7 @@ body {
   padding: 20px;
   border-radius: 8px;
   flex: 1;
-  min-width: 150px;
+  max-width: 50%;
   text-align: center;
   color: #ffffff;
 }
@@ -57,7 +57,7 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
   border-radius: 8px;
-  flex: 1;
+  flex: 2;
   min-width: 250px;
   color: #ffffff;
 }

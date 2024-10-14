@@ -131,61 +131,61 @@ exports.getDonationsOverview = async (req, res) => {
     }
   };
   
-  // Monthly donations for bar chart (current year)
-  exports.getMonthlyDonations = async (req, res) => {
-    try {
+// Monthly donations for bar chart (current year)
+exports.getMonthlyDonations = async (req, res) => {
+  try {
       const currentYear = new Date().getFullYear();
       const monthlyDonations = await Donation.aggregate([
-        {
-          $match: {
-            createdAt: {
-              $gte: new Date(`${currentYear}-01-01`),
-              $lte: new Date(`${currentYear}-12-31`)
-            }
-          }
-        },
-        {
-          $group: {
-            _id: { month: { $month: "$createdAt" } },
-            total: { $sum: "$amount" }
-          }
-        },
-        { $sort: { "_id.month": 1 } }
+          {
+              $match: {
+                  createdAt: {
+                      $gte: new Date(`${currentYear}-01-01`),
+                      $lte: new Date(`${currentYear}-12-31`)
+                  }
+              }
+          },
+          {
+              $group: {
+                  _id: { $month: "$createdAt" },
+                  total: { $sum: "$amount" }
+              }
+          },
+          { $sort: { "_id": 1 } }
       ]);
-  
+
       res.json(monthlyDonations);
-    } catch (error) {
+  } catch (error) {
       console.error("Error fetching monthly donations:", error);
       res.status(500).json({ message: 'Internal server error' });
-    }
-  };
-  
-  // Recent transactions
-  exports.getRecentTransactions = async (req, res) => {
-    try {
+  }
+};
+
+// Recent transactions
+exports.getRecentTransactions = async (req, res) => {
+  try {
       const recentTransactions = await Donation.find()
-        .sort({ createdAt: -1 })
-        .limit(10)
-        .populate('userId', 'firstName lastName email');
-        
+          .sort({ createdAt: -1 })
+          .limit(10)
+          .populate('userId', 'firstName lastName email');
       res.json(recentTransactions);
-    } catch (error) {
+  } catch (error) {
       console.error('Error fetching recent transactions:', error);
       res.status(500).json({ message: 'Internal server error' });
-    }
-  };
+  }
+};
 
-  // donationController.js
+// Payment method breakdown
 exports.getPaymentMethodBreakdown = async (req, res) => {
-    try {
+  try {
       const paymentMethods = await Donation.aggregate([
-        { $group: { _id: "$paymentMethod", total: { $sum: "$amount" } } }
+          { $group: { _id: "$paymentMethod", total: { $sum: "$amount" } } }
       ]);
-  
+
       res.json(paymentMethods);
-    } catch (error) {
+  } catch (error) {
       console.error('Error fetching payment method breakdown:', error);
       res.status(500).json({ message: 'Internal server error' });
-    }
-  };
+  }
+};
+
   

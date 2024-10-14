@@ -111,10 +111,10 @@ const Dashboard = () => {
       <div className="top-section">
         {/* Donation Overview */}
         <div className="donation-overview">
-          <div className="overview-card">
+          {/* <div className="overview-card">
             <h3>Today's Donations</h3>
-            <p>${donationOverview.totalToday || 0}</p>
-          </div>
+            <p>{donationOverview.totalToday || 0}</p>
+          </div> */}
           <div className="overview-card">
             <h3>This Month's Donations</h3>
             <p>${donationOverview.totalThisMonth || 0}</p>

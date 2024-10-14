@@ -6,41 +6,55 @@ import '../css/Donation.css';
 const Donation = () => {
     const [donations, setDonations] = useState([]);
     const [monthlyData, setMonthlyData] = useState({ labels: [], data: [] });
+    const [paymentBreakdown, setPaymentBreakdown] = useState([]);
+
+    const token = localStorage.getItem("admin"); // Fetch the admin token
 
     useEffect(() => {
-        const fetchDonations = async () => {
+        const fetchDonationsData = async () => {
             try {
-                const response = await axios.get('/api/donations'); // Adjust endpoint as necessary
-                setDonations(response.data);
-                prepareMonthlyData(response.data);
+                // Fetch monthly donations data for the bar chart
+                const monthlyResponse = await axios.get('/api/donations/monthly', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                prepareMonthlyData(monthlyResponse.data);
+
+                // Fetch recent transactions for the transaction table
+                const transactionResponse = await axios.get('/api/donations/recent', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setDonations(transactionResponse.data);
+
+                // Fetch payment method breakdown
+                const paymentBreakdownResponse = await axios.get('/api/donations/payment-methods', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setPaymentBreakdown(paymentBreakdownResponse.data);
+
             } catch (error) {
-                console.error('Error fetching donations:', error);
+                console.error('Error fetching donation data:', error);
             }
         };
 
-        fetchDonations();
-    }, []);
+        fetchDonationsData();
+    }, [token]);
 
     const prepareMonthlyData = (data) => {
         const labels = [];
         const amounts = [];
-        const monthlyTotals = data.reduce((acc, donation) => {
-            const month = new Date(donation.date).toLocaleString('default', { month: 'long' });
-            acc[month] = (acc[month] || 0) + donation.amount;
-            return acc;
-        }, {});
 
-        for (const [month, total] of Object.entries(monthlyTotals)) {
+        data.forEach((entry) => {
+            const month = new Date(entry._id).toLocaleString('default', { month: 'long' });
             labels.push(month);
-            amounts.push(total);
-        }
+            amounts.push(entry.total);
+        });
 
         setMonthlyData({ labels, data: amounts });
     };
 
     return (
         <div className="donation-container">
-            <h1>Monthly Donations</h1>
+            <h1>Monthly Donations for {new Date().getFullYear()}</h1>
             <Bar
                 data={{
                     labels: monthlyData.labels,
@@ -58,7 +72,8 @@ const Donation = () => {
                     },
                 }}
             />
-            <h2>Donation Transactions</h2>
+
+            <h2>Recent Donation Transactions</h2>
             <table className="donation-table">
                 <thead>
                     <tr>
@@ -73,16 +88,25 @@ const Donation = () => {
                 <tbody>
                     {donations.map((donation) => (
                         <tr key={donation.transactionId}>
-                            <td>{donation.userFullName}</td>
-                            <td>{donation.userEmail}</td>
+                            <td>{donation.userId.firstName} {donation.userId.lastName}</td>
+                            <td>{donation.userId.email}</td>
                             <td>{donation.amount}</td>
                             <td>{donation.paymentMethod}</td>
                             <td>{donation.transactionId}</td>
-                            <td>{new Date(donation.date).toLocaleDateString()}</td>
+                            <td>{new Date(donation.createdAt).toLocaleDateString()}</td>
                         </tr>
                     ))}
                 </tbody>
             </table>
+
+            <h2>Payment Method Breakdown</h2>
+            <ul className="payment-breakdown">
+                {paymentBreakdown.map((method) => (
+                    <li key={method._id}>
+                        {method._id}: ${method.total}
+                    </li>
+                ))}
+            </ul>
         </div>
     );
 };
