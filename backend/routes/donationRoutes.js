@@ -5,7 +5,7 @@ const { adminMiddleware } = require("../middleware/adminMiddleware");
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+router.get('/',adminMiddleware, async (req, res) => {
   try {
       const donations = await Donation.find().populate('userId', 'firstName lastName email mobileNumber');
       res.json(donations);
@@ -17,13 +17,13 @@ router.get('/', async (req, res) => {
 
 
 // Overview data: Total donations (today, month, year)
-router.get('/overview', getDonationsOverview);
+router.get('/overview',adminMiddleware, getDonationsOverview);
 
 // Monthly donations for the bar chart
-router.get('/monthly', getMonthlyDonations);
+router.get('/monthly',adminMiddleware, getMonthlyDonations);
 
 // Recent transactions
-router.get('/recent', getRecentTransactions);
+router.get('/recent',adminMiddleware, getRecentTransactions);
 
 // Ensure both routes have valid callback functions
 router.post('/donate', makeDonation);
@@ -31,7 +31,7 @@ router.post('/donate', makeDonation);
 // router.post('/mpesa/success', handleMpesaSuccess);
 
 // DonationRoutes.js
-router.get('/payment-methods', getPaymentMethodBreakdown);
+router.get('/payment-methods',adminMiddleware, getPaymentMethodBreakdown);
 
 
 router.post('/send-payslip', async (req, res) => {
