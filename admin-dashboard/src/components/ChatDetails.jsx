@@ -93,7 +93,7 @@ const ChatDetails = () => {
 
     const handleDeleteMessage = async (messageId) => {
         try {
-            await axios.post('http://localhost:5000/api/chat/admin/delete', { messageId }, {
+            await axios.post(`http://localhost:5000/api/chat/admin/delete/${chatId}`, { messageId }, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },

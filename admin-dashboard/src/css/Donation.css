@@ -1,34 +1,85 @@
 .donation-container {
     padding: 20px;
-    max-width: 1000px;
+    max-width: 1200px;
     margin: auto;
     text-align: center;
-    background-color: white;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+h1, h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.error-message {
+    color: red;
+    font-weight: bold;
 }
 
 .donation-table {
     width: 100%;
     margin-top: 20px;
     border-collapse: collapse;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .donation-table th, .donation-table td {
-    border: 1px solid #ccc;
-    padding: 10px;
+    border: 1px solid #ddd;
+    padding: 12px 15px;
     text-align: left;
 }
 
 .donation-table th {
     background-color: #f4f4f4;
+    color: #555;
+    font-size: 14px;
+}
+
+.donation-table td {
+    font-size: 14px;
+    color: #666;
+}
+
+.donation-table tr:nth-child(even) {
+    background-color: #f9f9f9;
 }
 
 .payment-breakdown {
     margin-top: 20px;
     list-style-type: none;
     padding: 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 .payment-breakdown li {
+    background-color: #fff;
+    padding: 10px 15px;
+    margin: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
     font-size: 16px;
-    margin: 5px 0;
+    color: #333;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+    .donation-table th, .donation-table td {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .payment-breakdown li {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+
+    .donation-container {
+        padding: 10px;
+    }
 }

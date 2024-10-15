@@ -29,7 +29,7 @@ router.get("/all", authMiddleware, getUserChats);
 router.post("/admin/send", adminMiddleware, sendMessage);
 router.get("/admin/messages", adminMiddleware, fetchChatMessages);
 router.post("/admin/edit", adminMiddleware, editMessage);
-router.post("/admin/delete", adminMiddleware, deleteMessage);
+router.post("/admin/delete/:chatId", adminMiddleware, deleteMessage);
 router.get("/admin/all", adminMiddleware, getUserChats);
 router.post('/admin/reply/:chatId', adminMiddleware, replyMessage);
 

@@ -21,116 +21,116 @@ const mpesaApi = new Mpesa({
 });
 
 exports.makeDonation = async (req, res) => {
-    const { amount, paymentMethod, accountBank, accountNumber } = req.body;
+  const { amount, paymentMethod, accountBank, accountNumber } = req.body;
 
-    try {
-        let transactionId;
-        const user = await User.findById(req.user.id);
-        if (!user) {
-            return res.status(404).json({ msg: 'User not found' });
-        }
+  try {
+      let transactionId;
+      const user = await User.findById(req.user.id);
+      if (!user) {
+          return res.status(404).json({ msg: 'User not found' });
+      }
 
-        const userFullName = `${user.firstName} ${user.lastName}`;
-        const userEmail = user.email;
-        const userMobileNumber = user.mobileNumber;
+      const userFullName = `${user.firstName} ${user.lastName}`;
+      const userEmail = user.email;
+      const userMobileNumber = user.mobileNumber;
 
-        if (paymentMethod === 'Visa' || paymentMethod === 'Mastercard') {
-            const payload = {
-                "account_bank": accountBank, // Flutterwave bank code
-                "account_number": accountNumber,
-                "amount": amount,
-                "narration": `Donation by ${userFullName}`,
-                "currency": "NGN", // change as needed
-                "reference": generateTransactionId(), // Unique reference for this transfer
-                "callback_url": `${process.env.BACKEND_URL}/api/donations/flutterwave/success`,
-                "debit_currency": "NGN"
-            };
+      if (paymentMethod === 'Visa' || paymentMethod === 'Mastercard') {
+          const payload = {
+              "account_bank": accountBank, // Flutterwave bank code
+              "account_number": accountNumber,
+              "amount": amount,
+              "narration": `Donation by ${userFullName}`,
+              "currency": "NGN", // change as needed
+              "reference": generateTransactionId(), // Unique reference for this transfer
+              "callback_url": `${process.env.BACKEND_URL}/api/donations/flutterwave/success`,
+              "debit_currency": "NGN"
+          };
 
-            const response = await flw.Transfer.initiate(payload);
-            if (response.status === 'success') {
-                transactionId = response.data.id;
-            } else {
-                return res.status(400).json({ msg: 'Flutterwave payment failed' });
-            }
-        } else if (paymentMethod === 'M-Pesa') {
-            const response = await mpesaApi.lipaNaMpesaOnline(
-                userMobileNumber,
-                amount,
-                `${process.env.BACKEND_URL}/api/donations/mpesa/success`,
-                `Donation-${generateTransactionId()}`
-            );
+          const response = await flw.Transfer.initiate(payload);
+          if (response.status === 'success') {
+              transactionId = response.data.id;
+          } else {
+              return res.status(400).json({ msg: 'Flutterwave payment failed' });
+          }
+      } else if (paymentMethod === 'M-Pesa') {
+          const response = await mpesaApi.lipaNaMpesaOnline(
+              userMobileNumber,
+              amount,
+              `${process.env.BACKEND_URL}/api/donations/mpesa/success`,
+              `Donation-${generateTransactionId()}`
+          );
 
-            if (response.ResponseCode === '0') {
-                transactionId = response.CheckoutRequestID;
-            } else {
-                return res.status(400).json({ msg: 'M-Pesa payment failed' });
-            }
-        }
+          if (response.ResponseCode === '0') {
+              transactionId = response.CheckoutRequestID;
+          } else {
+              return res.status(400).json({ msg: 'M-Pesa payment failed' });
+          }
+      }
 
-        // Save donation in the database
-        const donation = new Donation({
-            userId: user._id,
-            amount,
-            paymentMethod,
-            transactionId,
-            userFullName,
-            userEmail,
-            userMobileNumber
-        });
+      // Save donation in the database
+      const donation = new Donation({
+          userId: user._id, // Ensure userId is set correctly
+          amount,
+          paymentMethod,
+          transactionId,
+          userFullName,
+          userEmail,
+          userMobileNumber
+      });
 
-        await donation.save();
-        await updateUserDonation(req.user.id, amount);
-        await handleDonationAchievements(req.user.id, amount);
+      await donation.save();
+      await updateUserDonation(req.user.id, amount);
+      await handleDonationAchievements(req.user.id, amount);
 
-        // Send notification
-        const donationMessage = `Thank you for your donation of $${amount}. Your transaction ID is ${transactionId}.`;
-        await Notification.create({ userId: req.user.id, message: donationMessage, type: 'donation' });
+      // Send notification
+      const donationMessage = `Thank you for your donation of $${amount}. Your transaction ID is ${transactionId}.`;
+      await Notification.create({ userId: req.user.id, message: donationMessage, type: 'donation' });
 
-        // Send payslip via email
-        const payslipHtml = generatePayslipTemplate(donation);
-        await sendDonationEmail(user.email, payslipHtml);
+      // Send payslip via email
+      const payslipHtml = generatePayslipTemplate(donation);
+      await sendDonationEmail(user.email, payslipHtml);
 
-        res.json(donation);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
+      res.json(donation);
+  } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server error');
+  }
 };
 
 // Overview: Total donations today, this month, this year
 exports.getDonationsOverview = async (req, res) => {
-    try {
+  try {
       const now = new Date();
-      const startOfDay = new Date(now.setHours(0, 0, 0, 0));
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const startOfYear = new Date(now.getFullYear(), 0, 1);
-  
+
       const totalToday = await Donation.aggregate([
-        { $match: { createdAt: { $gte: startOfDay } } },
-        { $group: { _id: null, total: { $sum: "$amount" } } }
+          { $match: { date: { $gte: startOfDay } } },
+          { $group: { _id: null, total: { $sum: "$amount" } } }
       ]);
-  
+
       const totalThisMonth = await Donation.aggregate([
-        { $match: { createdAt: { $gte: startOfMonth } } },
-        { $group: { _id: null, total: { $sum: "$amount" } } }
+          { $match: { date: { $gte: startOfMonth } } },
+          { $group: { _id: null, total: { $sum: "$amount" } } }
       ]);
-  
+
       const totalThisYear = await Donation.aggregate([
-        { $match: { createdAt: { $gte: startOfYear } } },
-        { $group: { _id: null, total: { $sum: "$amount" } } }
+          { $match: { date: { $gte: startOfYear } } },
+          { $group: { _id: null, total: { $sum: "$amount" } } }
       ]);
-  
+
       res.json({
-        totalToday: totalToday[0]?.total || 0,
-        totalThisMonth: totalThisMonth[0]?.total || 0,
-        totalThisYear: totalThisYear[0]?.total || 0
+          totalToday: totalToday[0]?.total || 0,
+          totalThisMonth: totalThisMonth[0]?.total || 0,
+          totalThisYear: totalThisYear[0]?.total || 0
       });
-    } catch (error) {
+  } catch (error) {
       console.error("Error fetching donations overview:", error);
       res.status(500).json({ message: 'Internal server error' });
-    }
-  };
-  
+  }
+};
+
 // Monthly donations for bar chart (current year)
 exports.getMonthlyDonations = async (req, res) => {
   try {
@@ -138,7 +138,7 @@ exports.getMonthlyDonations = async (req, res) => {
       const monthlyDonations = await Donation.aggregate([
           {
               $match: {
-                  createdAt: {
+                  date: {
                       $gte: new Date(`${currentYear}-01-01`),
                       $lte: new Date(`${currentYear}-12-31`)
                   }
@@ -146,7 +146,7 @@ exports.getMonthlyDonations = async (req, res) => {
           },
           {
               $group: {
-                  _id: { $month: "$createdAt" },
+                  _id: { $month: "$date" },
                   total: { $sum: "$amount" }
               }
           },
@@ -164,9 +164,9 @@ exports.getMonthlyDonations = async (req, res) => {
 exports.getRecentTransactions = async (req, res) => {
   try {
       const recentTransactions = await Donation.find()
-          .sort({ createdAt: -1 })
+          .sort({ date: -1 }) // Corrected from 'createdAt' to 'date'
           .limit(10)
-          .populate('userId', 'firstName lastName email');
+          .populate('userId', 'firstName lastName email mobileNumber');
       res.json(recentTransactions);
   } catch (error) {
       console.error('Error fetching recent transactions:', error);
@@ -177,15 +177,32 @@ exports.getRecentTransactions = async (req, res) => {
 // Payment method breakdown
 exports.getPaymentMethodBreakdown = async (req, res) => {
   try {
+      const allMethods = ['Visa', 'Mastercard', 'PayPal', 'MPesa', 'Flutterwave'];
+
       const paymentMethods = await Donation.aggregate([
-          { $group: { _id: "$paymentMethod", total: { $sum: "$amount" } } }
+          {
+              $group: {
+                  _id: "$paymentMethod",
+                  total: { $sum: "$amount" }
+              }
+          }
       ]);
 
-      res.json(paymentMethods);
+      // Create an object that sets total to 0 for methods with no donations
+      const paymentBreakdown = allMethods.map(method => {
+          const methodData = paymentMethods.find(pm => pm._id === method);
+          return {
+              paymentMethod: method,
+              total: methodData ? methodData.total : 0
+          };
+      });
+
+      res.json(paymentBreakdown);
   } catch (error) {
       console.error('Error fetching payment method breakdown:', error);
       res.status(500).json({ message: 'Internal server error' });
   }
 };
+  
 
   

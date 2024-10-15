@@ -140,6 +140,7 @@ const Dashboard = () => {
             <tr>
               <th>User</th>
               <th>Amount</th>
+              <th>Payment Method</th>
               <th>Date</th>
               <th>Status</th>
             </tr>
@@ -151,7 +152,8 @@ const Dashboard = () => {
                   {transaction.userId?.firstName} {transaction.userId?.lastName}
                 </td>
                 <td>${transaction.amount}</td>
-                <td>{new Date(transaction.createdAt).toLocaleDateString()}</td>
+                <td>{transaction.paymentMethod}</td>
+                <td>{new Date(transaction.date).toLocaleDateString()}</td>
                 <td>{transaction.status}</td>
               </tr>
             ))}

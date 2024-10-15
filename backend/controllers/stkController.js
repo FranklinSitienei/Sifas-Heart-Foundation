@@ -21,12 +21,10 @@ const getAccessToken = async () => {
 const handleStkPush = async (req, res) => {
   const { amount, phoneNumber } = req.body;
 
-  // Ensure amount is provided
   if (!amount) {
     return res.status(400).json({ message: 'Amount is required.' });
   }
 
-  // Retrieve user details from the token
   const userId = req.user?.id;
   if (!userId) {
     return res.status(400).json({ message: 'User ID not found in request.' });
@@ -38,7 +36,7 @@ const handleStkPush = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    let mobileNumber = user.mobileNumber || phoneNumber; 
+    let mobileNumber = user.mobileNumber || phoneNumber;
     if (!mobileNumber) {
       return res.status(400).json({ message: 'User mobile number is required.' });
     }
@@ -57,11 +55,11 @@ const handleStkPush = async (req, res) => {
       Timestamp: timestamp,
       TransactionType: 'CustomerPayBillOnline',
       Amount: amount,
-      PartyA: formattedPhone, // User's phone number
-      PartyB: BUSINESS_SHORT_CODE, // Paybill short code
-      PhoneNumber: formattedPhone, // User's phone number
-      CallBackURL: 'https://mydomain.com/path', // Use ngrok to expose localhost
-      AccountReference: ACCOUNT_NUMBER, // Account number for Paybill
+      PartyA: formattedPhone,
+      PartyB: BUSINESS_SHORT_CODE,
+      PhoneNumber: formattedPhone,
+      CallBackURL: `${process.env.BASE_URL}/mpesa/success`, // Callback route for M-Pesa response
+      AccountReference: ACCOUNT_NUMBER,
       TransactionDesc: 'Donation Payment',
     };
 
@@ -98,34 +96,57 @@ const handleStkPush = async (req, res) => {
   }
 };
 
-// Handle M-Pesa success callback (add implementation)
+// Handle M-Pesa success callback
 const handleMpesaSuccess = async (req, res) => {
   try {
     const { Body } = req.body;
+    const { CheckoutRequestID, ResultCode, ResultDesc, CallbackMetadata } = Body.stkCallback;
 
-    const {
-      CheckoutRequestID,
-      ResultCode,
-      ResultDesc,
-    } = Body.stkCallback;
-
-    // Check if payment was successful
     if (ResultCode === 0) {
       const donation = await Donation.findOne({ transactionId: CheckoutRequestID });
-      if (donation) {
-        donation.status = 'Completed';
-        await donation.save();
-        return res.status(200).json({ message: 'Donation successful', donation });
+
+      if (!donation) {
+        return res.status(404).json({ message: 'Donation not found' });
       }
-      return res.status(404).json({ message: 'Donation not found' });
+
+      const metadata = CallbackMetadata.Item;
+
+      let mReceipt = null, mPhoneNumber = null, mAmount = null;
+
+      metadata.forEach((entry) => {
+        switch (entry.Name) {
+          case 'MpesaReceiptNumber':
+            mReceipt = entry.Value;
+            break;
+          case 'PhoneNumber':
+            mPhoneNumber = entry.Value;
+            break;
+          case 'Amount':
+            mAmount = entry.Value;
+            break;
+          default:
+            break;
+        }
+      });
+
+      // Update donation details
+      donation.status = 'Completed';
+      donation.receiptNumber = mReceipt;
+      donation.phoneNumber = mPhoneNumber;
+      donation.amount = mAmount;
+
+      await donation.save();
+
+      return res.status(200).json({ message: 'Donation successful', donation });
     } else if (ResultCode === 1032) {
-      // ResultCode 1032 indicates the user canceled the transaction
       const donation = await Donation.findOne({ transactionId: CheckoutRequestID });
+
       if (donation) {
         donation.status = 'Canceled';
         await donation.save();
         return res.status(200).json({ message: 'Donation canceled by user' });
       }
+
       return res.status(404).json({ message: 'Donation not found' });
     } else {
       return res.status(400).json({ message: `Payment failed: ${ResultDesc}` });

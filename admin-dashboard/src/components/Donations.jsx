@@ -7,32 +7,43 @@ const Donation = () => {
     const [donations, setDonations] = useState([]);
     const [monthlyData, setMonthlyData] = useState({ labels: [], data: [] });
     const [paymentBreakdown, setPaymentBreakdown] = useState([]);
+    const [loading, setLoading] = useState(true); // Loading state
+    const [error, setError] = useState(null); // Error state
 
     const token = localStorage.getItem("admin"); // Fetch the admin token
 
     useEffect(() => {
+        if (!token) {
+            setError("Admin token not found. Please log in.");
+            setLoading(false);
+            return;
+        }
+
         const fetchDonationsData = async () => {
             try {
                 // Fetch monthly donations data for the bar chart
-                const monthlyResponse = await axios.get('/api/donations/monthly', {
+                const monthlyResponse = await axios.get('http://localhost:5000/api/donations/monthly', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 prepareMonthlyData(monthlyResponse.data);
 
                 // Fetch recent transactions for the transaction table
-                const transactionResponse = await axios.get('/api/donations/recent', {
+                const transactionResponse = await axios.get('http://localhost:5000/api/donations/recent', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setDonations(transactionResponse.data);
 
                 // Fetch payment method breakdown
-                const paymentBreakdownResponse = await axios.get('/api/donations/payment-methods', {
+                const paymentBreakdownResponse = await axios.get('http://localhost:5000/api/donations/payment-methods', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setPaymentBreakdown(paymentBreakdownResponse.data);
 
+                setLoading(false); // Data fetched successfully
             } catch (error) {
                 console.error('Error fetching donation data:', error);
+                setError("Failed to fetch donation data. Please try again later.");
+                setLoading(false);
             }
         };
 
@@ -42,15 +53,28 @@ const Donation = () => {
     const prepareMonthlyData = (data) => {
         const labels = [];
         const amounts = [];
+        const monthNames = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
 
         data.forEach((entry) => {
-            const month = new Date(entry._id).toLocaleString('default', { month: 'long' });
+            const monthNumber = entry._id; // Assuming _id is the month number (1-12)
+            const month = monthNames[monthNumber - 1] || 'Unknown';
             labels.push(month);
             amounts.push(entry.total);
         });
 
         setMonthlyData({ labels, data: amounts });
     };
+
+    if (loading) {
+        return <div className="donation-container"><p>Loading...</p></div>;
+    }
+
+    if (error) {
+        return <div className="donation-container"><p className="error-message">{error}</p></div>;
+    }
 
     return (
         <div className="donation-container">
@@ -70,45 +94,64 @@ const Donation = () => {
                             beginAtZero: true,
                         },
                     },
+                    responsive: true,
+                    maintainAspectRatio: false,
                 }}
+                height={400} // Adjust height as needed
             />
 
             <h2>Recent Donation Transactions</h2>
-            <table className="donation-table">
-                <thead>
-                    <tr>
-                        <th>User Full Name</th>
-                        <th>Email</th>
-                        <th>Amount</th>
-                        <th>Payment Method</th>
-                        <th>Transaction ID</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {donations.map((donation) => (
-                        <tr key={donation.transactionId}>
-                            <td>{donation.userId.firstName} {donation.userId.lastName}</td>
-                            <td>{donation.userId.email}</td>
-                            <td>{donation.amount}</td>
-                            <td>{donation.paymentMethod}</td>
-                            <td>{donation.transactionId}</td>
-                            <td>{new Date(donation.createdAt).toLocaleDateString()}</td>
+            {donations.length === 0 ? (
+                <p>No recent donations found.</p>
+            ) : (
+                <table className="donation-table">
+                    <thead>
+                        <tr>
+                            <th>User Full Name</th>
+                            <th>Email</th>
+                            <th>Amount</th>
+                            <th>Payment Method</th>
+                            <th>Transaction ID</th>
+                            <th>Date</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {donations.map((donation) => (
+                            <tr key={donation.transactionId}>
+                                <td>
+                                    {donation.userId ? 
+                                        `${donation.userId.firstName} ${donation.userId.lastName}` 
+                                        : 'N/A'
+                                    }
+                                </td>
+                                <td>
+                                    {donation.userId ? donation.userId.email : 'N/A'}
+                                </td>
+                                <td>${donation.amount.toFixed(2)}</td>
+                                <td>{donation.paymentMethod}</td>
+                                <td>{donation.transactionId}</td>
+                                <td>{new Date(donation.date).toLocaleDateString()}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
 
             <h2>Payment Method Breakdown</h2>
-            <ul className="payment-breakdown">
-                {paymentBreakdown.map((method) => (
-                    <li key={method._id}>
-                        {method._id}: ${method.total}
-                    </li>
-                ))}
-            </ul>
+            {paymentBreakdown.length === 0 ? (
+                <p>No payment methods data available.</p>
+            ) : (
+                <ul className="payment-breakdown">
+                    {paymentBreakdown.map((method) => (
+                        <li key={method._id}>
+                            <strong>{method._id}:</strong> ${method.total.toFixed(2)}
+                        </li>
+                    ))}
+                </ul>
+            )}
         </div>
     );
+
 };
 
 export default Donation;
