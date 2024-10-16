@@ -1,3 +1,4 @@
+// src/components/Dashboard.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Bar, Pie } from "react-chartjs-2";
@@ -12,64 +13,77 @@ const Dashboard = () => {
   const [userChats, setUserChats] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
 
+  const [loading, setLoading] = useState(true); // Loading state
+  const [error, setError] = useState(null); // Error state
+
   useEffect(() => {
     const adminToken = localStorage.getItem("admin");
+    if (!adminToken) {
+      setError("Admin token not found. Please log in.");
+      setLoading(false);
+      return;
+    }
+
     const config = { headers: { Authorization: `Bearer ${adminToken}` } };
 
-    // Fetch donations overview
-    axios
-      .get("http://localhost:5000/api/donations/overview", config)
-      .then((res) => setDonationOverview(res.data))
-      .catch((error) =>
-        console.error("Error fetching donation overview:", error)
-      );
+    const fetchDashboardData = async () => {
+      try {
+        // Fetch all data concurrently
+        const [
+          overviewResponse,
+          monthlyResponse,
+          usersResponse,
+          transactionsResponse,
+          chatsResponse,
+          paymentMethodsResponse,
+        ] = await Promise.all([
+          axios.get("http://localhost:5000/api/donations/overview", config),
+          axios.get("http://localhost:5000/api/donations/monthly", config),
+          axios.get("http://localhost:5000/api/auth/total", config),
+          axios.get("http://localhost:5000/api/donations/recent", config),
+          axios.get("http://localhost:5000/api/chat/admin/all", config),
+          axios.get("http://localhost:5000/api/donations/payment-methods", config),
+        ]);
 
-    // Fetch monthly donations for the bar chart
-    axios
-      .get("http://localhost:5000/api/donations/monthly", config)
-      .then((res) => setMonthlyDonations(res.data))
-      .catch((error) =>
-        console.error("Error fetching monthly donations:", error)
-      );
+        setDonationOverview(overviewResponse.data);
+        setMonthlyDonations(monthlyResponse.data);
+        setUsers(usersResponse.data.total);
+        setRecentTransactions(transactionsResponse.data);
+        setUserChats(chatsResponse.data);
+        setPaymentMethods(paymentMethodsResponse.data);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching dashboard data:", err);
+        setError("Failed to fetch dashboard data. Please try again later.");
+        setLoading(false);
+      }
+    };
 
-    // Fetch total users
-    axios
-      .get("http://localhost:5000/api/auth/total", config)
-      .then((res) => setUsers(res.data.total))
-      .catch((error) => console.error("Error fetching total users:", error));
-
-    // Fetch recent transactions
-    axios
-      .get("http://localhost:5000/api/donations/recent", config)
-      .then((res) => setRecentTransactions(res.data))
-      .catch((error) =>
-        console.error("Error fetching recent transactions:", error)
-      );
-
-    // Fetch user chats/questions
-    axios
-      .get("http://localhost:5000/api/chat/admin/all", config)
-      .then((res) => {
-        console.log("User Chats Response:", res.data);
-        setUserChats(res.data);
-      })
-      .catch((error) => console.error("Error fetching user chats:", error));
-
-    // Fetch payment method breakdown for pie chart
-    axios
-      .get("http://localhost:5000/api/donations/payment-methods", config)
-      .then((res) => setPaymentMethods(res.data))
-      .catch((error) =>
-        console.error("Error fetching payment methods:", error)
-      );
+    fetchDashboardData();
   }, []);
 
-  // Preparing data for the bar chart
+  // Month names for labeling the bar chart
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  // Preparing data for the bar chart with month names
   const barChartData = {
-    labels: monthlyDonations.map((data) => `Month ${data._id.month}`),
+    labels: monthlyDonations.map((data) => monthNames[data._id - 1] || `Month ${data._id}`),
     datasets: [
       {
-        label: "Donations per Month (USD)",
+        label: "Donations per Month (Ksh)",
         data: monthlyDonations.map((data) => data.total),
         backgroundColor: "rgba(75, 192, 192, 0.6)",
         borderColor: "rgba(75, 192, 192, 1)",
@@ -78,58 +92,69 @@ const Dashboard = () => {
     ],
   };
 
-  // Preparing data for the pie chart
+  // Mapping payment methods to specific colors
+  const paymentMethodColors = {
+    Visa: "#FF6384",
+    Mastercard: "#36A2EB",
+    Mpesa: "#FFCE56",
+    PayPal: "#4BC0C0",
+    Flutterwave: "#9966FF",
+  };
+
+  // Preparing data for the pie chart with specific colors
   const pieChartData = {
-    labels: paymentMethods.map((data) => data._id),
+    labels: paymentMethods.map((data) => data.paymentMethod),
     datasets: [
       {
         label: "Payment Method Breakdown",
         data: paymentMethods.map((data) => data.total),
-        backgroundColor: [
-          "#FF6384",
-          "#36A2EB",
-          "#FFCE56",
-          "#4BC0C0",
-          "#9966FF",
-          "#FF9F40",
-        ],
-        hoverBackgroundColor: [
-          "#FF6384",
-          "#36A2EB",
-          "#FFCE56",
-          "#4BC0C0",
-          "#9966FF",
-          "#FF9F40",
-        ],
+        backgroundColor: paymentMethods.map(
+          (method) => paymentMethodColors[method.paymentMethod] || "#CCCCCC"
+        ),
+        hoverBackgroundColor: paymentMethods.map(
+          (method) => paymentMethodColors[method.paymentMethod] || "#CCCCCC"
+        ),
       },
     ],
   };
 
+  // Format amount with Ksh and commas
+  const formatAmount = (amount) => `Ksh ${amount.toLocaleString()}`;
+
+  if (loading) {
+    return (
+      <div className="dashboard-container">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="dashboard-container">
+        <p className="error-message">{error}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard-container">
-      {/* Top Section: Donation Overview and Monthly Donations */}
+      {/* Top Section: Donation Overview */}
       <div className="top-section">
-        {/* Donation Overview */}
-        <div className="donation-overview">
-          {/* <div className="overview-card">
-            <h3>Today's Donations</h3>
-            <p>{donationOverview.totalToday || 0}</p>
-          </div> */}
-          <div className="overview-card">
-            <h3>This Month's Donations</h3>
-            <p>${donationOverview.totalThisMonth || 0}</p>
-          </div>
-          <div className="overview-card">
-            <h3>This Year's Donations</h3>
-            <p>${donationOverview.totalThisYear || 0}</p>
-          </div>
+        <div className="overview-card">
+          <h3>This Month's Donations</h3>
+          <p>Ksh {donationOverview.totalThisMonth || 0}</p>
         </div>
+        <div className="overview-card">
+          <h3>This Year's Donations</h3>
+          <p>Ksh {donationOverview.totalThisYear || 0}</p>
+        </div>
+      </div>
 
-        {/* Monthly Donations Bar Chart */}
-        <div className="monthly-donations-chart">
-          <h3>Monthly Donations ({new Date().getFullYear()})</h3>
-          <Bar data={barChartData} />
-        </div>
+      {/* Monthly Donations Bar Chart */}
+      <div className="monthly-donations-chart">
+        <h3>Monthly Donations ({new Date().getFullYear()})</h3>
+        <Bar data={barChartData} />
       </div>
 
       {/* Middle Section: Recent Transactions */}
@@ -147,16 +172,25 @@ const Dashboard = () => {
           </thead>
           <tbody>
             {recentTransactions.map((transaction) => (
-              <tr key={transaction._id}>
+              <tr key={transaction.transactionId}>
                 <td>
-                  {transaction.userId?.firstName} {transaction.userId?.lastName}
+                  {transaction.userId
+                    ? `${transaction.userId.firstName} ${transaction.userId.lastName}`
+                    : "N/A"}
                 </td>
-                <td>${transaction.amount}</td>
+                <td>{formatAmount(transaction.amount)}</td>
                 <td>{transaction.paymentMethod}</td>
                 <td>{new Date(transaction.date).toLocaleDateString()}</td>
                 <td>{transaction.status}</td>
               </tr>
             ))}
+            {recentTransactions.some((donation) => !donation.userId) && (
+              <tr>
+                <td colSpan="5" style={{ textAlign: "center", color: "red" }}>
+                  Some donations could not be loaded due to missing user information.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -165,7 +199,7 @@ const Dashboard = () => {
       <div className="bottom-section">
         {/* User Chats */}
         <div className="user-chats-section">
-          <h3>User Chats and Questions</h3>
+          <h3>Latest User/Admin Chats</h3>
           <ul className="chat-list">
             {Array.isArray(userChats) && userChats.length > 0 ? (
               userChats.map((chat) => (
@@ -182,18 +216,15 @@ const Dashboard = () => {
                         {chat.userId?.lastName || ''}
                       </strong>
                       <p>
-                        {chat.messages[chat.messages.length - 1]?.text ||
-                          "No messages yet."}
+                        {chat.messages[chat.messages.length - 1]?.text || "No messages yet."}
                       </p>
-                      <small>
-                        {new Date(chat.lastActive).toLocaleString()}
-                      </small>
+                      <small>{new Date(chat.lastActive).toLocaleString()}</small>
                     </div>
                   </div>
                 </li>
               ))
             ) : (
-              <p>No user chats available.</p>
+              <p>No chats available.</p>
             )}
           </ul>
         </div>
