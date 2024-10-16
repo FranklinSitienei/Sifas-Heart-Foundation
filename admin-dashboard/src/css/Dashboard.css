@@ -49,17 +49,14 @@ body {
 
 .overview-card p {
   font-size: 1.5em;
-  color: #ffffff;
+  color: #444444;
 }
 
 /* Monthly Donations Bar Chart */
 .monthly-donations-chart {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  border-radius: 8px;
-  flex: 2;
-  min-width: 250px;
-  color: #ffffff;
+  position: relative;
+  height: 400px;
+  margin-bottom: 40px;
 }
 
 .monthly-donations-chart h3 {
@@ -181,6 +178,7 @@ body {
 
 /* Responsive Design */
 @media screen and (max-width: 992px) {
+
   .top-section,
   .bottom-section {
     flex-direction: column;

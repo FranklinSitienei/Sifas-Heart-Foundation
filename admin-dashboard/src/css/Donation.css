@@ -1,3 +1,5 @@
+/* Donation.css */
+
 .donation-container {
     padding: 20px;
     max-width: 1200px;
@@ -15,6 +17,18 @@ h1, h2 {
 .error-message {
     color: red;
     font-weight: bold;
+}
+
+.chart-container {
+    position: relative;
+    height: 400px; /* Adjust as needed */
+    margin-bottom: 40px;
+}
+
+.pie-chart-container {
+    width: 100%;
+    max-width: 500px;
+    margin: auto;
 }
 
 .donation-table {
@@ -81,5 +95,13 @@ h1, h2 {
 
     .donation-container {
         padding: 10px;
+    }
+
+    .chart-container {
+        height: 300px; /* Adjust for smaller screens */
+    }
+
+    .pie-chart-container {
+        max-width: 100%;
     }
 }

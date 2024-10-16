@@ -78,19 +78,49 @@ const Dashboard = () => {
     "December",
   ];
 
-  // Preparing data for the bar chart with month names
+  // Preparing data for the bar chart with month names and Ksh formatting
   const barChartData = {
     labels: monthlyDonations.map((data) => monthNames[data._id - 1] || `Month ${data._id}`),
     datasets: [
-      {
-        label: "Donations per Month (Ksh)",
-        data: monthlyDonations.map((data) => data.total),
-        backgroundColor: "rgba(75, 192, 192, 0.6)",
-        borderColor: "rgba(75, 192, 192, 1)",
-        borderWidth: 1,
-      },
+        {
+            label: "Total Donations (Ksh)",
+            data: monthlyDonations.map((data) => data.total),
+            backgroundColor: "rgba(75, 192, 192, 0.6)",
+            borderColor: "rgba(75, 192, 192, 1)",
+            borderWidth: 1,
+        },
     ],
-  };
+};
+
+// Configure the y-axis to display Ksh
+const barChartOptions = {
+    scales: {
+        y: {
+            beginAtZero: true,
+            ticks: {
+                callback: function(value) {
+                    return 'Ksh ' + value;
+                }
+            }
+        },
+        x: {
+            ticks: {
+                autoSkip: false
+            }
+        }
+    },
+    plugins: {
+        tooltip: {
+            callbacks: {
+                label: function(context) {
+                    return `Ksh ${context.parsed.y}`;
+                }
+            }
+        }
+    },
+    responsive: true,
+    maintainAspectRatio: false,
+};
 
   // Mapping payment methods to specific colors
   const paymentMethodColors = {
@@ -154,45 +184,47 @@ const Dashboard = () => {
       {/* Monthly Donations Bar Chart */}
       <div className="monthly-donations-chart">
         <h3>Monthly Donations ({new Date().getFullYear()})</h3>
-        <Bar data={barChartData} />
+        <Bar data={barChartData} options={barChartOptions} height={400} />
       </div>
 
       {/* Middle Section: Recent Transactions */}
       <div className="recent-transactions">
-        <h3>Recent Transactions</h3>
-        <table className="transactions-table">
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Amount</th>
-              <th>Payment Method</th>
-              <th>Date</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recentTransactions.map((transaction) => (
-              <tr key={transaction.transactionId}>
-                <td>
-                  {transaction.userId
-                    ? `${transaction.userId.firstName} ${transaction.userId.lastName}`
-                    : "N/A"}
-                </td>
-                <td>{formatAmount(transaction.amount)}</td>
-                <td>{transaction.paymentMethod}</td>
-                <td>{new Date(transaction.date).toLocaleDateString()}</td>
-                <td>{transaction.status}</td>
-              </tr>
-            ))}
-            {recentTransactions.some((donation) => !donation.userId) && (
-              <tr>
-                <td colSpan="5" style={{ textAlign: "center", color: "red" }}>
-                  Some donations could not be loaded due to missing user information.
-                </td>
-              </tr>
+      <h2>Recent Donation Transactions</h2>
+            {recentTransactions.length === 0 ? (
+                <p>No recent donations found.</p>
+            ) : (
+                <table className="donation-table">
+                    <thead>
+                        <tr>
+                            <th>User Full Name</th>
+                            <th>Email</th>
+                            <th>Amount</th>
+                            <th>Payment Method</th>
+                            <th>Transaction ID</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {recentTransactions.map((transaction) => (
+                            <tr key={transaction.transactionId}>
+                                <td>
+                                    {transaction.userId ? 
+                                        `${transaction.userId.firstName} ${transaction.userId.lastName}` 
+                                        : 'N/A'
+                                    }
+                                </td>
+                                <td>
+                                    {transaction.userId ? transaction.userId.email : 'N/A'}
+                                </td>
+                                <td>Ksh {transaction.amount.toLocaleString()}</td>
+                                <td>{transaction.paymentMethod}</td>
+                                <td>{transaction.transactionId}</td>
+                                <td>{new Date(transaction.date).toLocaleDateString()}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             )}
-          </tbody>
-        </table>
       </div>
 
       {/* Bottom Section: User Chats and Payment Methods Pie Chart */}
