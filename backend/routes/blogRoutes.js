@@ -30,12 +30,13 @@ router.get("/all", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const blog = await Blog.findById(req.params.id)
+      .populate("admin", "firstName lastName profilePicture")
       .populate("comments.admin", "firstName lastName profilePicture")
       .populate("comments.user", "firstName lastName profilePicture")
       .populate("comments.replies.user", "firstName lastName profilePicture")
       .populate("comments.replies.admin", "firstName lastName profilePicture");;
 
-      console.log("Fetched Blog Data:", blog);
+    console.log("Fetched Blog Data:", blog);
 
     if (!blog) return res.status(404).json({ message: "Blog not found" });
     res.status(200).json(blog);
