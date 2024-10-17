@@ -84,3 +84,16 @@ exports.createAdminNotification = async (req, res) => {
       res.status(500).send('Server error');
     }
   };
+
+  // Fetch notifications for a user
+exports.getAdminNotifications = async (req, res) => {
+    const adminId = req.admin.id;
+
+    try {
+        const notifications = await Notification.find({ userId }).sort({ date: -1 });
+        res.json(notifications);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+};
