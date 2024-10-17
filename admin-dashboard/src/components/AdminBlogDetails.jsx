@@ -103,6 +103,8 @@ const AdminBlogDetails = () => {
 
       const fetchedBlog = response.data;
       setBlog(fetchedBlog);
+
+      // Assuming the response has a comments structure that includes admin details
       setComments(Array.isArray(fetchedBlog.comments) ? fetchedBlog.comments : []);
 
       // Load liked states from localStorage
@@ -114,6 +116,11 @@ const AdminBlogDetails = () => {
       const likedComments = JSON.parse(localStorage.getItem('likedComments')) || {};
       const updatedComments = fetchedBlog.comments.map(comment => {
         comment.isLiked = likedComments[comment._id] || false; // Set liked state for each comment
+        // Ensure replies also contain admin data
+        comment.replies = comment.replies.map(reply => {
+          reply.admin = reply.admin || {}; // Default to an empty object if not present
+          return reply;
+        });
         return comment;
       });
       setComments(updatedComments);
@@ -662,7 +669,7 @@ const AdminBlogDetails = () => {
                 <div className="blog-tags">
                   {blog.tags.map((tag) => (
                     <Link key={tag} to={`/tags/${tag}`} className="tag">
-                      #{tag}
+                      {tag}
                     </Link>
                   ))}
                 </div>

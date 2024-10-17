@@ -7,6 +7,7 @@ import {
   AiFillLike,
   AiOutlineSend,
   AiOutlineEllipsis,
+  AiFillHeart
 } from "react-icons/ai";
 import { MdVerified } from "react-icons/md";
 import { HiOutlineEllipsisVertical } from "react-icons/hi2";
@@ -681,7 +682,7 @@ const BlogDetails = () => {
                 <div className="blog-tags">
                   {blog.tags.map((tag) => (
                     <Link key={tag} to={`/tags/${tag}`} className="tag">
-                      #{tag}
+                      {tag}
                     </Link>
                   ))}
                 </div>
@@ -708,23 +709,34 @@ const BlogDetails = () => {
                 {Array.isArray(comments) && comments.length > 0 ? (
                   comments
                     .sort((a, b) => {
-                      const loggedInUser = JSON.parse(localStorage.getItem('profile'));
-                      if (a.user._id === loggedInUser?._id) return -1;
-                      if (b.user._id === loggedInUser?._id) return 1;
+                      const loggedInUser = localStorage.getItem('admin');
+                      if (a.user?._id === loggedInUser?._id) return -1;
+                      if (b.user?._id === loggedInUser?._id) return 1;
                       return 0;
                     })
                     .map((comment) => (
                       <div className="comment" key={comment._id}>
                         <div className="comment-header">
-                          <img
-                            src={comment.user.profilePicture || "/default-user.png"}
-                            alt={`${comment.user.firstName} ${comment.user.lastName}`}
-                            className="comment-user-picture"
-                          />
+                          <div className="comment-profile-wrapper">
+                            <img
+                              src={comment.user?.profilePicture || comment.admin?.profilePicture || "/default-user.png"}
+                              alt={`${comment.user?.firstName || comment.admin?.firstName || 'Unknown'} ${comment.user?.lastName || comment.admin?.lastName || ''}`}
+                              className="comment-user-picture"
+                            />
+                            {comment.admin && comment.isLiked && (
+                              <div className="like-icon-wrapper">
+                                <AiFillHeart className="admin-like-icon" />
+                              </div>
+                            )}
+                          </div>
                           <span className="comment-user-name">
-                            {comment.user.firstName} {comment.user.lastName}
-                            {comment.user.role === "admin" && (
-                              <MdVerified className="verified-icon" />
+                            {comment.user?.firstName} {comment.user?.lastName}
+                            {comment.admin && (
+                              <>
+                                {comment.admin.firstName} {comment.admin.lastName}
+                                <MdVerified className="verified-icon" />
+                                <span className="admin-label">Creator</span>
+                              </>
                             )}
                           </span>
                           <span className="comment-timestamp">
@@ -798,24 +810,21 @@ const BlogDetails = () => {
                             <button
                               className="toggle-replies-button"
                               onClick={() => toggleReplies(comment._id)}
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                marginLeft: '10px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                fontSize: '14px',
-                                color: '#3897f0'
-                              }}
                             >
                               {expandedReplies[comment._id] ? (
                                 <>
-                                  Hide Replies <HiOutlineArrowUp style={{ marginLeft: '5px' }} />
+                                  Hide Replies <HiOutlineArrowUp />
+                                  {comment.replies.some(reply => reply.admin) && (
+                                    <img
+                                      src={comment.replies.find(reply => reply.admin)?.admin?.profilePicture || "/default-user.png"}
+                                      alt="Admin"
+                                      className="reply-admin-picture"
+                                    />
+                                  )}
                                 </>
                               ) : (
                                 <>
-                                  Show Replies ({comment.replies.length}) <HiOutlineArrowDown style={{ marginLeft: '5px' }} />
+                                  Show Replies ({comment.replies.length}) <HiOutlineArrowDown />
                                 </>
                               )}
                             </button>
@@ -837,13 +846,11 @@ const BlogDetails = () => {
                                     key={user._id}
                                     className="suggestion-item"
                                     onClick={() => selectMention(user)}
-                                    style={{ display: 'flex', alignItems: 'center', padding: '5px' }}
                                   >
                                     <img
                                       src={user.profilePicture || "/default-user.png"}
                                       alt={`${user.firstName} ${user.lastName}`}
                                       className="suggestion-user-picture"
-                                      style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }}
                                     />
                                     <span>{user.firstName} {user.lastName}</span>
                                   </div>
@@ -876,18 +883,29 @@ const BlogDetails = () => {
                           <div className="replies">
                             {Array.isArray(comment.replies) && comment.replies.length > 0 && (
                               <>
-                                {comment.replies.slice(0, replyLimit[comment._id] || 2).map((reply) => (
+                                {comment.replies.slice(0, replyLimit[comment._id] || 5).map((reply) => (
                                   <div className="reply" key={reply._id}>
-                                    <img
-                                      src={reply.user.profilePicture || "/default-user.png"}
-                                      alt={`${reply.user.firstName} ${reply.user.lastName}`}
-                                      className="reply-user-picture"
-                                    />
+                                    <div className="reply-profile-wrapper">
+                                      <img
+                                        src={reply.user?.profilePicture || reply.admin?.profilePicture || "/default-user.png"}
+                                        alt={`${reply.user?.firstName || reply.admin?.firstName || 'Unknown'} ${reply.user?.lastName || reply.admin?.lastName || ''}`}
+                                        className="reply-user-picture"
+                                      />
+                                      {reply.admin && reply.isLiked && (
+                                        <div className="like-icon-wrapper">
+                                          <AiFillHeart className="admin-like-icon" />
+                                        </div>
+                                      )}
+                                    </div>
                                     <div className="reply-info">
                                       <span className="reply-user-name">
-                                        {reply.user.firstName} {reply.user.lastName}
-                                        {reply.user.role === "admin" && (
-                                          <MdVerified className="verified-icon" />
+                                        {reply.user?.firstName} {reply.user?.lastName}
+                                        {reply.admin && (
+                                          <>
+                                            {reply.admin.firstName} {reply.admin.lastName}
+                                            <MdVerified className="verified-icon" />
+                                            <span className="admin-label">Creator</span>
+                                          </>
                                         )}
                                       </span>
                                       <span className="reply-timestamp">
@@ -918,25 +936,19 @@ const BlogDetails = () => {
                                         )}
                                         <span className="like-count">{reply.likeCount || 0}</span>
                                         <HiOutlineEllipsisVertical
-                                          className="options-icon"
+                                          className="reply-options-icon"
                                           onClick={() => toggleDropdown(reply._id)}
                                         />
                                         {activeDropdown === reply._id && (
-                                          <div className="dropdown-menu">
+                                          <div className="reply-dropdown-menu">
                                             <button
-                                              className="dropdown-item"
-                                              onClick={() => handleReportReply(comment._id, reply._id)}
-                                            >
-                                              Report Reply
-                                            </button>
-                                            <button
-                                              className="dropdown-item"
+                                              className="reply-dropdown-item"
                                               onClick={() => handleEditReply(reply, comment._id)}
                                             >
                                               Edit
                                             </button>
                                             <button
-                                              className="dropdown-item"
+                                              className="reply-dropdown-item"
                                               onClick={() => handleDeleteReply(comment._id, reply._id)}
                                             >
                                               Delete
@@ -948,30 +960,12 @@ const BlogDetails = () => {
                                   </div>
                                 ))}
                                 {/* Show More / Show Less Replies */}
-                                {comment.replies.length > (replyLimit[comment._id] || 2) && (
-                                  <div className="show-more-replies" style={{ marginTop: '10px' }}>
-                                    <button
-                                      onClick={() => showMoreReplies(comment._id)}
-                                      style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        color: '#3897f0',
-                                        cursor: 'pointer',
-                                        fontSize: '14px',
-                                      }}
-                                    >
+                                {comment.replies.length > (replyLimit[comment._id] || 5) && (
+                                  <div className="show-more-replies">
+                                    <button onClick={() => showMoreReplies(comment._id)}>
                                       Show More Replies
                                     </button>
-                                    <button
-                                      onClick={() => showLessReplies(comment._id)}
-                                      style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        color: '#3897f0',
-                                        cursor: 'pointer',
-                                        fontSize: '14px',
-                                      }}
-                                    >
+                                    <button onClick={() => showLessReplies(comment._id)}>
                                       Show Less Replies
                                     </button>
                                   </div>
