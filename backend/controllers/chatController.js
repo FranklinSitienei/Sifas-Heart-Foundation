@@ -7,101 +7,99 @@ const User = require("../models/User");
 // Send a message from the user or admin
 exports.sendMessage = async (req, res) => {
   const { message, emoji } = req.body;
-  const userId = req.user.id;
-  const from = req.user.role === 'admin' ? 'admin' : 'user'; // Check if the sender is admin
+  const userId = req.user ? req.user.id : req.admin.id; // Get the user ID depending on whether it's an admin or user
+  const from = req.admin ? 'admin' : 'user'; // Check if the sender is admin
 
   try {
-      let chat = await Chat.findOne({ userId });
+    let chat = await Chat.findOne({ userId });
 
-      if (!chat) {
-          chat = new Chat({
-              userId,
-          });
+    if (!chat) {
+      chat = new Chat({ userId });
+    }
+
+    chat.messages.push({ from, text: message, emoji, createdAt: new Date() });
+    chat.lastActive = Date.now();
+    await chat.save();
+
+    // Increment chat count for achievements if the sender is a user
+    if (from === 'user') {
+      const user = await User.findById(userId);
+      if (user) {
+        user.chatCount = user.chatCount ? user.chatCount + 1 : 1;
+        await user.save();
       }
+    }
 
-      chat.messages.push({ from, text: message, emoji, createdAt: new Date() });
-      chat.lastActive = Date.now();
+    // Automated responses
+    let autoResponse = "";
+    if (message.toLowerCase().includes("hello")) {
+      autoResponse = "Hi there! How can I assist you today? 😊";
+    } else if (message.toLowerCase().includes("help")) {
+      autoResponse = "Sure! What do you need help with?";
+    }
+
+    if (autoResponse) {
+      chat.messages.push({
+        from: "admin",
+        text: autoResponse,
+        createdAt: new Date(),
+      });
       await chat.save();
+      await handleAdminChatAchievements(userId);
+    }
 
-      // Increment chat count for achievements if the sender is a user
-      if (from === 'user') {
-          const user = await User.findById(userId);
-          if (user) {
-              user.chatCount = user.chatCount ? user.chatCount + 1 : 1;
-              await user.save();
-          }
+    // Handle complex messages
+    const complexKeywords = ["issue", "problem", "urgent"];
+    if (
+      complexKeywords.some((keyword) => message.toLowerCase().includes(keyword))
+    ) {
+      chat.isComplex = true;
+      await chat.save();
+      const admin = await Admin.findOne({ isOnline: true });
+      if (admin) {
+        await Notification.create({
+          userId: chat.adminId,
+          message: "A complex query requires your attention.",
+          type: "admin_chat",
+        });
       }
+    }
 
-      // Automated responses
-      let autoResponse = "";
-      if (message.toLowerCase().includes("hello")) {
-          autoResponse = "Hi there! How can I assist you today? 😊";
-      } else if (message.toLowerCase().includes("help")) {
-          autoResponse = "Sure! What do you need help with?";
-      }
-
-      if (autoResponse) {
-          chat.messages.push({
-              from: "admin",
-              text: autoResponse,
-              createdAt: new Date(),
-          });
-          await chat.save();
-          await handleAdminChatAchievements(userId);
-      }
-
-      // Handle complex messages
-      const complexKeywords = ["issue", "problem", "urgent"];
-      if (
-          complexKeywords.some((keyword) => message.toLowerCase().includes(keyword))
-      ) {
-          chat.isComplex = true;
-          await chat.save();
-          const admin = await Admin.findOne({ isOnline: true });
-          if (admin) {
-              await Notification.create({
-                  userId: chat.adminId,
-                  message: "A complex query requires your attention.",
-                  type: "admin_chat",
-              });
-          }
-      }
-
-      res.json({ from, text: message, emoji, createdAt: new Date() });
+    res.json({ from, text: message, emoji, createdAt: new Date() });
   } catch (error) {
-      console.error("Error sending message:", error);
-      res.status(500).send("Server error");
+    console.error("Error sending message:", error);
+    res.status(500).send("Server error");
   }
 };
 
 // Send a reply from the admin to the user
 exports.replyMessage = async (req, res) => {
   const { message } = req.body;
-  const userId = req.user.id; // Admin ID
+  const adminId = req.admin.id; // Get the admin ID
   const chatId = req.params.chatId; // Get chatId from request params
 
   try {
-      const chat = await Chat.findById(chatId);
-      if (!chat) return res.status(404).json({ msg: "Chat not found" });
+    const chat = await Chat.findById(chatId);
+    if (!chat) return res.status(404).json({ msg: "Chat not found" });
 
-      chat.messages.push({
-          from: "admin",
-          text: message,
-          createdAt: new Date(),
-      });
-      await chat.save();
+    chat.messages.push({
+      from: "admin",
+      text: message,
+      createdAt: new Date(),
+    });
+    await chat.save();
 
-      res.json({ msg: "Reply sent successfully", message });
+    res.json({ msg: "Reply sent successfully", message });
   } catch (error) {
-      console.error("Error sending reply:", error);
-      res.status(500).send("Server error");
+    console.error("Error sending reply:", error);
+    res.status(500).send("Server error");
   }
 };
 
 // Edit a message
 exports.editMessage = async (req, res) => {
   const { messageId, newText } = req.body;
-  const userId = req.user.id;
+  const userId = req.user ? req.user.id : req.admin.id; // Get user or admin ID
 
   try {
     let chat = await Chat.findOne({ userId });
@@ -127,7 +125,7 @@ exports.editMessage = async (req, res) => {
 // Delete a message
 exports.deleteMessage = async (req, res) => {
   const { messageId } = req.body;
-  const userId = req.user.id;
+  const userId = req.user ? req.user.id : req.admin.id; // Get user or admin ID
 
   try {
     let chat = await Chat.findOne({ userId });
@@ -149,7 +147,7 @@ exports.deleteMessage = async (req, res) => {
 
 // Fetch chat messages
 exports.fetchChatMessages = async (req, res) => {
-  const userId = req.user.id;
+  const userId = req.user ? req.user.id : req.admin.id; // Get user or admin ID
 
   try {
     if (!userId) return res.status(400).json({ msg: "Invalid user ID" });
@@ -192,7 +190,7 @@ exports.checkAdminStatus = async (req, res) => {
 
 // Handle complex messages
 exports.handleComplexMessage = async (req, res) => {
-  const userId = req.user.id;
+  const userId = req.user ? req.user.id : req.admin.id; // Get user or admin ID
   const { messageId } = req.body;
 
   try {
@@ -237,19 +235,18 @@ exports.getUserChats = async (req, res) => {
 exports.fetchChatDetails = async (req, res) => {
   const chatId = req.params.chatId; // Correctly extract chatId
 
-    try {
-        const chat = await Chat.findById(chatId)
-            .populate('userId', 'firstName lastName profilePicture isOnline lastSeen'); // Populate user details
+  try {
+    const chat = await Chat.findById(chatId)
+      .populate('userId', 'firstName lastName profilePicture isOnline lastSeen'); // Populate user details
 
-        if (!chat) return res.status(404).json({ msg: "Chat not found" });
+    if (!chat) return res.status(404).json({ msg: "Chat not found" });
 
-        res.json({
-            messages: chat.messages,
-            user: chat.userId, // Send user details
-        });
-    } catch (error) {
-        console.error("Error fetching chat details:", error);
-        res.status(500).json({ error: "Server error" });
-    }
+    res.json({
+      messages: chat.messages,
+      user: chat.userId, // Send user details
+    });
+  } catch (error) {
+    console.error("Error fetching chat details:", error);
+    res.status(500).json({ error: "Server error" });
+  }
 };
-

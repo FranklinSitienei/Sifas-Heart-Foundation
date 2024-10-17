@@ -452,6 +452,31 @@
   cursor: pointer;
 }
 
+.comment-profile-wrapper, .reply-profile-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.admin-like-icon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  color: red;
+  display: none;
+}
+
+.comment-profile-wrapper:hover .admin-like-icon,
+.reply-profile-wrapper:hover .admin-like-icon {
+  display: block;
+}
+
+.reply-admin-picture {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  margin-left: 8px;
+}
+
 .admin-reply-dot {
   color: green; /* Adjust color as needed */
   margin: 0 5px;

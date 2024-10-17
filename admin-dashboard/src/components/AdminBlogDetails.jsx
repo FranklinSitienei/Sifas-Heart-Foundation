@@ -7,6 +7,7 @@ import {
   AiFillLike,
   AiOutlineSend,
   AiOutlineEllipsis,
+  AiFillHeart,
 } from "react-icons/ai";
 import { MdVerified } from "react-icons/md";
 import { HiOutlineEllipsisVertical } from "react-icons/hi2";
@@ -696,16 +697,23 @@ const AdminBlogDetails = () => {
                     .map((comment) => (
                       <div className="comment" key={comment._id}>
                         <div className="comment-header">
-                          <img
-                            src={comment.user?.profilePicture || comment.admin?.profilePicture || "/default-user.png"}
-                            alt={`${comment.user?.firstName || comment.admin?.firstName || 'Unknown'} ${comment.user?.lastName || comment.admin?.lastName || ''}`}
-                            className="comment-user-picture"
-                          />
+                          <div className="comment-profile-wrapper">
+                            <img
+                              src={comment.user?.profilePicture || comment.admin?.profilePicture || "/default-user.png"}
+                              alt={`${comment.user?.firstName || comment.admin?.firstName || 'Unknown'} ${comment.user?.lastName || comment.admin?.lastName || ''}`}
+                              className="comment-user-picture"
+                            />
+                            {comment.admin && comment.isLiked && (
+                              <div className="like-icon-wrapper">
+                                <AiFillHeart className="admin-like-icon" />
+                              </div>
+                            )}
+                          </div>
                           <span className="comment-user-name">
                             {comment.user?.firstName} {comment.user?.lastName}
-                            {comment.admin?.firstName} {comment.admin?.lastName}
                             {comment.admin && (
                               <>
+                                {comment.admin.firstName} {comment.admin.lastName}
                                 <MdVerified className="verified-icon" />
                                 <span className="admin-label">Creator</span>
                               </>
@@ -780,6 +788,13 @@ const AdminBlogDetails = () => {
                               {expandedReplies[comment._id] ? (
                                 <>
                                   Hide Replies <HiOutlineArrowUp />
+                                  {comment.replies.some(reply => reply.admin) && (
+                                    <img
+                                      src={comment.replies.find(reply => reply.admin)?.admin?.profilePicture || "/default-user.png"}
+                                      alt="Admin"
+                                      className="reply-admin-picture"
+                                    />
+                                  )}
                                 </>
                               ) : (
                                 <>
@@ -844,17 +859,24 @@ const AdminBlogDetails = () => {
                               <>
                                 {comment.replies.slice(0, replyLimit[comment._id] || 5).map((reply) => (
                                   <div className="reply" key={reply._id}>
-                                    <img
-                                      src={reply.user?.profilePicture || reply.admin?.profilePicture || "/default-user.png"}
-                                      alt={`${reply.user?.firstName || reply.admin?.firstName || 'Unknown'} ${reply.user?.lastName || reply.admin?.lastName || ''}`}
-                                      className="reply-user-picture"
-                                    />
+                                    <div className="reply-profile-wrapper">
+                                      <img
+                                        src={reply.user?.profilePicture || reply.admin?.profilePicture || "/default-user.png"}
+                                        alt={`${reply.user?.firstName || reply.admin?.firstName || 'Unknown'} ${reply.user?.lastName || reply.admin?.lastName || ''}`}
+                                        className="reply-user-picture"
+                                      />
+                                      {reply.admin && reply.isLiked && (
+                                        <div className="like-icon-wrapper">
+                                          <AiFillHeart className="admin-like-icon" />
+                                        </div>
+                                      )}
+                                    </div>
                                     <div className="reply-info">
                                       <span className="reply-user-name">
                                         {reply.user?.firstName} {reply.user?.lastName}
-                                        {reply.admin?.firstName} {reply.admin?.lastName}
                                         {reply.admin && (
                                           <>
+                                            {reply.admin.firstName} {reply.admin.lastName}
                                             <MdVerified className="verified-icon" />
                                             <span className="admin-label">Creator</span>
                                           </>
@@ -908,7 +930,6 @@ const AdminBlogDetails = () => {
                                           </div>
                                         )}
                                       </div>
-
                                     </div>
                                   </div>
                                 ))}
@@ -933,6 +954,7 @@ const AdminBlogDetails = () => {
                   <p>No comments yet. Be the first to comment!</p>
                 )}
               </div>
+
 
 
               {/* Add Comment */}
