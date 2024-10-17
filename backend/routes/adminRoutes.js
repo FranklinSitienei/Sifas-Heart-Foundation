@@ -105,7 +105,7 @@ router.get("/logout", adminMiddleware, async (req, res) => {
 // Fetch Admin Profile
 router.get('/profile', adminMiddleware, async (req, res) => {
   try {
-    const admin = await Admin.findById(req.admin._id).select('-password'); // Using req.user from middleware
+    const admin = await Admin.findById(req.admin._id).select('-password'); // Using req.admin from middleware
 
     if (!admin) {
       return res.status(404).json({ msg: "Admin not found" });
@@ -131,7 +131,7 @@ router.get("/admins", async (req, res) => {
 // Update Profile
 router.put("/update_profile", upload.single("profilePicture"), adminMiddleware, async (req, res) => {
   const { firstName, lastName, email, password, confirmPassword } = req.body;
-  const adminId = req.admin.id; // Assuming req.user contains the admin ID after auth
+  const adminId = req.admin.id; // Assuming req.admin contains the admin ID after auth
 
   if (!firstName || !lastName || !email) {
     return res.status(400).json({ msg: "Please fill in all fields correctly." });
