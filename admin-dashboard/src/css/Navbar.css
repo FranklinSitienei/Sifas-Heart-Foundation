@@ -31,6 +31,7 @@
 .navbar-icons {
     display: flex;
     align-items: center;
+    cursor: pointer;
 }
 
 .notification {

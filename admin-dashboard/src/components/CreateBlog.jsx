@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { FaCamera } from 'react-icons/fa'; // Import camera icon
 import '../css/createBlog.css';
 
 const CreateBlog = () => {
@@ -11,6 +12,7 @@ const CreateBlog = () => {
   const [mediaFile, setMediaFile] = useState(null);
   const [mediaUrl, setMediaUrl] = useState('');
   const [embedCode, setEmbedCode] = useState(''); // Embed code for social media
+  const [tags, setTags] = useState([]); // State to manage tags
 
   useEffect(() => {
     const fetchAdminProfile = async () => {
@@ -37,33 +39,17 @@ const CreateBlog = () => {
     }
   };
 
-  // Helper to check if a URL is a YouTube link
   const isYouTubeUrl = (url) => /youtube\.com|youtu\.be/.test(url);
-
-  // Helper to check if a URL is a TikTok link
   const isTikTokUrl = (url) => /tiktok\.com/.test(url);
-
-  // Helper to check if a URL is a Twitter link
   const isTwitterUrl = (url) => /twitter\.com/.test(url);
-
-  // Helper to check if a URL is an Instagram link
   const isInstagramUrl = (url) => /instagram\.com/.test(url);
-
-  // Helper to check if a URL is a GoFundMe link
   const isGoFundMeUrl = (url) => /gofundme\.com/.test(url);
 
-  // Function to generate the proper embed code based on the URL
   const generateEmbedCode = (url) => {
     if (isYouTubeUrl(url)) {
       const videoId = url.split('v=')[1]?.split('&')[0];
       return videoId ? `https://www.youtube.com/embed/${videoId}` : '';
-    } else if (isTikTokUrl(url)) {
-      return url;
-    } else if (isTwitterUrl(url)) {
-      return url;
-    } else if (isInstagramUrl(url)) {
-      return url;
-    } else if (isGoFundMeUrl(url)) {
+    } else if (isTikTokUrl(url) || isTwitterUrl(url) || isInstagramUrl(url) || isGoFundMeUrl(url)) {
       return url;
     }
     return '';
@@ -75,9 +61,20 @@ const CreateBlog = () => {
     setMediaFile(null); // Clear file if URL is provided
     setMediaPreview(''); // Clear preview if URL is provided
 
-    // Set embed code based on the provided URL
     const embed = generateEmbedCode(url);
     setEmbedCode(embed);
+  };
+
+  const handleTagChange = (e) => {
+    const inputValue = e.target.value;
+    if (e.key === 'Enter' && inputValue.trim()) {
+      // Prevent adding duplicate hashtags
+      const newTag = inputValue.startsWith('#') ? inputValue : `#${inputValue}`;
+      if (!tags.includes(newTag)) {
+        setTags((prevTags) => [...prevTags, newTag]);
+      }
+      e.target.value = ''; // Clear input after adding tag
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -85,8 +82,8 @@ const CreateBlog = () => {
     const formData = new FormData();
     formData.append('title', title);
     formData.append('content', content);
+    tags.forEach((tag) => formData.append('tags', tag)); // Add tags to form data
 
-    // Include media based on whether a file or URL is provided
     if (mediaFile) {
       formData.append('media', mediaFile);
     } else if (mediaUrl) {
@@ -95,18 +92,18 @@ const CreateBlog = () => {
 
     try {
       const token = localStorage.getItem('admin');
-      await axios.post('http://localhost:5000/api/blog/create', formData, {
+      await axios.post('http://localhost:5000/api/blog/admin/create', formData, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
       });
       alert('Blog created successfully!');
-      // Clear the form after successful submission
       setTitle('');
       setContent('');
       setMediaType('image');
       setMediaPreview('');
       setMediaFile(null);
       setMediaUrl('');
-      setEmbedCode(''); // Clear embed code
+      setEmbedCode('');
+      setTags([]); // Clear tags after submission
     } catch (error) {
       console.error('Failed to create blog:', error);
       alert('Error creating blog');
@@ -141,27 +138,54 @@ const CreateBlog = () => {
           <option value="video">Video</option>
         </select>
 
-        <label>Upload Media or Paste URL</label>
-        <input type="file" onChange={handleFileChange} />
-        <input
-          type="text"
-          placeholder="Paste media URL"
-          value={mediaUrl}
-          onChange={handleMediaUrlChange}
-        />
+        <div className="media-input-container">
+          <div className="media-upload-icon">
+            {mediaPreview ? (
+              mediaType === 'image' ? (
+                <img src={mediaPreview} alt="Preview" className="media-preview" />
+              ) : (
+                <iframe
+                  src={embedCode}
+                  title="Video Preview"
+                  className="media-preview"
+                  frameBorder="0"
+                  allowFullScreen
+                ></iframe>
+              )
+            ) : (
+              <label className="upload-label">
+                <FaCamera className="camera-icon" />
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  className="hidden-input"
+                />
+                Choose file (Image or Video)
+              </label>
+            )}
+          </div>
 
-        {mediaPreview && mediaType === 'image' && (
-          <img src={mediaPreview} alt="Preview" className="media-preview" />
-        )}
-        {mediaType === 'video' && mediaUrl && embedCode && (
-          <iframe
-            src={embedCode}
-            title="Video Preview"
-            className="media-preview"
-            frameBorder="0"
-            allowFullScreen
-          ></iframe>
-        )}
+          <input
+            type="text"
+            placeholder="Paste media URL"
+            value={mediaUrl}
+            onChange={handleMediaUrlChange}
+          />
+        </div>
+
+        <div className="tags-container">
+          <label>Tags</label>
+          <input
+            type="text"
+            placeholder="Add tags and press Enter"
+            onKeyDown={handleTagChange}
+          />
+          <div className="tags-display">
+            {tags.map((tag, index) => (
+              <span key={index} className="tag">{tag}</span>
+            ))}
+          </div>
+        </div>
 
         <button type="submit">Create Blog</button>
       </form>
