@@ -1,15 +1,17 @@
 // Sidebar.jsx
 import React, { useEffect, useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { FaTachometerAlt, FaDonate, FaBlog } from 'react-icons/fa';
 import { BiChart, BiTable } from 'react-icons/bi';
 import { MdCreate, MdEdit, MdViewList, MdChat } from 'react-icons/md'; // Importing the chat icon
 import '../css/Sidebar.css';
 import axios from 'axios';
-const token = localStorage.getItem("admin");
 
 const Sidebar = () => {
     const [messageCount, setMessageCount] = useState(0);
+    const navigate = useNavigate(); // useNavigate for redirecting after logout
+
+    const token = localStorage.getItem("admin");
 
     useEffect(() => {
         const fetchMessageCount = async () => {
@@ -28,7 +30,19 @@ const Sidebar = () => {
         };
 
         fetchMessageCount();
-    }, []);
+    }, [token]);
+
+    const handleLogout = async () => {
+        try {
+            await axios.get('http://localhost:5000/api/admin/logout', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            localStorage.removeItem('admin');
+            navigate('/login'); // Redirect to login page after logout
+        } catch (error) {
+            console.error('Logout failed:', error);
+        }
+    };
 
     return (
         <aside className="sidebar">
@@ -66,6 +80,12 @@ const Sidebar = () => {
                 <h2>Chat</h2>
                 <NavLink to="/chat" className="sidebar-link">
                     <MdChat /> Chat ({messageCount}) {/* Displaying message count */}
+                </NavLink>
+            </div>
+            <div className="sidebar-section">
+                <h2>Account</h2>
+                <NavLink to="/login" className="sidebar-link" onClick={handleLogout}>
+                    Logout {/* Add logout link */}
                 </NavLink>
             </div>
         </aside>

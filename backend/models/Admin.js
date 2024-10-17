@@ -28,11 +28,11 @@ const adminSchema = new Schema({
     type: Boolean,
     default: false,
   },
-  role: {
-    type: String,
-    enum: ['admin', 'secretary'],
-    default: 'admin',
-  },
+  // role: {
+  //   type: String,
+  //   enum: ['admin', 'secretary'],
+  //   default: 'admin',
+  // },
 });
 
 module.exports = mongoose.model('Admin', adminSchema);

@@ -26,7 +26,7 @@ const BlogSchema = new Schema({
   content: { type: String, required: true },
   image: { type: String },
   video: { type: String }, 
-  tags: { type: String },
+  tags: [{ type: String }],
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   comments: [CommentSchema],
   date: { type: Date, default: Date.now },

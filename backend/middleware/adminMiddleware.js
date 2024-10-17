@@ -10,7 +10,7 @@ const adminMiddleware = async (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.ADMIN_JWT_SECRET); // Use admin secret for verification
-        const admin = await Admin.findById(decoded.admin.id); // Adjust based on your payload structure
+        const admin = await Admin.findById(decoded.admin.id); // Ensure this matches your payload structure
         
         if (!admin) {
             return res.status(403).json({ message: "Not authorized" });

@@ -1,6 +1,5 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const passport = require("passport");
 const multer = require("multer");
 const Admin = require("../models/Admin");
@@ -20,7 +19,7 @@ router.get(
   "/google/callback",
   passport.authenticate('google-admin', { session: false }),
   async (req, res) => {
-    const token = generateToken(req.admin, true); // Ensure admin is marked true
+    const token = generateToken(null, req.admin, true); // Updated to pass admin
     await Admin.findOneAndUpdate({ email: req.admin.email }, { isOnline: true });
     
     // Use the referring request's base URL to avoid hardcoding
@@ -58,7 +57,7 @@ router.post("/signup", upload.single("profilePicture"), async (req, res) => {
     });
 
     await admin.save();
-    const token = generateToken(admin, true); // Pass true for admin
+    const token = generateToken(null, admin, true); // Updated to pass admin
     res.json({ token });
   } catch (err) {
     res.status(500).send("Server error");
@@ -82,7 +81,7 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ msg: "Invalid Credentials" });
     }
 
-    const token = generateToken(admin, true); // Pass true for admin
+    const token = generateToken(null, admin, true); // Updated to pass admin
     await Admin.findByIdAndUpdate(admin._id, { isOnline: true });
 
     res.json({ token });
