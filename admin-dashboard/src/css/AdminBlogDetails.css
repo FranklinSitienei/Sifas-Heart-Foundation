@@ -391,6 +391,13 @@
   padding-left: 15px;
 }
 
+.replies {
+  margin-left: 50px;
+  margin-top: 10px;
+  border-left: 2px solid #e0e0e0;
+  padding-left: 15px;
+}
+
 .reply {
   display: flex;
   align-items: flex-start;
@@ -402,6 +409,7 @@
   height: 30px;
   border-radius: 50%;
   margin-right: 10px;
+  object-fit: cover;
 }
 
 .reply-info {
@@ -436,9 +444,14 @@
 }
 
 .reply-dropdown-item {
-  padding: 8px 12px;
-  cursor: pointer;
+  padding: 10px;
+  font-size: 0.9rem;
+  color: #333;
+  background: none;
+  border: none;
+  width: 100%;
   text-align: left;
+  cursor: pointer;
 }
 
 .reply-dropdown-item:hover {

@@ -18,7 +18,9 @@ router.get("/all", async (req, res) => {
     const blogs = await Blog.find()
       .populate("admin", "firstName lastName profilePicture")
       .populate("comments.user", "firstName lastName profilePicture")
-      .populate("comments.replies.user", "firstName lastName profilePicture");
+      .populate("comments.admin", "firstName lastName profilePicture")
+      .populate("comments.replies.user", "firstName lastName profilePicture")
+      .populate("comments.replies.admin", "firstName lastName profilePicture");
     res.status(200).json(blogs);
   } catch (err) {
     console.error("Error fetching all blogs:", err);
@@ -160,7 +162,7 @@ router.post('/admin/:blogId/comment', adminMiddleware, async (req, res) => {
     });
 
     const newComment = {
-      user: req.admin.id, // Changed to req.admin.id
+      admin: req.admin.id, // Changed to req.admin.id
       content,
       mentions: mentionedUsers.map(user => user._id), // Store IDs of mentioned users
     };
@@ -199,7 +201,7 @@ router.post('/admin/:blogId/comment/:commentId/reply', adminMiddleware, async (r
     });
 
     const reply = {
-      user: req.admin.id, // Changed to req.admin.id
+      admin: req.admin.id, // Changed to req.admin.id
       content,
       mentions: mentionedUsers.map(user => user._id), // Store IDs of mentioned users
       createdAt: new Date(),

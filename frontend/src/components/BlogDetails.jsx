@@ -661,20 +661,20 @@ const BlogDetails = () => {
           <div className="blog-info-container">
             {/* Admin Details with Profile Picture */}
             <div className="admin-info">
-                <img
-                  src={blog.admin.profilePicture || "/default-user.png"}
-                  alt={`${blog.admin.firstName} ${blog.admin.lastName}`}
-                  className="admin-profile-picture"
-                />
-                <div className="admin-details">
-                  <span className="admin-name">
-                    {blog.admin.firstName} {blog.admin.lastName}
-                    <MdVerified className="verified-icon" />
-                  </span>
-                  <span className="admin-role">Creator</span>
-                </div>
+              <img
+                src={blog.admin.profilePicture || "/default-user.png"}
+                alt={`${blog.admin.firstName} ${blog.admin.lastName}`}
+                className="admin-profile-picture"
+              />
+              <div className="admin-details">
+                <span className="admin-name">
+                  {blog.admin.firstName} {blog.admin.lastName}
+                  <MdVerified className="verified-icon" />
+                </span>
+                <span className="admin-role">Creator</span>
               </div>
-              
+            </div>
+
             <div className="blog-info">
               <h1 className="blog-title">{blog.title}</h1>
               <p className="blog-description">{blog.content}</p>
@@ -710,8 +710,8 @@ const BlogDetails = () => {
                   comments
                     .sort((a, b) => {
                       const loggedInUser = localStorage.getItem('admin');
-                      if (a.user?._id === loggedInUser?._id) return -1;
-                      if (b.user?._id === loggedInUser?._id) return 1;
+                      if (a.user?._id === loggedInUser?._id || a.admin?._id === loggedInUser?._id) return -1;
+                      if (b.user?._id === loggedInUser?._id || b.admin?._id === loggedInUser?._id) return 1;
                       return 0;
                     })
                     .map((comment) => (
@@ -730,15 +730,19 @@ const BlogDetails = () => {
                             )}
                           </div>
                           <span className="comment-user-name">
-                            {comment.user?.firstName} {comment.user?.lastName}
-                            {comment.admin && (
+                            {comment.user ? (
+                              `${comment.user.firstName} ${comment.user.lastName}`
+                            ) : comment.admin ? (
                               <>
-                                {comment.admin.firstName} {comment.admin.lastName}
+                                {`${comment.admin.firstName} ${comment.admin.lastName}`}
                                 <MdVerified className="verified-icon" />
                                 <span className="admin-label">Creator</span>
                               </>
+                            ) : (
+                              'Anonymous'
                             )}
                           </span>
+
                           <span className="comment-timestamp">
                             {new Date(comment.createdAt).toLocaleString()}
                           </span>
@@ -806,7 +810,7 @@ const BlogDetails = () => {
                           <span className="like-count">{comment.likeCount || 0}</span>
 
                           {/* Toggle Replies Button */}
-                          {comment.replies.length > 0 && (
+                          {comment.replies?.length > 0 && (
                             <button
                               className="toggle-replies-button"
                               onClick={() => toggleReplies(comment._id)}
@@ -829,6 +833,7 @@ const BlogDetails = () => {
                               )}
                             </button>
                           )}
+
                         </div>
 
                         {/* Reply Input */}
