@@ -316,7 +316,7 @@ router.put('/admin/:blogId/comment/:commentId/reply/:replyId/edit', adminMiddlew
   }
 });
 
-// Like a comment (Admin) 
+// Like a comment (Admin)
 router.post("/admin/:blogId/comment/:commentId/like", adminMiddleware, async (req, res) => {
   try {
     const { blogId, commentId } = req.params;
@@ -328,18 +328,17 @@ router.post("/admin/:blogId/comment/:commentId/like", adminMiddleware, async (re
     if (!comment) return res.status(404).json({ message: "Comment not found" });
 
     // Check if the admin already liked the comment
-    if (comment.likes.includes(req.admin.id)) { // Changed to req.admin.id
+    if (comment.likes.includes(req.admin.id)) {
       return res.status(400).json({ message: "Already liked this comment" });
     }
 
-    // Use findOneAndUpdate to update the likes array directly
-    await Blog.findOneAndUpdate(
-      { _id: blogId, "comments._id": commentId },
-      { $addToSet: { "comments.$.likes": req.admin.id } }, // Use $addToSet to prevent duplicates
-      { new: true }
-    );
+    // Add the like and increment the likeCount
+    comment.likes.push(req.admin.id);
+    comment.likeCount += 1;
 
-    res.status(200).json({ message: "Comment liked", likeCount: comment.likes.length + 1 });
+    await blog.save();
+
+    res.status(200).json({ message: "Comment liked", likeCount: comment.likeCount });
   } catch (err) {
     console.error("Error liking comment:", err);
     res.status(500).json({ message: "Server error", error: err });
@@ -357,18 +356,17 @@ router.post("/admin/:blogId/comment/:commentId/unlike", adminMiddleware, async (
     const comment = blog.comments.id(commentId);
     if (!comment) return res.status(404).json({ message: "Comment not found" });
 
-    if (!comment.likes.includes(req.admin.id)) { // Changed to req.admin.id
+    if (!comment.likes.includes(req.admin.id)) {
       return res.status(400).json({ message: "You haven't liked this comment" });
     }
 
-    // Use findOneAndUpdate to update the likes array directly
-    await Blog.findOneAndUpdate(
-      { _id: blogId, "comments._id": commentId },
-      { $pull: { "comments.$.likes": req.admin.id } }, // Use $pull to remove the like
-      { new: true }
-    );
+    // Remove the like and decrement the likeCount
+    comment.likes.pull(req.admin.id);
+    comment.likeCount -= 1;
 
-    res.status(200).json({ message: "Comment unliked", likeCount: comment.likes.length - 1 });
+    await blog.save();
+
+    res.status(200).json({ message: "Comment unliked", likeCount: comment.likeCount });
   } catch (err) {
     console.error("Error unliking comment:", err);
     res.status(500).json({ message: "Server error", error: err });
@@ -380,30 +378,26 @@ router.post("/admin/:blogId/comment/:commentId/reply/:replyId/like", adminMiddle
   try {
     const { blogId, commentId, replyId } = req.params;
 
-    // Fetch the blog with all comments and replies
     const blog = await Blog.findById(blogId);
     if (!blog) return res.status(404).json({ message: "Blog not found" });
 
-    // Find the comment
     const comment = blog.comments.id(commentId);
     if (!comment) return res.status(404).json({ message: "Comment not found" });
 
-    // Find the reply
     const reply = comment.replies.id(replyId);
     if (!reply) return res.status(404).json({ message: "Reply not found" });
 
-    // Check if the admin already liked the reply
-    if (reply.likes.includes(req.admin.id)) { // Changed to req.admin.id
+    if (reply.likes.includes(req.admin.id)) {
       return res.status(400).json({ message: "Already liked this reply" });
     }
 
-    // Add the user's ID to the likes array of the reply
+    // Add the like and increment the likeCount
     reply.likes.push(req.admin.id);
+    reply.likeCount += 1;
 
-    // Save the blog document
     await blog.save();
 
-    res.status(200).json({ message: "Reply liked", likeCount: reply.likes.length });
+    res.status(200).json({ message: "Reply liked", likeCount: reply.likeCount });
   } catch (err) {
     console.error("Error liking reply:", err);
     res.status(500).json({ message: "Server error", error: err });
@@ -424,18 +418,17 @@ router.post("/admin/:blogId/comment/:commentId/reply/:replyId/unlike", adminMidd
     const reply = comment.replies.id(replyId);
     if (!reply) return res.status(404).json({ message: "Reply not found" });
 
-    if (!reply.likes.includes(req.admin.id)) { // Changed to req.admin.id
+    if (!reply.likes.includes(req.admin.id)) {
       return res.status(400).json({ message: "You haven't liked this reply" });
     }
 
-    // Use findOneAndUpdate to update the likes array directly
-    await Blog.findOneAndUpdate(
-      { _id: blogId, "comments._id": commentId, "comments.replies._id": replyId },
-      { $pull: { "comments.$.replies.$.likes": req.admin.id } }, // Use $pull to remove the like
-      { new: true }
-    );
+    // Remove the like and decrement the likeCount
+    reply.likes.pull(req.admin.id);
+    reply.likeCount -= 1;
 
-    res.status(200).json({ message: "Reply unliked", likeCount: reply.likes.length - 1 });
+    await blog.save();
+
+    res.status(200).json({ message: "Reply unliked", likeCount: reply.likeCount });
   } catch (err) {
     console.error("Error unliking reply:", err);
     res.status(500).json({ message: "Server error", error: err });
@@ -539,26 +532,24 @@ router.put(
 );
 
 // Like a blog (Admin)
-router.post("/admin/blog/:blogId/like", adminMiddleware, async (req, res) => {
+router.post("/admin/:blogId/like", adminMiddleware, async (req, res) => {
   try {
     const { blogId } = req.params;
 
     const blog = await Blog.findById(blogId);
     if (!blog) return res.status(404).json({ message: "Blog not found" });
 
-    // Check if the admin already liked the blog
-    if (blog.likes.includes(req.admin.id)) { // Changed to req.admin.id
+    if (blog.likes.includes(req.admin.id)) {
       return res.status(400).json({ message: "Already liked this blog" });
     }
 
-    // Use findOneAndUpdate to update the likes array directly
-    await Blog.findOneAndUpdate(
-      { _id: blogId },
-      { $addToSet: { likes: req.admin.id } }, // Use $addToSet to prevent duplicates
-      { new: true }
-    );
+    // Add the like and increment the likeCount
+    blog.likes.push(req.admin.id);
+    blog.likeCount += 1;
 
-    res.status(200).json({ message: "Blog liked", likeCount: blog.likes.length + 1 });
+    await blog.save();
+
+    res.status(200).json({ message: "Blog liked", likeCount: blog.likeCount });
   } catch (err) {
     console.error("Error liking blog:", err);
     res.status(500).json({ message: "Server error", error: err });
@@ -566,26 +557,24 @@ router.post("/admin/blog/:blogId/like", adminMiddleware, async (req, res) => {
 });
 
 // Unlike a blog (Admin)
-router.post("/admin/blog/:blogId/unlike", adminMiddleware, async (req, res) => {
+router.post("/admin/:blogId/unlike", adminMiddleware, async (req, res) => {
   try {
     const { blogId } = req.params;
 
     const blog = await Blog.findById(blogId);
     if (!blog) return res.status(404).json({ message: "Blog not found" });
 
-    // Check if the admin already liked the blog
-    if (!blog.likes.includes(req.admin.id)) { // Changed to req.admin.id
+    if (!blog.likes.includes(req.admin.id)) {
       return res.status(400).json({ message: "You haven't liked this blog" });
     }
 
-    // Use findOneAndUpdate to update the likes array directly
-    await Blog.findOneAndUpdate(
-      { _id: blogId },
-      { $pull: { likes: req.admin.id } }, // Use $pull to remove the like
-      { new: true }
-    );
+    // Remove the like and decrement the likeCount
+    blog.likes.pull(req.admin.id);
+    blog.likeCount -= 1;
 
-    res.status(200).json({ message: "Blog unliked", likeCount: blog.likes.length - 1 });
+    await blog.save();
+
+    res.status(200).json({ message: "Blog unliked", likeCount: blog.likeCount });
   } catch (err) {
     console.error("Error unliking blog:", err);
     res.status(500).json({ message: "Server error", error: err });
@@ -698,11 +687,10 @@ router.post("/user/:id/like", authMiddleware, async (req, res) => {
     }
 
     blog.likes.push(req.user.id);
+    blog.likeCount += 1; // Increment likeCount
     await blog.save();
 
-    res
-      .status(200)
-      .json({ message: "Blog liked", likeCount: blog.likes.length });
+    res.status(200).json({ message: "Blog liked", likeCount: blog.likeCount });
   } catch (err) {
     console.error("Error liking blog:", err);
     res.status(500).json({ message: "Server error", error: err });
@@ -715,14 +703,17 @@ router.post("/user/:id/unlike", authMiddleware, async (req, res) => {
     const blog = await Blog.findById(req.params.id);
     if (!blog) return res.status(404).json({ message: "Blog not found" });
 
+    if (!blog.likes.includes(req.user.id)) {
+      return res.status(400).json({ message: "You haven't liked this blog" });
+    }
+
     blog.likes = blog.likes.filter(
       (like) => like.toString() !== req.user.id.toString()
     );
+    blog.likeCount -= 1; // Decrement likeCount
     await blog.save();
 
-    res
-      .status(200)
-      .json({ message: "Blog unliked", likeCount: blog.likes.length });
+    res.status(200).json({ message: "Blog unliked", likeCount: blog.likeCount });
   } catch (err) {
     console.error("Error unliking blog:", err);
     res.status(500).json({ message: "Server error", error: err });
@@ -868,23 +859,21 @@ router.post("/user/:blogId/comment/:commentId/like", authMiddleware, async (req,
   try {
     const { blogId, commentId } = req.params;
 
-    // Re-fetch the blog to get the latest version
     const blog = await Blog.findById(blogId);
     if (!blog) return res.status(404).json({ message: "Blog not found" });
 
     const comment = blog.comments.id(commentId);
     if (!comment) return res.status(404).json({ message: "Comment not found" });
 
-    // Check if the user already liked the comment
     if (comment.likes.includes(req.user.id)) {
       return res.status(400).json({ message: "Already liked this comment" });
     }
 
-    // Add like and save
     comment.likes.push(req.user.id);
-    await blog.save(); // This will now work with the latest document version
+    comment.likeCount = (comment.likeCount || 0) + 1; // Increment comment likeCount
+    await blog.save();
 
-    res.status(200).json({ message: "Comment liked", likeCount: comment.likes.length });
+    res.status(200).json({ message: "Comment liked", likeCount: comment.likeCount });
   } catch (err) {
     console.error("Error liking comment:", err);
     res.status(500).json({ message: "Server error", error: err });
@@ -908,9 +897,10 @@ router.post("/user/:blogId/comment/:commentId/unlike", authMiddleware, async (re
     comment.likes = comment.likes.filter(
       (like) => like.toString() !== req.user.id.toString()
     );
+    comment.likeCount -= 1; // Decrement comment likeCount
     await blog.save();
 
-    res.status(200).json({ message: "Comment unliked", likeCount: comment.likes.length });
+    res.status(200).json({ message: "Comment unliked", likeCount: comment.likeCount });
   } catch (err) {
     console.error("Error unliking comment:", err);
     res.status(500).json({ message: "Server error", error: err });
@@ -935,9 +925,10 @@ router.post("/user/:blogId/comment/:commentId/reply/:replyId/like", authMiddlewa
     }
 
     reply.likes.push(req.user.id);
+    reply.likeCount = (reply.likeCount || 0) + 1; // Increment reply likeCount
     await blog.save();
 
-    res.status(200).json({ message: "Reply liked", likeCount: reply.likes.length });
+    res.status(200).json({ message: "Reply liked", likeCount: reply.likeCount });
   } catch (err) {
     console.error("Error liking reply:", err);
     res.status(500).json({ message: "Server error", error: err });
@@ -964,9 +955,10 @@ router.post("/user/:blogId/comment/:commentId/reply/:replyId/unlike", authMiddle
     reply.likes = reply.likes.filter(
       (like) => like.toString() !== req.user.id.toString()
     );
+    reply.likeCount -= 1; // Decrement reply likeCount
     await blog.save();
 
-    res.status(200).json({ message: "Reply unliked", likeCount: reply.likes.length });
+    res.status(200).json({ message: "Reply unliked", likeCount: reply.likeCount });
   } catch (err) {
     console.error("Error unliking reply:", err);
     res.status(500).json({ message: "Server error", error: err });

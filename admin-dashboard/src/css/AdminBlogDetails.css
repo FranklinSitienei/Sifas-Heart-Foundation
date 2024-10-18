@@ -261,7 +261,7 @@
 
 .dropdown-menu {
   position: absolute;
-  top: 20px;
+  margin-left: 10px;
   right: 0;
   background-color: #fff;
   border: 1px solid #ddd;
@@ -295,7 +295,7 @@
 .comment-actions {
   display: flex;
   align-items: center;
-  margin-top: 5px;
+  margin-top: 10px;
 }
 
 .reply-button {
@@ -338,15 +338,14 @@
 }
 
 .reply-input textarea {
-  width: 80%;
+  width: 100%;
   padding: 10px;
   border-radius: 25px;
   border: 1px solid #ccc;
   resize: none;
-  font-size: 10px;
+  font-size: 0.9rem;
   outline: none;
   transition: border-color 0.3s ease;
-  height: 10px;
 }
 
 .reply-input textarea:focus {
@@ -356,22 +355,14 @@
 .reply-buttons {
   display: flex;
   justify-content: flex-end;
-  margin-top: 5px;
+  margin-top: 10px;
 }
 
-.cancel-button{
-  background-color: #982a2a;
-  border: none;
-  color: #ffffff;
-  cursor: pointer;
-  font-size: 0.9rem;
-  margin-left: 10px;
-  transition: color 0.3s ease;
-}
+.cancel-button,
 .send-reply-button {
-  background-color: #2a5298;
+  background-color: transparent;
   border: none;
-  color: #ffffff;
+  color: #555;
   cursor: pointer;
   font-size: 0.9rem;
   margin-left: 10px;
@@ -380,15 +371,7 @@
 
 .cancel-button:hover,
 .send-reply-button:hover {
-  color: #ffffff;
-  background-color: #777;
-}
-
-.replies {
-  margin-left: 50px;
-  margin-top: 10px;
-  border-left: 2px solid #e0e0e0;
-  padding-left: 15px;
+  color: #3897f0;
 }
 
 .replies {
@@ -436,35 +419,6 @@
   margin-top: 5px;
 }
 
-.reply-dropdown-menu {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.reply-dropdown-item {
-  padding: 10px;
-  font-size: 0.9rem;
-  color: #333;
-  background: none;
-  border: none;
-  width: 100%;
-  text-align: left;
-  cursor: pointer;
-}
-
-.reply-dropdown-item:hover {
-  background-color: #f0f0f0;
-}
-
-.reply-options-icon {
-  position: absolute;
-  right: 0; /* Position to the right */
-  bottom: 0; /* Position at the bottom */
-  cursor: pointer;
-}
-
 .comment-profile-wrapper, .reply-profile-wrapper {
   position: relative;
   display: inline-block;
@@ -498,6 +452,27 @@
 .admin-label {
   color: gray; /* Adjust color as needed */
   font-size: 14px; /* Adjust size as needed */
+}
+
+.toggle-replies-button{
+  background: none;
+  margin-left: 10px;
+  color: #3897f0;
+}
+
+.toggle-replies-button:hover{
+  background: none;
+  text-decoration: underline;
+}
+
+.show-more-replies{
+  background: none;
+  color: #3897f0;
+}
+
+.show-more-replies:hover{
+  background: none;
+  text-decoration: underline;
 }
 
 .add-comment-section {
