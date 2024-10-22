@@ -103,8 +103,6 @@ const AdminBlogDetails = () => {
 
       const fetchedBlog = response.data;
       setBlog(fetchedBlog);
-
-      // Assuming the response has a comments structure that includes admin details
       setComments(Array.isArray(fetchedBlog.comments) ? fetchedBlog.comments : []);
 
       // Load liked states from localStorage
@@ -116,11 +114,6 @@ const AdminBlogDetails = () => {
       const likedComments = JSON.parse(localStorage.getItem('likedComments')) || {};
       const updatedComments = fetchedBlog.comments.map(comment => {
         comment.isLiked = likedComments[comment._id] || false; // Set liked state for each comment
-        // Ensure replies also contain admin data
-        comment.replies = comment.replies.map(reply => {
-          reply.admin = reply.admin || {}; // Default to an empty object if not present
-          return reply;
-        });
         return comment;
       });
       setComments(updatedComments);
@@ -697,8 +690,8 @@ const AdminBlogDetails = () => {
                   comments
                     .sort((a, b) => {
                       const loggedInUser = localStorage.getItem('admin');
-                      if (a.user?._id === loggedInUser?._id) return -1;
-                      if (b.user?._id === loggedInUser?._id) return 1;
+                      if (a.user?._id === loggedInUser?._id || a.admin?._id === loggedInUser?._id) return -1;
+                      if (b.user?._id === loggedInUser?._id || b.admin?._id === loggedInUser?._id) return 1;
                       return 0;
                     })
                     .map((comment) => (
@@ -717,15 +710,19 @@ const AdminBlogDetails = () => {
                             )}
                           </div>
                           <span className="comment-user-name">
-                            {comment.user?.firstName} {comment.user?.lastName}
-                            {comment.admin && (
+                            {comment.user ? (
+                              `${comment.user.firstName} ${comment.user.lastName}`
+                            ) : comment.admin ? (
                               <>
-                                {comment.admin.firstName} {comment.admin.lastName}
+                                {`${comment.admin.firstName} ${comment.admin.lastName}`}
                                 <MdVerified className="verified-icon" />
                                 <span className="admin-label">Creator</span>
                               </>
+                            ) : (
+                              'Anonymous'
                             )}
                           </span>
+
                           <span className="comment-timestamp">
                             {new Date(comment.createdAt).toLocaleString()}
                           </span>
@@ -747,6 +744,12 @@ const AdminBlogDetails = () => {
                                   onClick={() => handleDeleteComment(comment._id)}
                                 >
                                   Delete
+                                </button>
+                                <button
+                                  className="dropdown-item"
+                                  onClick={() => handleApproveReply(comment._id)}
+                                >
+                                  Report
                                 </button>
                               </div>
                             )}
@@ -787,7 +790,7 @@ const AdminBlogDetails = () => {
                           <span className="like-count">{comment.likeCount || 0}</span>
 
                           {/* Toggle Replies Button */}
-                          {comment.replies.length > 0 && (
+                          {comment.replies?.length > 0 && (
                             <button
                               className="toggle-replies-button"
                               onClick={() => toggleReplies(comment._id)}
@@ -810,6 +813,7 @@ const AdminBlogDetails = () => {
                               )}
                             </button>
                           )}
+
                         </div>
 
                         {/* Reply Input */}
@@ -961,8 +965,6 @@ const AdminBlogDetails = () => {
                   <p>No comments yet. Be the first to comment!</p>
                 )}
               </div>
-
-
 
               {/* Add Comment */}
               {userProfile && (
