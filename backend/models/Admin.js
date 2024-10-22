@@ -28,6 +28,10 @@ const adminSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  lastSeen: {
+    type: Date,
+    default: Date.now,
+  },
   // role: {
   //   type: String,
   //   enum: ['admin', 'secretary'],

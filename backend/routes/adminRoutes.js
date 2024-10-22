@@ -20,8 +20,12 @@ router.get(
   passport.authenticate('google-admin', { session: false }),
   async (req, res) => {
     const token = generateToken(null, req.admin, true); // Updated to pass admin
-    await Admin.findOneAndUpdate({ email: req.admin.email }, { isOnline: true });
-    
+    // Update admin's online status and last seen time
+    await Admin.findByIdAndUpdate(req.admin.id, {
+      isOnline: true,
+      lastSeen: Date.now(),
+    });
+
     // Use the referring request's base URL to avoid hardcoding
     const redirectUrl = `${req.protocol}://${req.get('host')}/admin?token=${token}`;
     res.redirect(redirectUrl);
@@ -58,6 +62,11 @@ router.post("/signup", upload.single("profilePicture"), async (req, res) => {
 
     await admin.save();
     const token = generateToken(null, admin, true); // Updated to pass admin
+    // Update admin's online status and last seen time
+    await Admin.findByIdAndUpdate(admin.id, {
+      isOnline: true,
+      lastSeen: Date.now(),
+    });
     res.json({ token });
   } catch (err) {
     res.status(500).send("Server error");
@@ -82,7 +91,11 @@ router.post("/login", async (req, res) => {
     }
 
     const token = generateToken(null, admin, true); // Updated to pass admin
-    await Admin.findByIdAndUpdate(admin._id, { isOnline: true });
+    // Update admin's online status and last seen time
+    await Admin.findByIdAndUpdate(admin.id, {
+      isOnline: true,
+      lastSeen: Date.now(),
+    });
 
     res.json({ token });
   } catch (err) {
@@ -94,7 +107,11 @@ router.post("/login", async (req, res) => {
 // Admin Logout
 router.get("/logout", adminMiddleware, async (req, res) => {
   try {
-    await Admin.findByIdAndUpdate(req.admin.id, { isOnline: false });
+    // Update admin's online status and last seen time
+    await Admin.findByIdAndUpdate(req.admin.id, {
+      isOnline: false,
+      lastSeen: Date.now(),
+  });
     res.json({ msg: "Admin logged out successfully" });
   } catch (err) {
     res.status(500).send("Server error");

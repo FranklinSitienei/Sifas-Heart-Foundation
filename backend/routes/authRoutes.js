@@ -32,10 +32,14 @@ router.get(
     try {
       const token = generateToken(req.user);
       await handleSignupAchievements(req.user.id);
-      
+      await User.findByIdAndUpdate(req.user.id, {
+        isOnline: true,
+        lastSeen: Date.now(),
+      });
+
       // Set token in the response header instead of query param
       res.setHeader('Authorization', `Bearer ${token}`);
-        
+
     } catch (err) {
       res.status(500).send("Server error during Google callback");
     }
@@ -63,10 +67,25 @@ router.get("/login/failed", (req, res) => {
 });
 
 // Logout Route
-router.get("/logout", (req, res) => {
-  req.logout();
-  res.redirect("http://localhost:3000"); // Redirect to your client-side URL
+router.get("/logout", authMiddleware, async (req, res) => {
+  try {
+    // Update user's online status and last seen time
+    await User.findByIdAndUpdate(req.user.id, {
+      isOnline: false,
+      lastSeen: Date.now(),
+    });
+
+    // Perform the logout process
+    req.logout();
+
+    // Redirect to your client-side URL or a login page after successful logout
+    res.redirect("http://localhost:3000");
+  } catch (err) {
+    console.error("Error during logout:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
 });
+
 
 // User Signup Route
 router.post("/signup", async (req, res) => {
@@ -102,6 +121,11 @@ router.post("/signup", async (req, res) => {
     const token = generateToken(user);
     await handleSignupAchievements(user.id);
 
+    await User.findByIdAndUpdate(user.id, {
+      isOnline: true,
+      lastSeen: Date.now(),
+    });
+
     const registrationMessage = "Thank you for registering! Welcome to our platform.";
     await Notification.create({ userId: user.id, message: registrationMessage, type: "signup" });
 
@@ -122,7 +146,7 @@ router.post("/time_spent", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ msg: "User not found" });
-    
+
     await handleTimeSpentAchievements(user.id, timeSpentInMinutes); // Pass the time spent
     res.json({ msg: "Time spent achievement processed" });
   } catch (err) {
@@ -153,9 +177,14 @@ router.post("/login", async (req, res) => {
 
     const token = generateToken(user);
     await handleLoginAchievements(user.id);
-    
+
+    await User.findByIdAndUpdate(user.id, {
+      isOnline: true,
+      lastSeen: Date.now(),
+    });
+
     // Check and award daily visit achievement
-    await handleDailyVisitAchievements(user.id); 
+    await handleDailyVisitAchievements(user.id);
 
     const loginMessage = "You have successfully logged in.";
     await Notification.create({ userId: user.id, message: loginMessage, type: "login" });
@@ -251,29 +280,29 @@ router.post("/daily_visit", authMiddleware, async (req, res) => {
 
 // Upload Profile Picture Route
 router.post('/upload-profile-picture', upload.single('profilePicture'), async (req, res) => {
-    const token = req.headers.authorization?.split(' ')[1];
+  const token = req.headers.authorization?.split(' ')[1];
 
-    if (!token) {
-        return res.status(401).json({ msg: 'No token, authorization denied' });
+  if (!token) {
+    return res.status(401).json({ msg: 'No token, authorization denied' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.user.id);
+
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
     }
 
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findById(decoded.user.id);
+    // Convert image file to base64
+    const base64Image = req.file.buffer.toString('base64');
+    user.profilePicture = `data:${req.file.mimetype};base64,${base64Image}`;
 
-        if (!user) {
-            return res.status(404).json({ msg: 'User not found' });
-        }
-
-        // Convert image file to base64
-        const base64Image = req.file.buffer.toString('base64');
-        user.profilePicture = `data:${req.file.mimetype};base64,${base64Image}`;
-
-        await user.save();
-        res.json({ msg: 'Profile picture updated successfully' });
-    } catch (err) {
-        res.status(500).send('Server error');
-    }
+    await user.save();
+    res.json({ msg: 'Profile picture updated successfully' });
+  } catch (err) {
+    res.status(500).send('Server error');
+  }
 });
 
 // Update Mobile Number Route
@@ -316,154 +345,154 @@ router.post('/password-setup', authMiddleware, async (req, res) => {
   const { password, confirmPassword } = req.body;
 
   if (!password || password !== confirmPassword) {
-      return res.status(400).json({ msg: 'Passwords do not match' });
+    return res.status(400).json({ msg: 'Passwords do not match' });
   }
 
   try {
-      const user = await User.findById(req.user.id);  // Use user from auth middleware
+    const user = await User.findById(req.user.id);  // Use user from auth middleware
 
-      if (!user) {
-          return res.status(404).json({ msg: 'User not found' });
-      }
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
 
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(password, salt);
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
 
-      await user.save();
-      res.json({ msg: 'Password setup successful' });
+    await user.save();
+    res.json({ msg: 'Password setup successful' });
   } catch (err) {
-      res.status(500).send('Server error');
+    res.status(500).send('Server error');
   }
 });
 
 // Delete Account Route
 router.delete('/delete_account', authMiddleware, async (req, res) => {
-    const { password, email, reason, otherReason } = req.body;
+  const { password, email, reason, otherReason } = req.body;
 
-    if (!password || !email) {
-        return res.status(400).json({ msg: 'Password and email are required' });
+  if (!password || !email) {
+    return res.status(400).json({ msg: 'Password and email are required' });
+  }
+
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
     }
 
-    try {
-        const user = await User.findById(req.user.id);
-
-        if (!user) {
-            return res.status(404).json({ msg: 'User not found' });
-        }
-
-        // Check if email matches
-        if (user.email !== email) {
-            return res.status(400).json({ msg: 'Email does not match' });
-        }
-
-        // Validate password
-        const isMatch = await bcrypt.compare(password, user.password);
-
-        if (!isMatch) {
-            return res.status(400).json({ msg: 'Invalid password' });
-        }
-
-        // Handle different reasons for account deletion
-        if (reason === 'Other' && !otherReason) {
-            return res.status(400).json({ msg: 'Please provide a reason for deletion' });
-        }
-
-        if (reason === 'Temporary') {
-            user.isDeleted = true;
-            user.deleteReason = reason;
-            user.otherDeleteReason = otherReason || '';
-            user.deactivationDate = Date.now();
-            await user.save();
-            res.json({ msg: 'Account has been temporarily deactivated. You can recover it within 30 days.' });
-            return;
-        }
-
-        // Permanently delete the account
-        await User.findByIdAndDelete(user._id);
-        res.json({ msg: 'Account deleted successfully' });
-    } catch (err) {
-        res.status(500).send('Server error');
+    // Check if email matches
+    if (user.email !== email) {
+      return res.status(400).json({ msg: 'Email does not match' });
     }
+
+    // Validate password
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ msg: 'Invalid password' });
+    }
+
+    // Handle different reasons for account deletion
+    if (reason === 'Other' && !otherReason) {
+      return res.status(400).json({ msg: 'Please provide a reason for deletion' });
+    }
+
+    if (reason === 'Temporary') {
+      user.isDeleted = true;
+      user.deleteReason = reason;
+      user.otherDeleteReason = otherReason || '';
+      user.deactivationDate = Date.now();
+      await user.save();
+      res.json({ msg: 'Account has been temporarily deactivated. You can recover it within 30 days.' });
+      return;
+    }
+
+    // Permanently delete the account
+    await User.findByIdAndDelete(user._id);
+    res.json({ msg: 'Account deleted successfully' });
+  } catch (err) {
+    res.status(500).send('Server error');
+  }
 });
 
 // Password Recovery Route
 router.post('/recover', async (req, res) => {
-    const { email } = req.body;
+  const { email } = req.body;
 
-    if (!email) {
-        return res.status(400).json({ msg: 'Email is required' });
+  if (!email) {
+    return res.status(400).json({ msg: 'Email is required' });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ msg: 'No user found with that email' });
     }
 
-    try {
-        const user = await User.findOne({ email });
+    // Generate a password reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 3600000; // Token expires in 1 hour
 
-        if (!user) {
-            return res.status(400).json({ msg: 'No user found with that email' });
-        }
+    await user.save();
 
-        // Generate a password reset token
-        const resetToken = crypto.randomBytes(32).toString('hex');
-        user.resetPasswordToken = resetToken;
-        user.resetPasswordExpires = Date.now() + 3600000; // Token expires in 1 hour
+    // Send the reset email
+    const transporter = nodemailer.createTransport({
+      service: 'Gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
 
-        await user.save();
+    const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
 
-        // Send the reset email
-        const transporter = nodemailer.createTransport({
-            service: 'Gmail',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
-            },
-        });
-
-        const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
-
-        await transporter.sendMail({
-            to: user.email,
-            from: 'no-reply@yourapp.com',
-            subject: 'Password Reset Request',
-            html: `
+    await transporter.sendMail({
+      to: user.email,
+      from: 'no-reply@yourapp.com',
+      subject: 'Password Reset Request',
+      html: `
                 <p>You requested a password reset</p>
                 <p>Click <a href="${resetUrl}">here</a> to reset your password. This link will expire in 1 hour.</p>
             `,
-        });
+    });
 
-        res.json({ msg: 'Password reset link sent to your email' });
+    res.json({ msg: 'Password reset link sent to your email' });
 
-    } catch (err) {
-        res.status(500).send('Server error');
-    }
+  } catch (err) {
+    res.status(500).send('Server error');
+  }
 });
 
 // Password Reset Route
 router.post('/password-reset', async (req, res) => {
-    const { token, password, confirmPassword } = req.body;
+  const { token, password, confirmPassword } = req.body;
 
-    if (!token || !password || password !== confirmPassword) {
-        return res.status(400).json({ msg: 'Invalid token or passwords do not match' });
+  if (!token || !password || password !== confirmPassword) {
+    return res.status(400).json({ msg: 'Invalid token or passwords do not match' });
+  }
+
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ msg: 'Password reset token is invalid or has expired' });
     }
 
-    try {
-        const user = await User.findOne({
-            resetPasswordToken: token,
-            resetPasswordExpires: { $gt: Date.now() },
-        });
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
 
-        if (!user) {
-            return res.status(400).json({ msg: 'Password reset token is invalid or has expired' });
-        }
-
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(password, salt);
-        user.resetPasswordToken = undefined;
-        user.resetPasswordExpires = undefined;
-
-        await user.save();
-        res.json({ msg: 'Password has been successfully reset' });
-    } catch (err) {
-        res.status(500).send('Server error');
-    }
+    await user.save();
+    res.json({ msg: 'Password has been successfully reset' });
+  } catch (err) {
+    res.status(500).send('Server error');
+  }
 });
 
 // Total users

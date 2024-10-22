@@ -38,8 +38,6 @@ router.get("/:id", async (req, res) => {
       .populate("comments.replies.user", "firstName lastName profilePicture")
       .populate("comments.replies.admin", "firstName lastName profilePicture");;
 
-    console.log("Fetched Blog Data:", blog);
-
     if (!blog) return res.status(404).json({ message: "Blog not found" });
     res.status(200).json(blog);
   } catch (err) {

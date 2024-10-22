@@ -89,11 +89,11 @@ const UserSchema = new mongoose.Schema({
         type: Number,
         default: 0, // Count of chat-related achievements
     },
-    isOnline: { // Added isOnline field
+    isOnline: { 
         type: Boolean,
         default: false,
     },
-    lastSeen: { // Optionally track last seen time
+    lastSeen: { 
         type: Date,
         default: Date.now,
     },
