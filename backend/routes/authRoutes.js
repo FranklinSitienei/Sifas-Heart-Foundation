@@ -32,10 +32,6 @@ router.get(
     try {
       const token = generateToken(req.user);
       await handleSignupAchievements(req.user.id);
-      await User.findByIdAndUpdate(req.user.id, {
-        isOnline: true,
-        lastSeen: Date.now(),
-      });
 
       // Set token in the response header instead of query param
       res.setHeader('Authorization', `Bearer ${token}`);
@@ -69,12 +65,6 @@ router.get("/login/failed", (req, res) => {
 // Logout Route
 router.get("/logout", authMiddleware, async (req, res) => {
   try {
-    // Update user's online status and last seen time
-    await User.findByIdAndUpdate(req.user.id, {
-      isOnline: false,
-      lastSeen: Date.now(),
-    });
-
     // Perform the logout process
     req.logout();
 
@@ -85,7 +75,6 @@ router.get("/logout", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Server error", error: err });
   }
 });
-
 
 // User Signup Route
 router.post("/signup", async (req, res) => {
@@ -120,11 +109,6 @@ router.post("/signup", async (req, res) => {
 
     const token = generateToken(user);
     await handleSignupAchievements(user.id);
-
-    await User.findByIdAndUpdate(user.id, {
-      isOnline: true,
-      lastSeen: Date.now(),
-    });
 
     const registrationMessage = "Thank you for registering! Welcome to our platform.";
     await Notification.create({ userId: user.id, message: registrationMessage, type: "signup" });
@@ -177,11 +161,6 @@ router.post("/login", async (req, res) => {
 
     const token = generateToken(user);
     await handleLoginAchievements(user.id);
-
-    await User.findByIdAndUpdate(user.id, {
-      isOnline: true,
-      lastSeen: Date.now(),
-    });
 
     // Check and award daily visit achievement
     await handleDailyVisitAchievements(user.id);

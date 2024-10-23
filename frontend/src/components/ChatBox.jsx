@@ -24,8 +24,49 @@ const ChatBox = () => {
       checkAdminStatus();
       addGreetingMessage();
       fetchEmojis(); // Fetch emojis when chatbox is opened
+      setUserOnline(); // Set user as online
+    } else {
+      setUserOffline(); // Set user as offline when chatbox is closed
     }
   }, [isOpen]);
+  
+  const setUserOnline = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/chat/user-online', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error('Failed to set user online');
+    } catch (error) {
+      console.error('Error setting user online:', error);
+    }
+  };
+  
+  const setUserOffline = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/chat/user-offline', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error('Failed to set user offline');
+    } catch (error) {
+      console.error('Error setting user offline:', error);
+    }
+  };
+  
+  // Optionally, handle cleanup on logout (when user logs out)
+  useEffect(() => {
+    return () => {
+      if (isOpen) {
+        setUserOffline(); // Set user offline when component unmounts or chatbox closes
+      }
+    };
+  }, []);
+  
 
   useEffect(() => {
     if (chatBodyRef.current) {

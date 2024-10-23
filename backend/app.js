@@ -12,9 +12,10 @@ const emojiRoutes = require('./routes/emojiRoutes');
 const leaderboardRoutes = require('./routes/leaderboardRoutes');
 const lipaRoute = require('./routes/lipaRoute');
 const chatRoutes = require('./routes/chatRoutes');
-const blogRoutes = require('./routes/blogRoutes')
+const blogRoutes = require('./routes/blogRoutes');
 const path = require('path');
-require('./config/passport'); 
+const cookieParser = require('cookie-parser');  // Import cookie-parser
+require('./config/passport');
 
 const app = express();
 
@@ -31,6 +32,9 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json());
+app.use(cookieParser());  // Use cookie-parser
+
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/donations', donationRoutes);
 app.use('/api/notifications', authMiddleware, notificationRoutes);
@@ -44,6 +48,16 @@ app.use('/api/blog', blogRoutes);
 // Serve static files from the 'public' directory
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
 
+// Cookie consent route
+app.post('/api/cookie-consent', (req, res) => {
+    const { consent } = req.body;
+    if (consent) {
+        res.cookie('cookieConsent', 'accepted', { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true }); // Set cookie for 30 days
+        res.status(200).json({ message: "Cookies accepted" });
+    } else {
+        res.status(400).json({ message: "Cookie consent not given" });
+    }
+});
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {

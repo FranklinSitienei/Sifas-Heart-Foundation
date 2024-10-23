@@ -21,6 +21,7 @@ import ChatBox from "./components/ChatBox";
 import TokenHandler from "./components/TokenHandler";
 import BlogsPage from "./components/BlogsPage";
 import BlogDetails from "./components/BlogDetails";
+import CookieBanner from "./components/CookieBanner"; 
 import "./App.css";
 
 function App() {
@@ -56,6 +57,7 @@ function App() {
           </Routes>
           <Footer />
           <ChatBox />
+          <CookieBanner /> {/* Add CookieBanner here */}
         </div>
       </Router>
     </Provider>

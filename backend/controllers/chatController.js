@@ -4,11 +4,10 @@ const Notification = require("../models/Notification");
 const { handleAdminChatAchievements } = require("../utils/achievementUtils");
 const User = require("../models/User");
 
-// Send a message from the user or admin
+// Send a message from the user only
 exports.sendMessage = async (req, res) => {
   const { message, emoji } = req.body;
-  const userId = req.user ? req.user.id : req.admin.id; // Get the user ID depending on whether it's an admin or user
-  const from = req.admin ? 'admin' : 'user'; // Check if the sender is admin
+  const userId = req.user.id; // Only user can send a message
 
   try {
     let chat = await Chat.findOne({ userId });
@@ -17,42 +16,20 @@ exports.sendMessage = async (req, res) => {
       chat = new Chat({ userId });
     }
 
-    chat.messages.push({ from, text: message, emoji, createdAt: new Date() });
+    chat.messages.push({ from: 'user', text: message, emoji, createdAt: new Date() });
     chat.lastActive = Date.now();
     await chat.save();
 
-    // Increment chat count for achievements if the sender is a user
-    if (from === 'user') {
-      const user = await User.findById(userId);
-      if (user) {
-        user.chatCount = user.chatCount ? user.chatCount + 1 : 1;
-        await user.save();
-      }
-    }
-
-    // Automated responses
-    let autoResponse = "";
-    if (message.toLowerCase().includes("hello")) {
-      autoResponse = "Hi there! How can I assist you today? 😊";
-    } else if (message.toLowerCase().includes("help")) {
-      autoResponse = "Sure! What do you need help with?";
-    }
-
-    if (autoResponse) {
-      chat.messages.push({
-        from: "admin",
-        text: autoResponse,
-        createdAt: new Date(),
-      });
-      await chat.save();
-      await handleAdminChatAchievements(userId);
+    // Increment chat count for user achievements
+    const user = await User.findById(userId);
+    if (user) {
+      user.chatCount = user.chatCount ? user.chatCount + 1 : 1;
+      await user.save();
     }
 
     // Handle complex messages
     const complexKeywords = ["issue", "problem", "urgent"];
-    if (
-      complexKeywords.some((keyword) => message.toLowerCase().includes(keyword))
-    ) {
+    if (complexKeywords.some((keyword) => message.toLowerCase().includes(keyword))) {
       chat.isComplex = true;
       await chat.save();
       const admin = await Admin.findOne({ isOnline: true });
@@ -65,7 +42,7 @@ exports.sendMessage = async (req, res) => {
       }
     }
 
-    res.json({ from, text: message, emoji, createdAt: new Date() });
+    res.json({ from: 'user', text: message, emoji, createdAt: new Date() });
   } catch (error) {
     console.error("Error sending message:", error);
     res.status(500).send("Server error");
@@ -147,7 +124,7 @@ exports.deleteMessage = async (req, res) => {
 
 // Fetch chat messages
 exports.fetchChatMessages = async (req, res) => {
-  const userId = req.user ? req.user.id : req.admin.id; // Get user or admin ID
+  const userId = req.user.id; // Only fetching for user
 
   try {
     if (!userId) return res.status(400).json({ msg: "Invalid user ID" });
@@ -158,6 +135,28 @@ exports.fetchChatMessages = async (req, res) => {
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     if (chat.lastActive < twentyFourHoursAgo && chat.messages.length === 0) {
       return res.json({ messages: [] });
+    }
+
+    // Automated responses based on previous user messages
+    let autoResponse = "";
+    const lastMessage = chat.messages[chat.messages.length - 1];
+
+    if (lastMessage && lastMessage.from === 'user') {
+      if (lastMessage.text.toLowerCase().includes("hello")) {
+        autoResponse = "Hi there! How can I assist you today? 😊";
+      } else if (lastMessage.text.toLowerCase().includes("help")) {
+        autoResponse = "Sure! What do you need help with?";
+      }
+
+      if (autoResponse) {
+        chat.messages.push({
+          from: "admin",
+          text: autoResponse,
+          createdAt: new Date(),
+        });
+        await chat.save();
+        await handleAdminChatAchievements(userId);
+      }
     }
 
     res.json({ messages: chat.messages });
@@ -248,5 +247,42 @@ exports.fetchChatDetails = async (req, res) => {
   } catch (error) {
     console.error("Error fetching chat details:", error);
     res.status(500).json({ error: "Server error" });
+  }
+};
+
+// Update user's online status when chatbox is opened
+exports.setUserOnline = async (req, res) => {
+  const userId = req.user.id; // Assume only users initiate chat
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ msg: 'User not found' });
+
+    user.isOnline = true;
+    await user.save();
+
+    res.json({ msg: 'User is now online' });
+  } catch (error) {
+    console.error('Error updating user online status:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// Update user's online status when chatbox is closed
+exports.setUserOffline = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ msg: 'User not found' });
+
+    user.isOnline = false;
+    user.lastSeen = new Date(); // Optional: Track when the user was last online
+    await user.save();
+
+    res.json({ msg: 'User is now offline' });
+  } catch (error) {
+    console.error('Error updating user offline status:', error);
+    res.status(500).json({ error: 'Server error' });
   }
 };
