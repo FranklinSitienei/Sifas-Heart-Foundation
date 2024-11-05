@@ -27,7 +27,7 @@ const Leaderboard = () => {
 
             try {
                 // Fetch user profile data
-                const profileResponse = await fetch('https://sifas-heart-foundation-2.onrender.com/api/auth/profile', {
+                const profileResponse = await fetch('https://sifas-heart-foundation-1.onrender.com/api/auth/profile', {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -38,7 +38,7 @@ const Leaderboard = () => {
                     setUserProfile(userData); // Set the user profile data
 
                     // Fetch leaderboard data
-                    const leaderboardResponse = await fetch(`https://sifas-heart-foundation-2.onrender.com/api/leaderboards/monthly?year=${currentYear}&timezone=${timezone}`);
+                    const leaderboardResponse = await fetch(`https://sifas-heart-foundation-1.onrender.com/api/leaderboards/monthly?year=${currentYear}&timezone=${timezone}`);
                     const leaderboardData = await leaderboardResponse.json();
                     setData(leaderboardData);
                 } else {

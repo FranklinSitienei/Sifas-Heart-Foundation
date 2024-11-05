@@ -32,7 +32,7 @@ const ChatBox = () => {
   
   const setUserOnline = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/chat/user-online', {
+      const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/user-online', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -76,7 +76,7 @@ const ChatBox = () => {
 
   const fetchEmojis = async () => {
     try {
-      const response = await fetch('https://sifas-heart-foundation-2.onrender.com/api/emoji/emojis');
+      const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/emoji/emojis');
       if (!response.ok) throw new Error('Failed to fetch emojis');
       const emojis = await response.json();
       setEmojiList(emojis);
@@ -87,7 +87,7 @@ const ChatBox = () => {
 
   const fetchChatHistory = async () => {
     try {
-      const response = await fetch('https://sifas-heart-foundation-2.onrender.com/api/chat/messages', {
+      const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/messages', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -102,7 +102,7 @@ const ChatBox = () => {
 
   const checkAdminStatus = async () => {
     try {
-      const response = await fetch('https://sifas-heart-foundation-2.onrender.com/api/chat/admin-status');
+      const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/admin-status');
       if (!response.ok) throw new Error('Failed to check admin status');
       const adminStatus = await response.json();
       setIsAdminOnline(adminStatus.isOnline);
@@ -123,7 +123,7 @@ const ChatBox = () => {
         if (editMessageId) {
           await handleEdit();
         } else {
-          const response = await fetch('https://sifas-heart-foundation-2.onrender.com/api/chat/send', {
+          const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/send', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -150,7 +150,7 @@ const ChatBox = () => {
 
   const handleEdit = async () => {
     try {
-      const response = await fetch('https://sifas-heart-foundation-2.onrender.com/api/chat/edit', {
+      const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/edit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -173,7 +173,7 @@ const ChatBox = () => {
 
   const handleDelete = async (messageId) => {
     try {
-      const response = await fetch('https://sifas-heart-foundation-2.onrender.com/api/chat/delete', {
+      const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/delete', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

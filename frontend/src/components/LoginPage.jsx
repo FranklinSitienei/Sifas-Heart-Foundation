@@ -48,7 +48,7 @@ const Login = () => {
     const handleRecoverySubmit = async (e) => {
         e.preventDefault();
 
-        const response = await fetch('https://sifas-heart-foundation-2.onrender.com/api/auth/recover', {
+        const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/auth/recover', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

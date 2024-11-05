@@ -11,7 +11,7 @@ const NotificationModal = ({ token, onClose }) => {
         const fetchNotifications = async () => {
             try {
                 const response = await fetch(
-                    "https://sifas-heart-foundation-2.onrender.com/api/notifications",
+                    "https://sifas-heart-foundation-1.onrender.com/api/notifications",
                     {
                         method: "GET",
                         headers: {
@@ -39,7 +39,7 @@ const NotificationModal = ({ token, onClose }) => {
     const markAsRead = async (id) => {
         try {
             const response = await fetch(
-                `https://sifas-heart-foundation-2.onrender.com/api/notifications/${id}`,
+                `https://sifas-heart-foundation-1.onrender.com/api/notifications/${id}`,
                 {
                     method: "PUT",
                     headers: {
@@ -67,7 +67,7 @@ const NotificationModal = ({ token, onClose }) => {
     const deleteNotification = async (id) => {
         try {
             const response = await fetch(
-                `https://sifas-heart-foundation-2.onrender.com/api/notifications/${id}`,
+                `https://sifas-heart-foundation-1.onrender.com/api/notifications/${id}`,
                 {
                     method: "DELETE",
                     headers: {

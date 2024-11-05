@@ -11,7 +11,7 @@ const Notifications = () => {
     const fetchNotifications = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('https://sifas-heart-foundation-2.onrender.com/api/auth/notifications', {
+        const response = await axios.get('https://sifas-heart-foundation-1.onrender.com/api/auth/notifications', {
           headers: { Authorization: `Bearer ${token}` }
         });
         const sortedNotifications = response.data.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -30,7 +30,7 @@ const Notifications = () => {
   const markAsRead = async (id) => {
     const token = localStorage.getItem('token');
     try {
-      await axios.post(`https://sifas-heart-foundation-2.onrender.com/api/auth/notifications/${id}/read`, {}, {
+      await axios.post(`https://sifas-heart-foundation-1.onrender.com/api/auth/notifications/${id}/read`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(notifications.map(notification => 
@@ -45,7 +45,7 @@ const Notifications = () => {
   const markAllAsRead = async () => {
     const token = localStorage.getItem('token');
     try {
-      await axios.post('https://sifas-heart-foundation-2.onrender.com/api/auth/notifications/mark-all-read', {}, {
+      await axios.post('https://sifas-heart-foundation-1.onrender.com/api/auth/notifications/mark-all-read', {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(notifications.map(notification => ({ ...notification, read: true })));

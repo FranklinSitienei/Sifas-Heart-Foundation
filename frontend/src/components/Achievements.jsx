@@ -99,7 +99,7 @@ const Achievements = () => {
             {achievements.map((achievement, index) => (
               <tr key={achievement._id}>
                 <td className="text-center">
-                  <img src={`https://sifas-heart-foundation-2.onrender.com${achievement.icon}`} alt={achievement.title} />
+                  <img src={`https://sifas-heart-foundation-1.onrender.com${achievement.icon}`} alt={achievement.title} />
                 </td>
                 <td>{achievement.title}</td>
                 <td>{achievement.description}</td>
