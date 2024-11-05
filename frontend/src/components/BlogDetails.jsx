@@ -63,7 +63,7 @@ const BlogDetails = () => {
   const fetchUserProfile = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/auth/profile",
+        "https://sifas-heart-foundation-1.onrender.com/api/auth/profile",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -95,7 +95,7 @@ const BlogDetails = () => {
 
   const fetchBlogDetails = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/blog/${id}`, {
+      const response = await axios.get(`https://sifas-heart-foundation-1.onrender.com/blog/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -129,7 +129,7 @@ const BlogDetails = () => {
   const handleLikeToggle = async () => {
     try {
       await axios.post(
-        `http://localhost:5000/api/blog/user/${id}/like`,
+        `https://sifas-heart-foundation-1.onrender.com/api/blog/user/${id}/like`,
         {},
         {
           headers: {
@@ -170,7 +170,7 @@ const BlogDetails = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/blog/user/${id}/comment`,
+        `https://sifas-heart-foundation-1.onrender.com/api/blog/user/${id}/comment`,
         { content: newComment },
         {
           headers: {
@@ -206,7 +206,7 @@ const BlogDetails = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/blog/user/${id}/comment/${replyingTo}/reply`,
+        `https://sifas-heart-foundation-1.onrender.com/api/blog/user/${id}/comment/${replyingTo}/reply`,
         { content: replyContent },
         {
           headers: {
@@ -242,7 +242,7 @@ const BlogDetails = () => {
   const handleLikeComment = async (commentId) => {
     try {
       await axios.post(
-        `http://localhost:5000/api/blog/user/${id}/comment/${commentId}/like`,
+        `https://sifas-heart-foundation-1.onrender.com/api/blog/user/${id}/comment/${commentId}/like`,
         {},
         {
           headers: {
@@ -286,7 +286,7 @@ const BlogDetails = () => {
   const handleUnlikeComment = async (commentId) => {
     try {
       await axios.post(
-        `http://localhost:5000/api/blog/user/${id}/comment/${commentId}/unlike`,
+        `https://sifas-heart-foundation-1.onrender.com/api/blog/user/${id}/comment/${commentId}/unlike`,
         {},
         {
           headers: {
@@ -328,7 +328,7 @@ const BlogDetails = () => {
   const handleLikeReply = async (commentId, replyId) => {
     try {
       await axios.post(
-        `http://localhost:5000/api/blog/user/${id}/comment/${commentId}/reply/${replyId}/like`,
+        `https://sifas-heart-foundation-1.onrender.com/api/blog/user/${id}/comment/${commentId}/reply/${replyId}/like`,
         {},
         {
           headers: {
@@ -371,7 +371,7 @@ const BlogDetails = () => {
   const handleUnlikeReply = async (commentId, replyId) => {
     try {
       await axios.post(
-        `http://localhost:5000/api/blog/user/${id}/comment/${commentId}/reply/${replyId}/unlike`,
+        `https://sifas-heart-foundation-1.onrender.com/api/blog/user/${id}/comment/${commentId}/reply/${replyId}/unlike`,
         {},
         {
           headers: {
@@ -414,7 +414,7 @@ const BlogDetails = () => {
   const handleReportComment = async (commentId) => {
     try {
       await axios.post(
-        `http://localhost:5000/api/blog/user/${id}/comment/${commentId}/report`,
+        `https://sifas-heart-foundation-1.onrender.com/api/blog/user/${id}/comment/${commentId}/report`,
         {},
         {
           headers: {
@@ -434,7 +434,7 @@ const BlogDetails = () => {
   const handleReportReply = async (commentId, replyId) => {
     try {
       await axios.post(
-        `http://localhost:5000/api/blog/user/${id}/comment/${commentId}/reply/${replyId}/report`,
+        `https://sifas-heart-foundation-1.onrender.com/api/blog/user/${id}/comment/${commentId}/reply/${replyId}/report`,
         {},
         {
           headers: {
@@ -459,7 +459,7 @@ const BlogDetails = () => {
     const newContent = prompt("Edit your comment:", comment.content);
     if (newContent) {
       // Call the API to update the comment
-      fetch(`/api/blog/${id}/comment/${comment._id}/edit`, {
+      fetch(`https://sifas-heart-foundation-1.onrender.com/api/blog/${id}/comment/${comment._id}/edit`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -486,7 +486,7 @@ const BlogDetails = () => {
     const confirmDelete = window.confirm("Are you sure you want to delete this comment?");
     if (confirmDelete) {
       try {
-        const response = await fetch(`/api/blog/${id}/comment/${commentId}/delete`, {
+        const response = await fetch(`https://sifas-heart-foundation-1.onrender.com/api/blog/${id}/comment/${commentId}/delete`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -507,7 +507,7 @@ const BlogDetails = () => {
   const handleEditReply = (reply) => {
     const newContent = prompt("Edit your reply:", reply.content);
     if (newContent) {
-      fetch(`/api/blog/${id}/comment/${reply.commentId}/reply/${reply._id}/edit`, {
+      fetch(`https://sifas-heart-foundation-1.onrender.com/api/blog/${id}/comment/${reply.commentId}/reply/${reply._id}/edit`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -541,7 +541,7 @@ const BlogDetails = () => {
     const confirmDelete = window.confirm("Are you sure you want to delete this reply?");
     if (confirmDelete) {
       try {
-        const response = await fetch(`/api/blog/${id}/comment/${commentId}/reply/${replyId}/delete`, {
+        const response = await fetch(`https://sifas-heart-foundation-1.onrender.com/api/blog/${id}/comment/${commentId}/reply/${replyId}/delete`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -572,7 +572,7 @@ const BlogDetails = () => {
   const fetchMentionSuggestions = async (query) => {
     if (query.trim().length > 1) {
       try {
-        const response = await axios.get(`http://localhost:5000/api/blog/users/search?query=${query}`, {
+        const response = await axios.get(`https://sifas-heart-foundation-1.onrender.com/api/blog/users/search?query=${query}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

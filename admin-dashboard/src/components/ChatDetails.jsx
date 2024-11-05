@@ -23,7 +23,7 @@ const ChatDetails = () => {
 
     const fetchChatDetails = async (token, chatId) => {
         try {
-            const response = await axios.get(`http://localhost:5000/api/chat/admin/${chatId}`, {
+            const response = await axios.get(`https://sifas-heart-foundation-1.onrender.com/api/chat/admin/${chatId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -49,7 +49,7 @@ const ChatDetails = () => {
     const handleReplyMessage = async () => {
         const token = localStorage.getItem('admin');
         try {
-            await axios.post(`http://localhost:5000/api/chat/admin/reply/${chatId}`, { message: replyText }, {
+            await axios.post(`https://sifas-heart-foundation-1.onrender.com/api/chat/admin/reply/${chatId}`, { message: replyText }, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -78,7 +78,7 @@ const ChatDetails = () => {
 
     const handleEditMessage = async (messageId) => {
         try {
-            await axios.post('http://localhost:5000/api/chat/admin/edit', { messageId, newText: editingText }, {
+            await axios.post('https://sifas-heart-foundation-1.onrender.com/api/chat/admin/edit', { messageId, newText: editingText }, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -93,7 +93,7 @@ const ChatDetails = () => {
 
     const handleDeleteMessage = async (messageId) => {
         try {
-            await axios.post(`http://localhost:5000/api/chat/admin/delete/${chatId}`, { messageId }, {
+            await axios.post(`https://sifas-heart-foundation-1.onrender.com/api/chat/admin/delete/${chatId}`, { messageId }, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },

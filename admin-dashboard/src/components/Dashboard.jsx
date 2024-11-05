@@ -37,12 +37,12 @@ const Dashboard = () => {
           chatsResponse,
           paymentMethodsResponse,
         ] = await Promise.all([
-          axios.get("http://localhost:5000/api/donations/overview", config),
-          axios.get("http://localhost:5000/api/donations/monthly", config),
-          axios.get("http://localhost:5000/api/auth/total", config),
-          axios.get("http://localhost:5000/api/donations/recent", config),
-          axios.get("http://localhost:5000/api/chat/admin/all", config),
-          axios.get("http://localhost:5000/api/donations/payment-methods", config),
+          axios.get("https://sifas-heart-foundation-1.onrender.com/api/donations/overview", config),
+          axios.get("https://sifas-heart-foundation-1.onrender.com/api/donations/monthly", config),
+          axios.get("https://sifas-heart-foundation-1.onrender.com/api/auth/total", config),
+          axios.get("https://sifas-heart-foundation-1.onrender.com/api/donations/recent", config),
+          axios.get("https://sifas-heart-foundation-1.onrender.com/api/chat/admin/all", config),
+          axios.get("https://sifas-heart-foundation-1.onrender.com/api/donations/payment-methods", config),
         ]);
 
         setDonationOverview(overviewResponse.data);

@@ -22,7 +22,7 @@ const ChatMessages = () => {
 
     const fetchProfile = async (token) => {
         try {
-            const response = await fetch('http://localhost:5000/api/admin/profile', {
+            const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/admin/profile', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -42,7 +42,7 @@ const ChatMessages = () => {
 
     const fetchChats = async (token) => {
         try {
-            const response = await axios.get('http://localhost:5000/api/chat/admin/all', {
+            const response = await axios.get('https://sifas-heart-foundation-1.onrender.com/api/chat/admin/all', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },

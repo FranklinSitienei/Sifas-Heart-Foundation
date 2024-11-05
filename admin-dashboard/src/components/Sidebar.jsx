@@ -16,7 +16,7 @@ const Sidebar = () => {
     useEffect(() => {
         const fetchMessageCount = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/chat/admin/all',
+                const response = await axios.get('https://sifas-heart-foundation-1.onrender.com/api/chat/admin/all',
                     {
                         headers: {
                           Authorization: `Bearer ${token}`,
@@ -34,7 +34,7 @@ const Sidebar = () => {
 
     const handleLogout = async () => {
         try {
-            await axios.get('http://localhost:5000/api/admin/logout', {
+            await axios.get('https://sifas-heart-foundation-1.onrender.com/api/admin/logout', {
                 headers: { Authorization: `Bearer ${token}` },
             });
             localStorage.removeItem('admin');

@@ -10,7 +10,7 @@ const AllBlogs = () => {
     useEffect(() => {
         const fetchBlogs = async () => {
             try {
-                const response = await fetch('http://localhost:5000/api/blog/all');
+                const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/blog/all');
                 const data = await response.json();
                 setBlogs(data);
             } catch (error) {

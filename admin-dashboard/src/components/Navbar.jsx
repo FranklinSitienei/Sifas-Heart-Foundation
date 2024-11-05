@@ -23,7 +23,7 @@ const Navbar = () => {
             }
     
             try {
-                const response = await axios.get('http://localhost:5000/api/admin/profile', {
+                const response = await axios.get('https://sifas-heart-foundation-1.onrender.com/api/admin/profile', {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 console.log('Admin profile fetched successfully:', response.data);
@@ -45,7 +45,7 @@ const Navbar = () => {
     const handleLogout = async () => {
         const token = localStorage.getItem('admin');
         try {
-            await axios.get('http://localhost:5000/api/admin/logout', {
+            await axios.get('https://sifas-heart-foundation-1.onrender.com/api/admin/logout', {
                 headers: { Authorization: `Bearer ${token}` },
             });
             localStorage.removeItem('admin');

@@ -23,19 +23,19 @@ const Donation = () => {
         const fetchDonationsData = async () => {
             try {
                 // Fetch monthly donations data for the bar chart
-                const monthlyResponse = await axios.get('http://localhost:5000/api/donations/monthly', {
+                const monthlyResponse = await axios.get('https://sifas-heart-foundation-1.onrender.com/api/donations/monthly', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 prepareMonthlyData(monthlyResponse.data);
 
                 // Fetch recent transactions for the transaction table
-                const transactionResponse = await axios.get('http://localhost:5000/api/donations/recent', {
+                const transactionResponse = await axios.get('https://sifas-heart-foundation-1.onrender.com/api/donations/recent', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setDonations(transactionResponse.data);
 
                 // Fetch payment method breakdown
-                const paymentBreakdownResponse = await axios.get('http://localhost:5000/api/donations/payment-methods', {
+                const paymentBreakdownResponse = await axios.get('https://sifas-heart-foundation-1.onrender.com/api/donations/payment-methods', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setPaymentBreakdown(paymentBreakdownResponse.data);

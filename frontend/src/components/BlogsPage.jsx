@@ -11,7 +11,7 @@ const BlogsPage = () => {
     useEffect(() => {
         const fetchBlogs = async () => {
             try {
-                const response = await fetch('http://localhost:5000/api/blog/all');
+                const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/blog/all');
                 const data = await response.json();
                 setBlogs(data);
             } catch (error) {
@@ -25,7 +25,7 @@ const BlogsPage = () => {
     const handleLike = async (blogId) => {
         if (!likedBlogs.has(blogId)) {
             try {
-                await fetch(`http://localhost:5000/api/blog/${blogId}/like`, { method: 'POST'});
+                await fetch(`https://sifas-heart-foundation-1.onrender.com/api/blog/${blogId}/like`, { method: 'POST'});
                 setLikedBlogs((prev) => new Set(prev).add(blogId));
                 // Optional: Add animation class to the like icon
                 const likeElement = document.getElementById(`like-icon-${blogId}`);
