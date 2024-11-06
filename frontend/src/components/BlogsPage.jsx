@@ -129,7 +129,7 @@ const BlogsPage = () => {
                                     {blog.likeCount}
                                 </span>
                                 <Link to={`/blog/${blog._id}`} className="comments">
-                                    <FaComment /> {blog.comments.length}
+                                    <FaComment /> {blog.comments.commentCount}
                                 </Link>
                             </div>
                         </div>

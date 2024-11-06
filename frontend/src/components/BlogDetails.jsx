@@ -878,7 +878,7 @@ const BlogDetails = () => {
                                 </>
                               ) : (
                                 <>
-                                  Show Replies ({comment.replies.length}) <HiOutlineArrowDown />
+                                  Show Replies ({comment.replies.replyCount}) <HiOutlineArrowDown />
                                 </>
                               )}
                             </button>

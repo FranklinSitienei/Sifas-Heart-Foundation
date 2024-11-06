@@ -105,10 +105,10 @@ const AllBlogs = () => {
                             <span className="date">{new Date(blog.date).toLocaleString()}</span>
                             <div className="blog-actions">
                                 <span className="likes">
-                                    <FaRegThumbsUp /> {blog.likes.length}
+                                    <FaRegThumbsUp /> {blog.likes.likeCount}
                                 </span>
                                 <Link to={`/blog/${blog._id}`} className="comments">
-                                    <FaComment /> {blog.comments.length}
+                                    <FaComment /> {blog.comments.commentCount}
                                 </Link>
                             </div>
                         </div>
