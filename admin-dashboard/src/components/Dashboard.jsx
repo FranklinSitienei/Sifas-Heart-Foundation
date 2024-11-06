@@ -12,9 +12,9 @@ const Dashboard = () => {
   const [recentTransactions, setRecentTransactions] = useState([]);
   const [userChats, setUserChats] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
-
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState(null); // Error state
+  const [allChatsRead, setAllChatsRead] = useState(false); // Manage visibility of chat section
 
   useEffect(() => {
     const adminToken = localStorage.getItem("admin");
@@ -28,7 +28,6 @@ const Dashboard = () => {
 
     const fetchDashboardData = async () => {
       try {
-        // Fetch all data concurrently
         const [
           overviewResponse,
           monthlyResponse,
@@ -52,6 +51,9 @@ const Dashboard = () => {
         setUserChats(chatsResponse.data);
         setPaymentMethods(paymentMethodsResponse.data);
         setLoading(false);
+
+        // Set allChatsRead based on whether all chats are read or not
+        setAllChatsRead(chatsResponse.data.every(chat => chat.read)); // Example condition
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
         setError("Failed to fetch dashboard data. Please try again later.");
@@ -64,71 +66,56 @@ const Dashboard = () => {
 
   // Month names for labeling the bar chart
   const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
+    "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December",
   ];
 
   // Preparing data for the bar chart with month names and Ksh formatting
   const barChartData = {
     labels: monthlyDonations.map((data) => monthNames[data._id - 1] || `Month ${data._id}`),
     datasets: [
-        {
-            label: "Total Donations (Ksh)",
-            data: monthlyDonations.map((data) => data.total),
-            backgroundColor: "rgba(75, 192, 192, 0.6)",
-            borderColor: "rgba(75, 192, 192, 1)",
-            borderWidth: 1,
-        },
+      {
+        label: "Total Donations (Ksh)",
+        data: monthlyDonations.map((data) => data.total),
+        backgroundColor: "rgba(75, 192, 192, 0.6)",
+        borderColor: "rgba(75, 192, 192, 1)",
+        borderWidth: 1,
+      },
     ],
-};
+  };
 
-// Configure the y-axis to display Ksh
-const barChartOptions = {
+  // Configure the y-axis to display Ksh
+  const barChartOptions = {
     scales: {
-        y: {
-            beginAtZero: true,
-            ticks: {
-                callback: function(value) {
-                    return 'Ksh ' + value;
-                }
-            }
-        },
-        x: {
-            ticks: {
-                autoSkip: false
-            }
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: function(value) {
+            return 'Ksh ' + value;
+          }
         }
+      },
+      x: {
+        ticks: {
+          autoSkip: false
+        }
+      }
     },
     plugins: {
-        tooltip: {
-            callbacks: {
-                label: function(context) {
-                    return `Ksh ${context.parsed.y}`;
-                }
-            }
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            return `Ksh ${context.parsed.y}`;
+          }
         }
+      }
     },
     responsive: true,
     maintainAspectRatio: false,
-};
+  };
 
   // Mapping payment methods to specific colors
   const paymentMethodColors = {
-    Visa: "#FF6384",
-    Mastercard: "#36A2EB",
-    Mpesa: "#FFCE56",
-    PayPal: "#4BC0C0",
-    Flutterwave: "#9966FF",
+    Visa: "#FF6384", Mastercard: "#36A2EB", Mpesa: "#FFCE56", PayPal: "#4BC0C0", Flutterwave: "#9966FF",
   };
 
   // Preparing data for the pie chart with specific colors
@@ -188,53 +175,43 @@ const barChartOptions = {
       </div>
 
       {/* Middle Section: Recent Transactions */}
-      <div className="recent-transactions">
-      <h2>Recent Donation Transactions</h2>
-            {recentTransactions.length === 0 ? (
-                <p>No recent donations found.</p>
-            ) : (
-                <table className="donation-table">
-                    <thead>
-                        <tr>
-                            <th>User Full Name</th>
-                            <th>Email</th>
-                            <th>Amount</th>
-                            <th>Payment Method</th>
-                            <th>Transaction ID</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {recentTransactions.map((transaction) => (
-                            <tr key={transaction.transactionId}>
-                                <td>
-                                    {transaction.userId ? 
-                                        `${transaction.userId.firstName} ${transaction.userId.lastName}` 
-                                        : 'N/A'
-                                    }
-                                </td>
-                                <td>
-                                    {transaction.userId ? transaction.userId.email : 'N/A'}
-                                </td>
-                                <td>Ksh {transaction.amount.toLocaleString()}</td>
-                                <td>{transaction.paymentMethod}</td>
-                                <td>{transaction.transactionId}</td>
-                                <td>{new Date(transaction.date).toLocaleDateString()}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
-      </div>
+      {recentTransactions.length > 0 && (
+        <div className="recent-transactions">
+          <h2>Recent Donation Transactions</h2>
+          <table className="donation-table">
+            <thead>
+              <tr>
+                <th>User Full Name</th>
+                <th>Email</th>
+                <th>Amount</th>
+                <th>Payment Method</th>
+                <th>Transaction ID</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentTransactions.map((transaction) => (
+                <tr key={transaction.transactionId}>
+                  <td>{transaction.userId ? `${transaction.userId.firstName} ${transaction.userId.lastName}` : 'N/A'}</td>
+                  <td>{transaction.userId ? transaction.userId.email : 'N/A'}</td>
+                  <td>{formatAmount(transaction.amount)}</td>
+                  <td>{transaction.paymentMethod}</td>
+                  <td>{transaction.transactionId}</td>
+                  <td>{new Date(transaction.date).toLocaleDateString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Bottom Section: User Chats and Payment Methods Pie Chart */}
-      <div className="bottom-section">
-        {/* User Chats */}
-        <div className="user-chats-section">
-          <h3>Latest User/Admin Chats</h3>
-          <ul className="chat-list">
-            {Array.isArray(userChats) && userChats.length > 0 ? (
-              userChats.map((chat) => (
+      {!allChatsRead && userChats.length > 0 && (
+        <div className="bottom-section">
+          <div className="user-chats-section">
+            <h3>Latest User/Admin Chats</h3>
+            <ul className="chat-list">
+              {userChats.map((chat) => (
                 <li key={chat._id} className="chat-item">
                   <div className="chat-header">
                     <img
@@ -243,30 +220,25 @@ const barChartOptions = {
                       className="chat-user-picture"
                     />
                     <div>
-                      <strong>
-                        {chat.userId?.firstName || 'Unknown'}{' '}
-                        {chat.userId?.lastName || ''}
-                      </strong>
-                      <p>
-                        {chat.messages[chat.messages.length - 1]?.text || "No messages yet."}
-                      </p>
+                      <strong>{chat.userId?.firstName || 'Unknown'} {chat.userId?.lastName || ''}</strong>
+                      <p>{chat.messages[chat.messages.length - 1]?.text || "No messages yet."}</p>
                       <small>{new Date(chat.lastActive).toLocaleString()}</small>
                     </div>
                   </div>
                 </li>
-              ))
-            ) : (
-              <p>No chats available.</p>
-            )}
-          </ul>
+              ))}
+            </ul>
+          </div>
         </div>
+      )}
 
-        {/* Payment Methods Pie Chart */}
-        <div className="pie-chart-section">
-          <h3>Payment Method Breakdown</h3>
-          <Pie data={pieChartData} />
+      {/* Payment Methods Pie Chart */}
+      {paymentMethods.length > 0 && (
+        <div className="payment-methods">
+          <h3>Donation Payment Method Breakdown</h3>
+          <Pie data={pieChartData} height={200} />
         </div>
-      </div>
+      )}
     </div>
   );
 };
