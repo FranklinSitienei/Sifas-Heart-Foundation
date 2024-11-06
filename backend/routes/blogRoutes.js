@@ -54,10 +54,9 @@ router.post(
   [adminMiddleware, upload.single("media")],
   async (req, res) => {
     const { title, content, mediaUrl, tags } = req.body;
-    
+
     try {
       let mediaPath = "";
-      let mediaType = "";
 
       // Check if a media file was uploaded
       if (req.file) {
@@ -68,42 +67,42 @@ router.post(
             .json({ message: "File size exceeds 16 MB limit" });
         }
 
-        // Convert file to base64 for inline storage
         const base64Data = req.file.buffer.toString("base64");
         mediaPath = `data:${req.file.mimetype};base64,${base64Data}`;
-        mediaType = req.file.mimetype.startsWith("image") ? "image" : "video";
-        
       } else if (mediaUrl) {
-        // Use provided media URL
-        mediaPath = mediaUrl;
-        
-        // Determine media type based on URL format or extension
-        if (mediaUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
-          mediaType = "image";
-        } else if (mediaUrl.match(/\.(mp4|avi|mov|webm)$/i)) {
-          mediaType = "video";
+        // Check if a media URL is provided and categorize it
+        const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|embed|e)\/|\S*?v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+        const instagramRegex = /(?:https?:\/\/)?(?:www\.)?instagram\.com\/p\/([a-zA-Z0-9_-]+)/;
+        const twitterRegex = /(?:https?:\/\/)?(?:www\.)?twitter\.com\/(?:\w+)\/status\/([0-9]+)/;
+        const facebookRegex = /(?:https?:\/\/)?(?:www\.)?facebook\.com\/(?:[a-zA-Z0-9.]+)\/posts\/([a-zA-Z0-9_-]+)/;
+        const imageRegex = /\.(jpeg|jpg|gif|png)$/i;
+
+        if (imageRegex.test(mediaUrl)) {
+          mediaPath = mediaUrl; // Treat as an image URL
+        } else if (youtubeRegex.test(mediaUrl) || instagramRegex.test(mediaUrl) || twitterRegex.test(mediaUrl) || facebookRegex.test(mediaUrl)) {
+          mediaPath = mediaUrl; // Treat as an embed URL for video
         }
       }
 
-      // Create the new blog with appropriate media fields
       const newBlog = new Blog({
         admin: req.admin.id, // Admin's ID
         title,
         content,
         tags: tags ? tags.split(",").map((tag) => tag.trim()) : [],
-        image: mediaType === "image" ? mediaPath : "",
-        video: mediaType === "video" ? mediaPath : "",
+        image: mediaPath && mediaPath.match(/\.(jpeg|jpg|gif|png)$/i) ? mediaPath : "",
+        video: mediaPath && !mediaPath.match(/\.(jpeg|jpg|gif|png)$/i) ? mediaPath : "",
       });
 
       await newBlog.save();
-      res.status(201).json({ message: "Blog created successfully", blog: newBlog });
+      res
+        .status(201)
+        .json({ message: "Blog created successfully", blog: newBlog });
     } catch (err) {
       console.error("Error details:", err);
       res.status(500).json({ message: "Server error", error: err });
     }
   }
 );
-
 
 // Edit a blog (Admin only)
 router.put("/admin/:id/edit", adminMiddleware, async (req, res) => {
