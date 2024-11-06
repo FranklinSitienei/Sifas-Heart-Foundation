@@ -176,6 +176,7 @@ router.post('/admin/:blogId/comment', adminMiddleware, async (req, res) => {
     };
 
     blog.comments.push(newComment);
+    blog.comments.commentCount += 1;
     await blog.save();
 
     res.status(201).json(newComment);
@@ -216,6 +217,7 @@ router.post('/admin/:blogId/comment/:commentId/reply', adminMiddleware, async (r
     };
 
     comment.replies.push(reply);
+    comment.replies.replyCount += 1;
     await blog.save();
 
     res.status(201).json(reply);
@@ -240,6 +242,7 @@ router.delete('/admin/:blogId/comment/:commentId/delete', adminMiddleware, async
     }
 
     comment.remove();
+    comment.commentCount -= 1;
     await blog.save();
 
     res.status(200).json({ message: "Comment deleted successfully" });
@@ -290,6 +293,7 @@ router.delete('/admin/:blogId/comment/:commentId/reply/:replyId/delete', adminMi
     }
 
     reply.remove();
+    reply.replyCount -= 1;
     await blog.save();
 
     res.status(200).json({ message: "Reply deleted successfully" });
@@ -618,6 +622,7 @@ router.post("/user/:id/comment", authMiddleware, async (req, res) => {
     };
 
     blog.comments.push(newComment);
+    blog.comments.commentCount += 1;
     await blog.save();
 
     res.status(201).json(newComment);
@@ -675,6 +680,7 @@ router.post("/user/:blogId/comment/:commentId/reply", authMiddleware, async (req
     };
 
     comment.replies.push(reply);
+    comment.replies.replyCount += 1;
     await blog.save();
 
     res.status(201).json(reply);
@@ -745,6 +751,7 @@ router.delete(
       }
 
       comment.remove();
+      comment.commentCount -= 1;
       await blog.save();
 
       res.status(200).json({ message: "Comment deleted successfully" });
@@ -811,6 +818,7 @@ router.delete(
       }
 
       reply.remove();
+      reply.replyCount -= 1;
       await blog.save();
 
       res.status(200).json({ message: "Reply deleted successfully" });

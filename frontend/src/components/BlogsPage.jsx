@@ -126,7 +126,7 @@ const BlogsPage = () => {
                                     onClick={() => handleLike(blog._id)}
                                 >
                                     {likedBlogs.has(blog._id) ? <FaThumbsUp style={{ color: 'blue' }} /> : <FaRegThumbsUp />} 
-                                    {blog.likes.length}
+                                    {blog.likeCount}
                                 </span>
                                 <Link to={`/blog/${blog._id}`} className="comments">
                                     <FaComment /> {blog.comments.length}
