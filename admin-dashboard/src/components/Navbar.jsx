@@ -19,7 +19,7 @@ const Navbar = () => {
             
             if (!token) {
                 console.log('No admin token found, redirecting to login');
-                return navigate('/login');
+                return navigate('/signup');
             }
     
             try {
@@ -32,7 +32,7 @@ const Navbar = () => {
                 if (error.response && error.response.status === 401) {
                     console.error('Unauthorized access, redirecting to login:', error);
                     localStorage.removeItem('admin');
-                    navigate('/login');
+                    navigate('/signup');
                 } else {
                     console.error('Failed to fetch admin profile:', error);
                 }

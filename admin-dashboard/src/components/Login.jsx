@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import '../css/Login.css';
 import { FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 
@@ -117,9 +118,10 @@ const Login = () => {
                         </button>
                         <div className="recover-link">
                             <button type="button" onClick={() => setShowRecovery(true)} className="button">
-                                Forgot Password?
+                                Forgot Password? 
                             </button>
                         </div>
+                        {/* <p><Link to="/signup">signup</Link></p> */}
                         <div className="oauth-buttons">
                             <button type="button" onClick={handleGoogleLogin} className="google-button">
                                 Login with Google
@@ -145,6 +147,8 @@ const Login = () => {
                         </button>
                     </form>
                 )}
+
+                
             </div>
         </div>
     );

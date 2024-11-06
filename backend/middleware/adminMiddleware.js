@@ -2,7 +2,8 @@ const jwt = require('jsonwebtoken');
 const Admin = require('../models/Admin');
 
 const adminMiddleware = async (req, res, next) => {
-    const token = req.headers['authorization']?.split(' ')[1]; // Assuming Bearer token
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Assumes "Bearer <token>"
 
     if (!token) {
         return res.status(403).json({ message: "No token provided" });
@@ -10,6 +11,8 @@ const adminMiddleware = async (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.ADMIN_JWT_SECRET); // Use admin secret for verification
+        console.log("Decoded token:", decoded); // Log decoded payload for debugging
+        
         const admin = await Admin.findById(decoded.admin.id); // Ensure this matches your payload structure
         
         if (!admin) {
@@ -20,6 +23,9 @@ const adminMiddleware = async (req, res, next) => {
         next();
     } catch (error) {
         console.error("Admin middleware error:", error);
+        if (error instanceof jwt.JsonWebTokenError) {
+            return res.status(400).json({ message: "Invalid token format" });
+        }
         return res.status(500).json({ message: "Failed to authenticate token" });
     }
 };
