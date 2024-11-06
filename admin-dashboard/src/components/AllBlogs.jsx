@@ -90,19 +90,17 @@ const AllBlogs = () => {
                             </span>
                         </div>
                         <h2 className="blog-title">{blog.title}</h2>
-                        <p className="blog-content">{blog.content}</p>
                         {blog.image && (
                             <div className="media-container">
                                 <img src={blog.image} alt={blog.title} className="media" />
-                                <button className="donate-button">Donate</button>
                             </div>
                         )}
                         {blog.video && (
                             <div className="media-container">
-                                {renderEmbeddedMedia(blog.video)}
-                                <button className="donate-button">Donate</button>
+                                {renderEmbeddedMedia(blog.video)}                            
                             </div>
                         )}
+                        <p className="blog-content">{blog.content}</p>
                         <div className="blog-footer">
                             <span className="date">{new Date(blog.date).toLocaleString()}</span>
                             <div className="blog-actions">
