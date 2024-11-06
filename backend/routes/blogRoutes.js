@@ -54,9 +54,10 @@ router.post(
   [adminMiddleware, upload.single("media")],
   async (req, res) => {
     const { title, content, mediaUrl, tags } = req.body;
-
+    
     try {
       let mediaPath = "";
+      let mediaType = "";
 
       // Check if a media file was uploaded
       if (req.file) {
@@ -67,32 +68,42 @@ router.post(
             .json({ message: "File size exceeds 16 MB limit" });
         }
 
+        // Convert file to base64 for inline storage
         const base64Data = req.file.buffer.toString("base64");
         mediaPath = `data:${req.file.mimetype};base64,${base64Data}`;
+        mediaType = req.file.mimetype.startsWith("image") ? "image" : "video";
+        
       } else if (mediaUrl) {
-        // Check if a media URL is provided
+        // Use provided media URL
         mediaPath = mediaUrl;
+        
+        // Determine media type based on URL format or extension
+        if (mediaUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
+          mediaType = "image";
+        } else if (mediaUrl.match(/\.(mp4|avi|mov|webm)$/i)) {
+          mediaType = "video";
+        }
       }
 
+      // Create the new blog with appropriate media fields
       const newBlog = new Blog({
         admin: req.admin.id, // Admin's ID
         title,
         content,
         tags: tags ? tags.split(",").map((tag) => tag.trim()) : [],
-        image: mediaPath.includes("image") ? mediaPath : "",
-        video: mediaPath.includes("video") ? mediaPath : "",
+        image: mediaType === "image" ? mediaPath : "",
+        video: mediaType === "video" ? mediaPath : "",
       });
 
       await newBlog.save();
-      res
-        .status(201)
-        .json({ message: "Blog created successfully", blog: newBlog });
+      res.status(201).json({ message: "Blog created successfully", blog: newBlog });
     } catch (err) {
       console.error("Error details:", err);
       res.status(500).json({ message: "Server error", error: err });
     }
   }
 );
+
 
 // Edit a blog (Admin only)
 router.put("/admin/:id/edit", adminMiddleware, async (req, res) => {
