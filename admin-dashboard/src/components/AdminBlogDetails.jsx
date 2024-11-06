@@ -619,21 +619,69 @@ const AdminBlogDetails = () => {
     }));
   };
 
+  const renderEmbeddedMedia = (url) => {
+    // Check the URL and return an iframe based on the platform
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      return (
+        <iframe
+          src={`https://www.youtube.com/embed/${url.split('v=')[1]?.split('&')[0]}`}
+          title="YouTube video"
+          className="video"
+          allowFullScreen
+        />
+      );
+    } else if (url.includes('tiktok.com')) {
+      return (
+        <iframe
+          src={url.replace('tiktok.com', 't.tiktok.com')}
+          title="TikTok video"
+          className="video"
+          allowFullScreen
+        />
+      );
+    } else if (url.includes('twitter.com')) {
+      return (
+        <blockquote className="twitter-tweet">
+          <a href={url}>View Tweet</a>
+        </blockquote>
+      );
+    } else if (url.includes('instagram.com')) {
+      return (
+        <iframe
+          src={`https://instagram.com/p/${url.split('/p/')[1]}/embed`}
+          title="Instagram post"
+          className="video"
+          allowFullScreen
+        />
+      );
+    } else if (url.includes('gofundme.com')) {
+      return (
+        <iframe
+          src={url}
+          title="GoFundMe"
+          className="video"
+          allowFullScreen
+        />
+      );
+    }
+    return null; // Default case
+  };
+
   return (
     <div className="blog-details-container">
       {blog && (
         <div className="blog-details-content">
           {/* Blog Image */}
           <div className="blog-image-container" onDoubleClick={handleLikeToggle}>
-            {blog.image ? (
-              <img src={blog.image} alt={blog.title} className="blog-details-media" />
-            ) : blog.video ? (
-              <video controls className="blog-details-media">
-                <source src={blog.video} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            ) : (
-              <div className="placeholder-media">No Media</div>
+            {blog.image && (
+              <div className="media-container">
+                <img src={blog.image} alt={blog.title} className="media" />
+              </div>
+            )}
+            {blog.video && (
+              <div className="media-container">
+                {renderEmbeddedMedia(blog.video)}
+              </div>
             )}
           </div>
 
