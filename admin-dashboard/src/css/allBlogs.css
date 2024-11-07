@@ -2,13 +2,18 @@
     padding: 20px;
 }
 
+.title {
+    color: white;
+    position: relative;
+}
+
 .create-blog-button {
     position: absolute;
     top: 130px;
     right: 50px;
     border: none;
     cursor: pointer;
-    color: rgb(0, 110, 255);
+    color: rgb(255, 255, 255);
 }
 
 .blogs-grid {
@@ -38,9 +43,23 @@
     margin-right: 10px;
 }
 
+.admin-name {
+    font-weight: 600;
+    font-size: 1em;
+    display: block;
+}
+
 .verified-tick {
     color: rgb(0, 110, 255);
     margin-left: 5px;
+}
+
+.date {
+    color: #606060;
+    font-size: 0.9em;
+    margin-top: 2px;
+    display: block;
+    font-style: italic;
 }
 
 .blog-title {
@@ -55,32 +74,20 @@
 .media-container {
     position: relative;
     overflow: hidden;
+    border-radius: 8px;
 }
 
 .media {
     width: 100%;
     height: auto;
+    border-radius: 8px;
 }
 
 .video {
     width: 100%;
-    height: 200px; /* Adjust as needed */
-}
-
-.donate-button {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    background: rgba(255, 255, 255, 0.8);
-    border: none;
-    border-radius: 5px;
-    padding: 5px 10px;
-    cursor: pointer;
-    display: none; /* Initially hide */
-}
-
-.media-container:hover .donate-button {
-    display: block; /* Show on hover */
+    height: 200px;
+    /* Adjust as needed */
+    border-radius: 8px;
 }
 
 .blog-footer {
@@ -90,12 +97,27 @@
     border-top: 1px solid #e0e0e0;
 }
 
-.date {
-    color: gray;
-    font-size: 0.8em;
-}
-
 .blog-actions {
     display: flex;
     gap: 10px;
+    color: #606060;
+}
+
+.blog-actions .likes,
+.blog-actions .comments {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.3s;
+    color: black;
+}
+
+.blog-actions .likes:hover,
+.blog-actions .comments:hover {
+    color: #007bff;
+}
+
+.blog-actions .likes.liked {
+    color: #007bff;
 }

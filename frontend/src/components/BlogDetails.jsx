@@ -95,7 +95,7 @@ const BlogDetails = () => {
 
   const fetchBlogDetails = async () => {
     try {
-      const response = await axios.get(`https://sifas-heart-foundation-1.onrender.com/blog/${id}`, {
+      const response = await axios.get(`https://sifas-heart-foundation-1.onrender.com/api/blog/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

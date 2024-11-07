@@ -1,108 +1,108 @@
 .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background-color: #f8f8f8;
-    border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #f8f8f8;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .toggle-sidebar {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
 }
 
 .search-bar {
-    display: flex;
-    align-items: center;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    padding: 5px;
-    margin-left: 500px;
+  display: flex;
+  align-items: center;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 5px;
+  margin-left: 500px;
 }
 
 .search-bar input {
-    border: none;
-    outline: none;
+  border: none;
+  outline: none;
 }
 
 .navbar-icons {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
 }
 
 .notification {
-    position: relative;
-    margin-right: 20px;
+  position: relative;
+  margin-right: 20px;
 }
 
 .notification-count {
-    position: absolute;
-    top: -5px;
-    right: -10px;
-    background-color: red;
-    color: white;
-    border-radius: 50%;
-    padding: 2px 5px;
-    font-size: 12px;
+  position: absolute;
+  top: -5px;
+  right: -10px;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 5px;
+  font-size: 12px;
 }
 
-/* Account dropdown menu styling */
 .profile-container {
-    display: flex;
-    align-items: center;
-    position: relative;
-    cursor: pointer;
-    font-size: small;
-  }
-  
-  .profile-pic {
-    position: relative;
-  }
-  
-  .profile-icon {
-    font-size: 30px;
-    color: #007bff;
-  }
-  
-  .profile-image {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-  }
-  
-  .dropdown-icon {
-    font-size: 10px;
-    color: #333;
-    margin-left: 5px;
-  }
-  
-  .dropdown-menu {
-    display: flex;
-    flex-direction: column;
-    position: absolute;
-    top: 10%;
-    right: 0;
-    background: white;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
-    overflow: hidden;
-    z-index: 10;
-  }
-  
-  .dropdown-item {
-    padding: 10px 20px;
-    text-decoration: none;
-    color: #333;
-    display: block;
-    background-color: white;
-  }
-  
-  .dropdown-item:hover {
-    background-color: #007bff;
-    color: white;
-  }
+  display: flex;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+}
+
+.profile-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.account-icon {
+  font-size: 30px;
+  color: #007bff;
+}
+
+.dropdown-icon {
+  font-size: 10px;
+  color: #333;
+  margin-left: 5px;
+  transition: transform 0.3s;
+}
+
+.dropdown-icon.rotate {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 60px;
+  right: 10px;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  width: 150px;
+  z-index: 1000; /* Adjust to ensure visibility */
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-item {
+  padding: 10px 20px;
+  text-decoration: none;
+  color: #333;
+  display: block;
+  background-color: white;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: #007bff;
+  color: white;
+}

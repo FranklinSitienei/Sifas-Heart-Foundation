@@ -9,6 +9,11 @@
   margin-left: 200px;
 }
 
+.title {
+  color: white;
+  position: relative;
+}
+
 .blogs-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -35,6 +40,12 @@
   width: 40px;
   height: 40px;
   margin-right: 10px;
+}
+
+.admin-name {
+    font-weight: 600;
+    font-size: 1em;
+    display: block;
 }
 
 .verified-tick {
@@ -90,8 +101,11 @@
 }
 
 .date {
-  color: gray;
-  font-size: 0.8em;
+  color: #606060;
+  font-size: 0.9em;
+  margin-top: 2px;
+  display: block;
+  font-style: italic;
 }
 
 .blog-actions {
@@ -100,14 +114,23 @@
   cursor: pointer;
 }
 
-.likes {
-  display: flex;
-  align-items: center;
+.blog-actions .likes,
+.blog-actions .comments {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.3s;
+    color: black;
 }
 
-.comments {
-  display: flex;
-  align-items: center;
+.blog-actions .likes:hover,
+.blog-actions .comments:hover {
+    color: #007bff;
+}
+
+.blog-actions .likes.liked {
+    color: #007bff;
 }
 
 .animate-like {

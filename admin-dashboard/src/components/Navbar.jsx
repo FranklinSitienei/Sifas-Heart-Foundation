@@ -10,38 +10,30 @@ const Navbar = () => {
     const [admin, setAdmin] = useState(null);
     const [notificationCount, setNotificationCount] = useState(0);
     const navigate = useNavigate();
-    const [activeDropdown, setActiveDropdown] = useState(false); // Changed to boolean
+    const [activeDropdown, setActiveDropdown] = useState(false);
 
     useEffect(() => {
         const fetchAdminProfile = async () => {
             const token = localStorage.getItem('admin');
-            console.log('Retrieved token from localStorage:', token);
-            
             if (!token) {
-                console.log('No admin token found, redirecting to login');
                 return navigate('/login');
             }
-    
+
             try {
                 const response = await axios.get('https://sifas-heart-foundation-1.onrender.com/api/admin/profile', {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                console.log('Admin profile fetched successfully:', response.data);
                 setAdmin(response.data);
             } catch (error) {
                 if (error.response && error.response.status === 401) {
-                    console.error('Unauthorized access, redirecting to login:', error);
                     localStorage.removeItem('admin');
                     navigate('/login');
-                } else {
-                    console.error('Failed to fetch admin profile:', error);
                 }
             }
         };
-    
         fetchAdminProfile();
-    }, [navigate]);    
-    
+    }, [navigate]);
+
     const handleLogout = async () => {
         const token = localStorage.getItem('admin');
         try {
@@ -53,12 +45,13 @@ const Navbar = () => {
         } catch (error) {
             console.error('Logout failed:', error);
         }
-    };    
-
-    const toggleDropdown = () => {
-        setActiveDropdown(prev => !prev);
     };
 
+    const toggleDropdown = () => {
+        setActiveDropdown((prev) => !prev);
+        console.log("Dropdown active state:", activeDropdown);
+    };
+    
     return (
         <nav className="navbar">
             {isSidebarOpen && <Sidebar />}
@@ -71,7 +64,7 @@ const Navbar = () => {
                     <FaBell />
                     {notificationCount > 0 && <span className="notification-count">{notificationCount}</span>}
                 </div>
-                <div className="nav-icon" onClick={toggleDropdown}>
+                <div className="profile-container" onClick={toggleDropdown}>
                     {admin && admin.profilePicture ? (
                         <img
                             src={admin.profilePicture}
@@ -81,7 +74,7 @@ const Navbar = () => {
                     ) : (
                         <FaUserCircle className="account-icon" />
                     )}
-                    <FaChevronUp className="dropdown-icon" />
+                    <FaChevronUp className={`dropdown-icon ${activeDropdown ? 'rotate' : ''}`} />
                 </div>
                 {activeDropdown && (
                     <div className="dropdown-menu">
