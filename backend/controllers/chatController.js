@@ -85,7 +85,7 @@ exports.replyMessage = async (req, res) => {
   }
 };
 
-// Edit a message
+// Edit message
 exports.editMessage = async (req, res) => {
   const { messageId, newText } = req.body;
   const userId = req.user ? req.user.id : req.admin.id; // Get user or admin ID
@@ -98,12 +98,12 @@ exports.editMessage = async (req, res) => {
     if (!message) return res.status(404).json({ msg: "Message not found" });
 
     const messageAge = Date.now() - new Date(message.createdAt).getTime();
-    if (messageAge > 30000)
-      return res.status(400).json({ msg: "Editing time expired" });
+    if (messageAge > 30000) return res.status(400).json({ msg: "Editing time expired" });
 
     message.text = newText;
     await chat.save();
 
+    io.emit('messageEdited', { chatId: chat.id, messageId, newText }); // Emit the edited message in real-time
     res.json({ msg: "Message updated successfully" });
   } catch (error) {
     console.error("Error editing message:", error);
@@ -111,7 +111,7 @@ exports.editMessage = async (req, res) => {
   }
 };
 
-// Delete a message
+// Delete message
 exports.deleteMessage = async (req, res) => {
   const { messageId } = req.body;
   const userId = req.user ? req.user.id : req.admin.id; // Get user or admin ID
@@ -123,9 +123,10 @@ exports.deleteMessage = async (req, res) => {
     const message = chat.messages.id(messageId);
     if (!message) return res.status(404).json({ msg: "Message not found" });
 
-    // Use the pull method to remove the message from the array
     chat.messages.pull({ _id: messageId });
     await chat.save();
+
+    io.emit('messageDeleted', { chatId: chat.id, messageId }); // Emit the deleted message event
 
     res.json({ msg: "Message deleted successfully" });
   } catch (error) {
@@ -303,7 +304,7 @@ exports.setUserOffline = async (req, res) => {
   }
 };
 
-// Set admin online
+// Set admin online status
 exports.setAdminOnline = async (req, res) => {
   const adminId = req.admin.id;
 
@@ -315,7 +316,6 @@ exports.setAdminOnline = async (req, res) => {
     await admin.save();
 
     io.emit('adminOnline', { adminId, isOnline: true });
-
     res.json({ msg: 'Admin is now online' });
   } catch (error) {
     console.error('Error updating admin online status:', error);
@@ -323,7 +323,7 @@ exports.setAdminOnline = async (req, res) => {
   }
 };
 
-// Set admin offline
+// Set admin offline status
 exports.setAdminOffline = async (req, res) => {
   const adminId = req.admin.id;
 
@@ -335,7 +335,6 @@ exports.setAdminOffline = async (req, res) => {
     await admin.save();
 
     io.emit('adminOffline', { adminId, isOnline: false });
-
     res.json({ msg: 'Admin is now offline' });
   } catch (error) {
     console.error('Error updating admin offline status:', error);

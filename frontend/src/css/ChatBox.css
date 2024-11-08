@@ -43,25 +43,24 @@
   display: flex;
   align-items: center;
   padding: 10px;
-  border-bottom: 1px solid #ddd;
 }
 
 .admin-avatar {
+  border-radius: 50%;
   width: 40px;
   height: 40px;
-  border-radius: 50%;
   margin-right: 10px;
+}
+
+.admin-name {
+    font-weight: 600;
+    font-size: 10px;
+    display: block;
 }
 
 .admin-details {
   display: flex;
   flex-direction: column;
-}
-
-.admin-name {
-  font-weight: bold;
-  display: flex;
-  align-items: center;
 }
 
 .verified-icon {
@@ -70,7 +69,7 @@
 }
 
 .online-status {
-  font-size: 12px;
+  font-size: 10px;
   color: #888;
 }
 
@@ -136,6 +135,7 @@
 .emoji-icon {
   margin: 0 10px;
   cursor: pointer;
+  color: gold;
 }
 
 .emoji-picker {
@@ -153,6 +153,10 @@
   font-size: 10px;
   margin: 5px;
   cursor: pointer;
+}
+
+.send-icon{
+  color: #007bff;
 }
 
 .chatbox-icon {

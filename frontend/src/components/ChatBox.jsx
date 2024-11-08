@@ -96,29 +96,39 @@ const ChatBox = () => {
 
   const setUserOnline = async () => {
     try {
-      await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/user/online', {
+      const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/user/online', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+  
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
     } catch (error) {
       console.error('Error setting user online:', error);
+      alert("There was an issue setting the user status to online. Please try again.");
     }
   };
-
+  
   const setUserOffline = async () => {
     try {
-      await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/user/offline', {
+      const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/user/offline', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+  
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
     } catch (error) {
       console.error('Error setting user offline:', error);
+      alert("There was an issue setting the user status to offline. Please try again.");
     }
-  };
+  };  
 
   useEffect(() => {
     if (chatBodyRef.current) {
@@ -142,7 +152,16 @@ const ChatBox = () => {
 
   const checkAdminStatus = async () => {
     try {
-      const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/secretary-status');
+      const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/secretary-status', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
       const adminStatus = await response.json();
       setIsAdminOnline(adminStatus.isOnline);
       if (adminStatus.isOnline) {
@@ -150,8 +169,10 @@ const ChatBox = () => {
       }
     } catch (error) {
       console.error('Error checking admin status:', error);
+      alert("There was an issue checking the admin status.");
     }
   };
+
 
   const handleSend = async () => {
     if (message.trim()) {
@@ -242,20 +263,20 @@ const ChatBox = () => {
         <div className="chatbox">
           <div className="chatbox-header">
             <div className="chatbox-title">
-            {isAdminOnline && (
-              <div className="admin-info">
-                <div className="admin-profile">
-                  <img src={adminDetails.profilePicture || FaUserCircle} alt="Admin" className="admin-avatar" />
-                  <div className="admin-name">
-                    <span>{adminDetails.firstName} {adminDetails.lastName}</span>
-                    <MdVerified className="verified-icon" />
+              {isAdminOnline && (
+                <div className="admin-info">
+                  <div className="admin-profile">
+                    <img src={adminDetails.profilePicture || FaUserCircle} alt="Admin" className="admin-avatar" />
+                    <div className="admin-name">
+                      <span>{adminDetails.firstName} {adminDetails.lastName}</span>
+                      <MdVerified className="verified-icon" />
+                    </div>
+                  </div>
+                  <div className="admin-status">
+                    {isAdminOnline ? <span>Online</span> : <span>Offline</span>}
                   </div>
                 </div>
-                <div className="admin-status">
-                  {isAdminOnline ? <span>Online</span> : <span>Offline</span>}
-                </div>
-              </div>
-            )}
+              )}
             </div>
             <button className="chatbox-close" onClick={() => setIsOpen(false)}>X</button>
           </div>
@@ -278,7 +299,7 @@ const ChatBox = () => {
             ))}
           </div>
           <div className="chatbox-footer">
-            
+
             <input
               type="text"
               value={message}

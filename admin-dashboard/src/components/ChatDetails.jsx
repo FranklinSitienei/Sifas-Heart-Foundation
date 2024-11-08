@@ -4,6 +4,9 @@ import { HiOutlineEllipsisVertical } from 'react-icons/hi2';
 import { MdVerified } from 'react-icons/md';
 import '../css/ChatDetails.css';
 import { useParams } from 'react-router-dom';
+import { io } from 'socket.io-client';
+
+const socket = io('https://sifas-heart-foundation-1.onrender.com');
 
 const ChatDetails = () => {
     const { chatId } = useParams();
@@ -19,9 +22,13 @@ const ChatDetails = () => {
         if (token && chatId) {
             fetchChatDetails(token, chatId);
         }
-    }, [chatId]);
+    }, [chatId, token]);    
 
     const fetchChatDetails = async (token, chatId) => {
+        if (!token) {
+            console.error('Authorization token is missing.');
+            return;
+        }
         try {
             const response = await axios.get(`https://sifas-heart-foundation-1.onrender.com/api/chat/admin/${chatId}`, {
                 headers: {
@@ -35,6 +42,55 @@ const ChatDetails = () => {
             console.error('Error fetching chat details:', error.response?.data || error.message);
         }
     };
+    
+    useEffect(() => {
+        fetchChatDetails();
+    
+        // Listen for new messages from the user
+        socket.on('message', (newMessage) => {
+          if (newMessage.chatId === chatId) {
+            setMessages((prevMessages) => [...prevMessages, newMessage]);
+          }
+        });
+    
+        // Listen for admin replies
+        socket.on('adminReply', (reply) => {
+          if (reply.chatId === chatId) {
+            setMessages((prevMessages) => [...prevMessages, reply]);
+          }
+        });
+    
+        // Listen for message edits
+        socket.on('messageEdited', (editedMessage) => {
+          setMessages((prevMessages) => {
+            return prevMessages.map(msg => 
+              msg._id === editedMessage.messageId ? { ...msg, text: editedMessage.newText } : msg
+            );
+          });
+        });
+    
+        // Listen for message deletions
+        socket.on('messageDeleted', (deletedMessage) => {
+          setMessages((prevMessages) => prevMessages.filter(msg => msg._id !== deletedMessage.messageId));
+        });
+    
+        return () => {
+          socket.off('message');
+          socket.off('adminReply');
+          socket.off('messageEdited');
+          socket.off('messageDeleted');
+        };
+      }, [chatId]);
+    
+      useEffect(() => {
+        // Emit that the admin is online when the chat details page is opened
+        socket.emit('adminOnline', { chatId });
+    
+        return () => {
+          // Emit that the admin is offline when the chat details page is closed
+          socket.emit('adminOffline', { chatId });
+        };
+      }, [chatId]);
 
     const scrollToBottom = () => {
         if (messagesEndRef.current) {
@@ -78,7 +134,7 @@ const ChatDetails = () => {
 
     const handleEditMessage = async (messageId) => {
         try {
-            await axios.post('https://sifas-heart-foundation-1.onrender.com/api/chat/admin/edit', { messageId, newText: editingText }, {
+            await axios.post(`https://sifas-heart-foundation-1.onrender.com/api/chat/admin/edit/${chatId}`, { messageId, newText: editingText }, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },

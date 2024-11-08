@@ -25,8 +25,8 @@ router.post("/user/online", authMiddleware, setUserOnline);
 router.post("/user/offline", authMiddleware, setUserOffline);
 router.get("/secretary-status", authMiddleware, checkAdminStatus);
 router.post("/complex", authMiddleware, handleComplexMessage);
-router.post("/edit", authMiddleware, editMessage);
-router.post("/delete", authMiddleware, deleteMessage);
+router.post("/edit/:chatId", authMiddleware, editMessage);
+router.post("/delete/:chatId", authMiddleware, deleteMessage);
 router.get("/all", authMiddleware, getUserChats);
 
 // Admin routes - Define specific routes first
