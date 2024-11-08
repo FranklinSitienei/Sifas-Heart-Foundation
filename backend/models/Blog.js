@@ -7,7 +7,7 @@ const CommentSchema = new Schema({
   content: { type: String, required: true },
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   likeCount: { type: Number, default: 0 },
-  commentCount: { type: Number, default: 0 },
+  
   mentions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Admin' }],
   replies: [
     {
@@ -33,6 +33,7 @@ const BlogSchema = new Schema({
   tags: [{ type: String }],
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   likeCount: { type: Number, default: 0 },
+  commentCount: { type: Number, default: 0 },
   comments: [CommentSchema],
   date: { type: Date, default: Date.now },
 });

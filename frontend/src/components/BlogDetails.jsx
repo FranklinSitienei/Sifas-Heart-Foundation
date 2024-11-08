@@ -167,7 +167,7 @@ const BlogDetails = () => {
 
   const handleCommentSubmit = async () => {
     if (!newComment.trim()) return;
-
+  
     try {
       const response = await axios.post(
         `https://sifas-heart-foundation-1.onrender.com/api/blog/user/${id}/comment`,
@@ -178,16 +178,23 @@ const BlogDetails = () => {
           },
         }
       );
+  
+      // Update comments and clear input
       setComments([...comments, response.data]);
       setNewComment("");
       setShowSuggestions(false);
+  
+      // Increment the local comment count
+      setBlog((prevBlog) => ({
+        ...prevBlog,
+        commentCount: prevBlog.commentCount + 1,
+      }));
+  
     } catch (error) {
-      console.error(
-        "Error submitting comment:",
-        error.response?.data || error.message
-      );
+      console.error("Error submitting comment:", error.response?.data || error.message);
     }
   };
+  
 
   const handleReplyChange = (e) => {
     const value = e.target.value;
