@@ -1,13 +1,14 @@
 const Chat = require("../models/Chat");
+const { io } = require('../server');
 const Admin = require("../models/Admin");
 const Notification = require("../models/Notification");
 const { handleAdminChatAchievements } = require("../utils/achievementUtils");
 const User = require("../models/User");
 
-// Send a message from the user only
+// Send a message from the user
 exports.sendMessage = async (req, res) => {
   const { message, emoji } = req.body;
-  const userId = req.user.id; // Only user can send a message
+  const userId = req.user.id;
 
   try {
     let chat = await Chat.findOne({ userId });
@@ -16,9 +17,17 @@ exports.sendMessage = async (req, res) => {
       chat = new Chat({ userId });
     }
 
-    chat.messages.push({ from: 'user', text: message, emoji, createdAt: new Date() });
+    const newMessage = {
+      from: 'user',
+      text: message,
+      emoji,
+      createdAt: new Date()
+    };
+    chat.messages.push(newMessage);
     chat.lastActive = Date.now();
     await chat.save();
+
+    io.emit('message', { userId, ...newMessage }); 
 
     // Increment chat count for user achievements
     const user = await User.findById(userId);
@@ -49,22 +58,25 @@ exports.sendMessage = async (req, res) => {
   }
 };
 
-// Send a reply from the admin to the user
+// Send a reply from the admin
 exports.replyMessage = async (req, res) => {
   const { message } = req.body;
-  const adminId = req.admin.id; // Get the admin ID
-  const chatId = req.params.chatId; // Get chatId from request params
+  const adminId = req.admin.id;
+  const chatId = req.params.chatId;
 
   try {
     const chat = await Chat.findById(chatId);
     if (!chat) return res.status(404).json({ msg: "Chat not found" });
 
-    chat.messages.push({
-      from: "admin",
+    const replyMessage = {
+      from: 'admin',
       text: message,
-      createdAt: new Date(),
-    });
+      createdAt: new Date()
+    };
+    chat.messages.push(replyMessage);
     await chat.save();
+
+    io.emit('adminReply', { chatId, ...replyMessage }); // Emit admin reply event
 
     res.json({ msg: "Reply sent successfully", message });
   } catch (error) {
@@ -250,9 +262,9 @@ exports.fetchChatDetails = async (req, res) => {
   }
 };
 
-// Update user's online status when chatbox is opened
+// Set user online
 exports.setUserOnline = async (req, res) => {
-  const userId = req.user.id; // Assume only users initiate chat
+  const userId = req.user.id;
 
   try {
     const user = await User.findById(userId);
@@ -261,6 +273,8 @@ exports.setUserOnline = async (req, res) => {
     user.isOnline = true;
     await user.save();
 
+    io.emit('userOnline', { userId, isOnline: true });
+
     res.json({ msg: 'User is now online' });
   } catch (error) {
     console.error('Error updating user online status:', error);
@@ -268,7 +282,7 @@ exports.setUserOnline = async (req, res) => {
   }
 };
 
-// Update user's online status when chatbox is closed
+// Set user offline
 exports.setUserOffline = async (req, res) => {
   const userId = req.user.id;
 
@@ -277,8 +291,10 @@ exports.setUserOffline = async (req, res) => {
     if (!user) return res.status(404).json({ msg: 'User not found' });
 
     user.isOnline = false;
-    user.lastSeen = new Date(); // Optional: Track when the user was last online
+    user.lastSeen = new Date();
     await user.save();
+
+    io.emit('userOffline', { userId, isOnline: false });
 
     res.json({ msg: 'User is now offline' });
   } catch (error) {
@@ -286,3 +302,44 @@ exports.setUserOffline = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
+// Set admin online
+exports.setAdminOnline = async (req, res) => {
+  const adminId = req.admin.id;
+
+  try {
+    const admin = await Admin.findById(adminId);
+    if (!admin) return res.status(404).json({ msg: 'Admin not found' });
+
+    admin.isOnline = true;
+    await admin.save();
+
+    io.emit('adminOnline', { adminId, isOnline: true });
+
+    res.json({ msg: 'Admin is now online' });
+  } catch (error) {
+    console.error('Error updating admin online status:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// Set admin offline
+exports.setAdminOffline = async (req, res) => {
+  const adminId = req.admin.id;
+
+  try {
+    const admin = await Admin.findById(adminId);
+    if (!admin) return res.status(404).json({ msg: 'Admin not found' });
+
+    admin.isOnline = false;
+    await admin.save();
+
+    io.emit('adminOffline', { adminId, isOnline: false });
+
+    res.json({ msg: 'Admin is now offline' });
+  } catch (error) {
+    console.error('Error updating admin offline status:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+

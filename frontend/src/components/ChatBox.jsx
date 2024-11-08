@@ -3,8 +3,11 @@ import { FaPaperPlane } from 'react-icons/fa';
 import { MdChat } from 'react-icons/md';
 import { BsEmojiSmile } from 'react-icons/bs';
 import { FaUserCircle } from 'react-icons/fa';
-import { MdVerified } from 'react-icons/md'; // Verified Icon
+import { MdVerified } from 'react-icons/md';
 import '../css/ChatBox.css';
+import io from 'socket.io-client';
+
+const socket = io('https://sifas-heart-foundation-1.onrender.com');
 
 const ChatBox = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,51 +16,58 @@ const ChatBox = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isAdminOnline, setIsAdminOnline] = useState(false);
   const [adminDetails, setAdminDetails] = useState({});
-  const [editMessageId, setEditMessageId] = useState(null); 
+  const [editMessageId, setEditMessageId] = useState(null);
   const [emojiList, setEmojiList] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const token = localStorage.getItem('token');
   const chatBodyRef = useRef(null);
 
   useEffect(() => {
+    socket.on('message', (newMessage) => {
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+    });
+
+    socket.on('messageEdited', (updatedMessage) => {
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg._id === updatedMessage._id ? updatedMessage : msg
+        )
+      );
+    });
+
+    socket.on('messageDeleted', (deletedMessageId) => {
+      setMessages((prevMessages) =>
+        prevMessages.filter((msg) => msg._id !== deletedMessageId)
+      );
+    });
+
+    socket.on('adminOnline', ({ adminId }) => {
+      setIsAdminOnline(true);
+    });
+
+    socket.on('adminOffline', ({ adminId }) => {
+      setIsAdminOnline(false);
+    });
+
+    return () => {
+      socket.off('message');
+      socket.off('messageEdited');
+      socket.off('messageDeleted');
+      socket.off('adminOnline');
+      socket.off('adminOffline');
+    };
+  }, []);
+
+  useEffect(() => {
     if (isOpen) {
       fetchChatHistory();
       checkAdminStatus();
       addGreetingMessage();
-      fetchEmojis(); // Fetch emojis when chatbox is opened
-      setUserOnline(); // Set user as online
+      setUserOnline();
     } else {
-      setUserOffline(); // Set user as offline when chatbox is closed
+      setUserOffline();
     }
   }, [isOpen]);
-
-  const setUserOnline = async () => {
-    try {
-      const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/user/online', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) throw new Error('Failed to set user online');
-    } catch (error) {
-      console.error('Error setting user online:', error);
-    }
-  };
-
-  const setUserOffline = async () => {
-    try {
-      const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/user/offline', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) throw new Error('Failed to set user offline');
-    } catch (error) {
-      console.error('Error setting user offline:', error);
-    }
-  };
 
   useEffect(() => {
     return () => {
@@ -84,6 +94,38 @@ const ChatBox = () => {
     }
   };
 
+  const setUserOnline = async () => {
+    try {
+      await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/user/online', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (error) {
+      console.error('Error setting user online:', error);
+    }
+  };
+
+  const setUserOffline = async () => {
+    try {
+      await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/user/offline', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (error) {
+      console.error('Error setting user offline:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (chatBodyRef.current) {
+      chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   const fetchChatHistory = async () => {
     try {
       const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/messages', {
@@ -91,7 +133,6 @@ const ChatBox = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      if (!response.ok) throw new Error('Failed to fetch chat history');
       const chatData = await response.json();
       setMessages(chatData.messages || []);
     } catch (error) {
@@ -102,7 +143,6 @@ const ChatBox = () => {
   const checkAdminStatus = async () => {
     try {
       const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/secretary-status');
-      if (!response.ok) throw new Error('Failed to check admin status');
       const adminStatus = await response.json();
       setIsAdminOnline(adminStatus.isOnline);
       if (adminStatus.isOnline) {
@@ -112,11 +152,11 @@ const ChatBox = () => {
       console.error('Error checking admin status:', error);
     }
   };
-  
+
   const handleSend = async () => {
     if (message.trim()) {
+      setIsLoading(true);
       try {
-        setIsLoading(true);
         if (editMessageId) {
           await handleEdit();
         } else {
@@ -129,14 +169,12 @@ const ChatBox = () => {
             body: JSON.stringify({ message }),
           });
 
-          if (!response.ok) throw new Error('Failed to send message');
-
           const newMessage = await response.json();
-          setMessages([...messages, newMessage]);
+          socket.emit('message', newMessage);
         }
 
         setMessage('');
-        setEditMessageId(null); 
+        setEditMessageId(null);
         setIsLoading(false);
       } catch (error) {
         console.error('Error sending message:', error);
@@ -156,9 +194,8 @@ const ChatBox = () => {
         body: JSON.stringify({ messageId: editMessageId, newText: message }),
       });
 
-      if (!response.ok) throw new Error('Failed to edit message');
-
-      setMessages(messages.map(msg => (msg._id === editMessageId ? { ...msg, text: message } : msg)));
+      const updatedMessage = await response.json();
+      socket.emit('messageEdited', updatedMessage);
 
       setEditMessageId(null);
       setMessage('');
@@ -169,7 +206,7 @@ const ChatBox = () => {
 
   const handleDelete = async (messageId) => {
     try {
-      const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/delete', {
+      await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/delete', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -178,9 +215,7 @@ const ChatBox = () => {
         body: JSON.stringify({ messageId }),
       });
 
-      if (!response.ok) throw new Error('Failed to delete message');
-
-      setMessages(messages.filter(msg => msg._id !== messageId));
+      socket.emit('messageDeleted', messageId);
     } catch (error) {
       console.error('Error deleting message:', error);
     }
