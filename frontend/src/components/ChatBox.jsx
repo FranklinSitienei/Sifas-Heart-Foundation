@@ -3,7 +3,7 @@ import { FaPaperPlane } from 'react-icons/fa';
 import { MdChat } from 'react-icons/md';
 import { BsEmojiSmile } from 'react-icons/bs';
 import { FaUserCircle } from 'react-icons/fa';
-import { MdVerified } from "react-icons/md";
+import { MdVerified } from 'react-icons/md'; // Verified Icon
 import '../css/ChatBox.css';
 
 const ChatBox = () => {
@@ -13,7 +13,7 @@ const ChatBox = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isAdminOnline, setIsAdminOnline] = useState(false);
   const [adminDetails, setAdminDetails] = useState({});
-  const [editMessageId, setEditMessageId] = useState(null);
+  const [editMessageId, setEditMessageId] = useState(null); 
   const [emojiList, setEmojiList] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const token = localStorage.getItem('token');
@@ -22,11 +22,12 @@ const ChatBox = () => {
   useEffect(() => {
     if (isOpen) {
       fetchChatHistory();
+      checkAdminStatus();
       addGreetingMessage();
-      fetchEmojis();
-      setUserOnline();
+      fetchEmojis(); // Fetch emojis when chatbox is opened
+      setUserOnline(); // Set user as online
     } else {
-      setUserOffline();
+      setUserOffline(); // Set user as offline when chatbox is closed
     }
   }, [isOpen]);
 
@@ -93,28 +94,29 @@ const ChatBox = () => {
       if (!response.ok) throw new Error('Failed to fetch chat history');
       const chatData = await response.json();
       setMessages(chatData.messages || []);
-
-      // Extract admin details directly from messages
-      const adminMessage = chatData.messages.find((msg) => msg.from === 'admin');
-      if (adminMessage) {
-        setAdminDetails({
-          firstName: adminMessage.adminDetails?.firstName || 'Admin',
-          lastName: adminMessage.adminDetails?.lastName || '',
-          profilePicture: adminMessage.adminDetails?.profilePicture || FaUserCircle,
-          role: adminMessage.adminDetails?.role || 'Support',
-        });
-        setIsAdminOnline(true);
-      }
     } catch (error) {
       console.error('Error fetching chat history:', error);
     }
   };
 
+  const checkAdminStatus = async () => {
+    try {
+      const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/secretary-status');
+      if (!response.ok) throw new Error('Failed to check admin status');
+      const adminStatus = await response.json();
+      setIsAdminOnline(adminStatus.isOnline);
+      if (adminStatus.isOnline) {
+        setAdminDetails(adminStatus.secretary);
+      }
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+    }
+  };
+  
   const handleSend = async () => {
     if (message.trim()) {
       try {
         setIsLoading(true);
-
         if (editMessageId) {
           await handleEdit();
         } else {
@@ -134,7 +136,7 @@ const ChatBox = () => {
         }
 
         setMessage('');
-        setEditMessageId(null);
+        setEditMessageId(null); 
         setIsLoading(false);
       } catch (error) {
         console.error('Error sending message:', error);
@@ -156,11 +158,10 @@ const ChatBox = () => {
 
       if (!response.ok) throw new Error('Failed to edit message');
 
-      // Update the message in the UI
       setMessages(messages.map(msg => (msg._id === editMessageId ? { ...msg, text: message } : msg)));
 
-      setEditMessageId(null); // Clear editing state
-      setMessage(''); // Clear the input after editing
+      setEditMessageId(null);
+      setMessage('');
     } catch (error) {
       console.error('Error editing message:', error);
     }
@@ -206,23 +207,23 @@ const ChatBox = () => {
         <div className="chatbox">
           <div className="chatbox-header">
             <div className="chatbox-title">
-              {adminDetails && (
-                <div className="admin-info">
-                  <img src={adminDetails.profilePicture} alt="Admin" className="admin-avatar" />
-                  <div className="admin-details">
-                    <span className="admin-name">
-                      {adminDetails.firstName} {adminDetails.lastName} <MdVerified className="verified-icon" />
-                    </span>
-                    <span className="online-status">
-                      {adminDetails.isOnline ? 'Online' : 'Offline'}
-                    </span>
+            {isAdminOnline && (
+              <div className="admin-info">
+                <div className="admin-profile">
+                  <img src={adminDetails.profilePicture || FaUserCircle} alt="Admin" className="admin-avatar" />
+                  <div className="admin-name">
+                    <span>{adminDetails.firstName} {adminDetails.lastName}</span>
+                    <MdVerified className="verified-icon" />
                   </div>
                 </div>
-              )}
+                <div className="admin-status">
+                  {isAdminOnline ? <span>Online</span> : <span>Offline</span>}
+                </div>
+              </div>
+            )}
             </div>
             <button className="chatbox-close" onClick={() => setIsOpen(false)}>X</button>
           </div>
-
           <div className="chatbox-body" ref={chatBodyRef}>
             {messages.map((msg, index) => (
               <div key={index} className={`message ${msg.from}`}>
@@ -242,12 +243,7 @@ const ChatBox = () => {
             ))}
           </div>
           <div className="chatbox-footer">
-            {/* {isAdminOnline && (
-              <div className="admin-info">
-                <img src={adminDetails.profilePicture} alt="Admin" className="admin-avatar" />
-                <span>{adminDetails.firstName} {adminDetails.lastName} ({adminDetails.role})</span>
-              </div>
-            )} */}
+            
             <input
               type="text"
               value={message}
@@ -255,26 +251,11 @@ const ChatBox = () => {
               placeholder={editMessageId ? 'Edit your message...' : 'Type a message...'}
             />
             <BsEmojiSmile className="emoji-icon" onClick={() => setShowEmojiPicker(!showEmojiPicker)} />
-            {showEmojiPicker && (
-              <div className="emoji-picker">
-                {emojiList.map((emojiItem) => (
-                  <span
-                    key={emojiItem.name}
-                    className="emoji"
-                    onClick={() => handleEmojiClick(emojiItem.symbol)}
-                  >
-                    {emojiItem.symbol}
-                  </span>
-                ))}
-              </div>
-            )}
-            <button onClick={handleSend} disabled={isLoading}>
-              <FaPaperPlane />
-            </button>
+            <FaPaperPlane className="send-icon" onClick={handleSend} />
           </div>
         </div>
       )}
-      <MdChat className="chatbox-icon" onClick={() => setIsOpen(!isOpen)} />
+      <MdChat onClick={() => setIsOpen(!isOpen)} className="chatbox-icon" />
     </>
   );
 };
