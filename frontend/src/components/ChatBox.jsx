@@ -32,7 +32,7 @@ const ChatBox = () => {
   
   const setUserOnline = async () => {
     try {
-      const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/user-online', {
+      const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/user/online', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -46,7 +46,7 @@ const ChatBox = () => {
   
   const setUserOffline = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/chat/user-offline', {
+      const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/chat/user/offline', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

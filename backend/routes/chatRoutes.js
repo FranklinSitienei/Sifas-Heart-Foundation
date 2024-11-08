@@ -12,6 +12,8 @@ const {
     getUserChats,
     fetchChatDetails,
     replyMessage,
+    setUserOnline,
+    setUserOffline,
 } = require("../controllers/chatController");
 
 const router = express.Router();
@@ -19,6 +21,8 @@ const router = express.Router();
 // User routes
 router.get("/messages", authMiddleware, fetchChatMessages);
 router.post("/send", authMiddleware, sendMessage);
+router.post("/user/online", authMiddleware, setUserOnline);
+router.post("/user/offline", authMiddleware, setUserOffline);
 router.get("/secretary-status", authMiddleware, checkAdminStatus);
 router.post("/complex", authMiddleware, handleComplexMessage);
 router.post("/edit", authMiddleware, editMessage);

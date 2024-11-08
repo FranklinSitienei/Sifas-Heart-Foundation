@@ -129,7 +129,7 @@ const BlogsPage = () => {
                                     {blog.likeCount}
                                 </span>
                                 <Link to={`/blog/${blog._id}`} className="comments">
-                                    <IoChatboxOutline /> {blog.comments.commentCount}
+                                    <IoChatboxOutline /> {blog.commentCount}
                                 </Link>
                             </div>
                         </div>
