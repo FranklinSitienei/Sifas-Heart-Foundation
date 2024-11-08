@@ -176,7 +176,7 @@ router.post('/admin/:blogId/comment', adminMiddleware, async (req, res) => {
     };
 
     blog.comments.push(newComment);
-    blog.comments.commentCount += 1;
+    blog.commentCount += 1;
     await blog.save();
 
     res.status(201).json(newComment);
@@ -242,7 +242,7 @@ router.delete('/admin/:blogId/comment/:commentId/delete', adminMiddleware, async
     }
 
     comment.remove();
-    comment.commentCount -= 1;
+    blog.commentCount -= 1;
     await blog.save();
 
     res.status(200).json({ message: "Comment deleted successfully" });
@@ -253,7 +253,7 @@ router.delete('/admin/:blogId/comment/:commentId/delete', adminMiddleware, async
 });
 
 // Admin can edit any comment
-router.put('/admin/:blogId/comment/:commentId/edit', adminMiddleware, async (req, res) => {
+router.put('/admin/:blogId/comments/:commentId/edit', adminMiddleware, async (req, res) => {
   const { content } = req.body;
 
   try {
@@ -449,7 +449,7 @@ router.post("/admin/:blogId/comment/:commentId/reply/:replyId/unlike", adminMidd
 
 // Admin can delete any reported comment or reply
 router.delete(
-  "/admin/:blogId/comment/:commentId/delete",
+  "/admin/:blogId/reportedcomment/:commentId/delete",
   adminMiddleware,
   async (req, res) => {
     try {
@@ -622,7 +622,7 @@ router.post("/user/:id/comment", authMiddleware, async (req, res) => {
     };
 
     blog.comments.push(newComment);
-    blog.comments.commentCount += 1;
+    blog.commentCount += 1;
     await blog.save();
 
     res.status(201).json(newComment);
@@ -751,7 +751,7 @@ router.delete(
       }
 
       comment.remove();
-      comment.commentCount -= 1;
+      blog.commentCount -= 1;
       await blog.save();
 
       res.status(200).json({ message: "Comment deleted successfully" });
