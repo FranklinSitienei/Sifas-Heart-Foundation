@@ -267,13 +267,13 @@ const Dashboard = () => {
                     <div>
                       <strong>{chat.userId?.firstName || 'Admin'} {chat.userId?.lastName || ''}</strong>
                       <p>{chat.messages[chat.messages.length - 1]?.text || "No messages yet."}</p>
-                      <small>{new Date(chat.lastActive).toLocaleString()}</small>
                       <button
                         onClick={() => markAsRead(chat._id)}
                         className="mark-as-read"
                       >
                         Mark as Read
                       </button>
+                      <small>{new Date(chat.lastActive).toLocaleString()}</small>
                     </div>
                   </div>
                 </li>

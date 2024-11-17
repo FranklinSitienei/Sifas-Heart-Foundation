@@ -114,21 +114,16 @@
 }
 
 .bottom-section.with-chats .user-chats-section {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  border-radius: 8px;
   flex: 1;
+  min-width: 250px;
+  color: #ffffff;
 }
 
 .user-chats-section.hidden {
   display: none;
-}
-
-/* User Chats */
-.user-chats-section {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  border-radius: 8px;
-  flex: 2;
-  min-width: 250px;
-  color: #ffffff;
 }
 
 .user-chats-section h3 {
@@ -168,6 +163,11 @@
 
 .chat-item small {
   color: #7e7e7e;
+}
+
+.mark-as-read{
+  background-color: red;
+  margin-right: 500px;
 }
 
 /* Payment Methods Pie Chart */
