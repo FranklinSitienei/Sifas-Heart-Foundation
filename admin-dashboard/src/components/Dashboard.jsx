@@ -1,7 +1,8 @@
-// src/components/Dashboard.jsx
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Bar, Pie } from "react-chartjs-2";
+import io from "socket.io-client";
 import "chart.js/auto";
 import "../css/Dashboard.css";
 
@@ -12,9 +13,12 @@ const Dashboard = () => {
   const [recentTransactions, setRecentTransactions] = useState([]);
   const [userChats, setUserChats] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
-  const [loading, setLoading] = useState(true); // Loading state
-  const [error, setError] = useState(null); // Error state
-  const [allChatsRead, setAllChatsRead] = useState(false); // Manage visibility of chat section
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [hasUnreadChats, setHasUnreadChats] = useState(false);
+
+  const navigate = useNavigate();
+  const socket = io("https://sifas-heart-foundation-1.onrender.com");
 
   useEffect(() => {
     const adminToken = localStorage.getItem("admin");
@@ -52,8 +56,8 @@ const Dashboard = () => {
         setPaymentMethods(paymentMethodsResponse.data);
         setLoading(false);
 
-        // Set allChatsRead based on whether all chats are read or not
-        setAllChatsRead(chatsResponse.data.every(chat => chat.read)); // Example condition
+        const unreadChats = chatsResponse.data.filter((chat) => !chat.isRead);
+        setHasUnreadChats(unreadChats.length > 0);
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
         setError("Failed to fetch dashboard data. Please try again later.");
@@ -62,7 +66,40 @@ const Dashboard = () => {
     };
 
     fetchDashboardData();
-  }, []);
+
+    // Socket.IO real-time updates
+    socket.on("newChat", (newChat) => {
+      setUserChats((prevChats) => [newChat, ...prevChats]);
+      setHasUnreadChats(true);
+    });
+
+    socket.on("updateDonationOverview", (data) => {
+      setDonationOverview(data);
+    });
+
+    socket.on("newTransaction", (transaction) => {
+      setRecentTransactions((prevTransactions) => [transaction, ...prevTransactions]);
+    });
+
+    return () => {
+      socket.disconnect(); // Cleanup socket connection
+    };
+  }, [socket]);
+
+  const handleChatClick = (chatId) => {
+    navigate(`/chat/details/${chatId}`);
+  };
+
+  const markAsRead = async (chatId) => {
+    try {
+      await axios.post(
+        `https://sifas-heart-foundation-1.onrender.com/api/chat/admin/${chatId}/read`
+      );
+      setUserChats((prevChats) => prevChats.filter((chat) => chat._id !== chatId));
+    } catch (err) {
+      console.error("Error marking chat as read:", err);
+    }
+  };
 
   // Month names for labeling the bar chart
   const monthNames = [
@@ -89,7 +126,7 @@ const Dashboard = () => {
       y: {
         beginAtZero: true,
         ticks: {
-          callback: function(value) {
+          callback: function (value) {
             return 'Ksh ' + value;
           }
         }
@@ -103,7 +140,7 @@ const Dashboard = () => {
     plugins: {
       tooltip: {
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             return `Ksh ${context.parsed.y}`;
           }
         }
@@ -206,31 +243,45 @@ const Dashboard = () => {
       )}
 
       {/* Bottom Section: User Chats and Payment Methods Pie Chart */}
-      {!allChatsRead && userChats.length > 0 && (
-        <div className="bottom-section">
+      <div
+        className={`bottom-section ${hasUnreadChats ? 'with-chats' : 'no-chats'
+          }`}
+      >
+        {hasUnreadChats && (
           <div className="user-chats-section">
-            <h3>Latest User/Admin Chats</h3>
+            <h3>Latest User Chats</h3>
             <ul className="chat-list">
               {userChats.map((chat) => (
-                <li key={chat._id} className="chat-item">
+                <li
+                  key={chat._id}
+                  className="chat-item"
+                  onClick={() => handleChatClick(chat._id)}
+                  style={{ cursor: "pointer" }}
+                >
                   <div className="chat-header">
                     <img
                       src={chat.userId?.profilePicture || '/default-profile.png'}
-                      alt={`${chat.userId?.firstName || 'Unknown'} ${chat.userId?.lastName || ''}`}
+                      alt={`${chat.userId?.firstName || 'Admin'} ${chat.userId?.lastName || ''}`}
                       className="chat-user-picture"
                     />
                     <div>
-                      <strong>{chat.userId?.firstName || 'Unknown'} {chat.userId?.lastName || ''}</strong>
+                      <strong>{chat.userId?.firstName || 'Admin'} {chat.userId?.lastName || ''}</strong>
                       <p>{chat.messages[chat.messages.length - 1]?.text || "No messages yet."}</p>
                       <small>{new Date(chat.lastActive).toLocaleString()}</small>
+                      <button
+                        onClick={() => markAsRead(chat._id)}
+                        className="mark-as-read"
+                      >
+                        Mark as Read
+                      </button>
                     </div>
                   </div>
                 </li>
               ))}
             </ul>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Payment Methods Pie Chart */}
       {paymentMethods.length > 0 && (

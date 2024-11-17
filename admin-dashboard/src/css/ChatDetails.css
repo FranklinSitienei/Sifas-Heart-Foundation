@@ -75,13 +75,13 @@
     position: relative;
 }
 
-.user-message {
+.message.user {
     align-self: flex-start;
     background-color: #bebebe;
     color: #000;
 }
 
-.admin-message {
+.message.admin {
     justify-self: flex-end;
     align-self: flex-end;
     background-color: #0084ff;

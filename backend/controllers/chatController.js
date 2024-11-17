@@ -342,3 +342,20 @@ exports.setAdminOffline = async (req, res) => {
   }
 };
 
+exports.markAsRead = async (req, res) => {
+  const { chatId } = req.params;
+
+  try {
+    const chat = await Chat.findById(chatId);
+    if (!chat) return res.status(404).json({ msg: "Chat not found" });
+
+    chat.isRead = true;
+    await chat.save();
+
+    io.emit('chatRead', { chatId });
+    res.json({ msg: "Chat marked as read" });
+  } catch (error) {
+    console.error("Error marking chat as read:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};

@@ -187,7 +187,7 @@ const ChatDetails = () => {
                             <div className="date-separator">{formatDate(message.createdAt)}</div>
                         ) : null}
 
-                        <div className={`message ${message.from === 'user' ? 'user-message' : 'admin-message'}`}>
+                        <div className={`message ${message.from}`}>
                             <div className="message-header">
                                 <span className="message-user-name">
                                     {message.from === 'user'

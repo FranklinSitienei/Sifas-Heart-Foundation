@@ -14,6 +14,7 @@ const {
     replyMessage,
     setUserOnline,
     setUserOffline,
+    markAsRead,
 } = require("../controllers/chatController");
 
 const router = express.Router();
@@ -35,6 +36,7 @@ router.post("/admin/edit", adminMiddleware, editMessage);
 router.post("/admin/delete/:chatId", adminMiddleware, deleteMessage);
 router.get("/admin/all", adminMiddleware, getUserChats);
 router.post('/admin/reply/:chatId', adminMiddleware, replyMessage);
+router.post('/admin/:chatId/read', adminMiddleware, markAsRead);
 
 // Generic admin route - Define last
 router.get('/admin/:chatId', adminMiddleware, fetchChatDetails);

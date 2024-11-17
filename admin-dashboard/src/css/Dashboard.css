@@ -97,12 +97,28 @@
   color: black;
 }
 
-/* Bottom Section: User Chats and Payment Methods Pie Chart */
 .bottom-section {
   display: flex;
   gap: 20px;
   align-items: flex-start;
   flex-wrap: wrap;
+}
+
+/* Adjust layout dynamically */
+.bottom-section.no-chats .payment-methods {
+  flex: 1;
+}
+
+.bottom-section.with-chats .payment-methods {
+  flex: 2;
+}
+
+.bottom-section.with-chats .user-chats-section {
+  flex: 1;
+}
+
+.user-chats-section.hidden {
+  display: none;
 }
 
 /* User Chats */
