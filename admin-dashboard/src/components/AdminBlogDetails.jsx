@@ -620,39 +620,50 @@ const AdminBlogDetails = () => {
   };
 
   const renderEmbeddedMedia = (url) => {
-    // Check the URL and return an iframe based on the platform
+    let isPortrait = false;
+  
+    // Check for known platforms or custom logic to detect aspect ratio
+    if (url.includes('tiktok.com') || url.includes('instagram.com')) {
+      isPortrait = true; // Assume TikTok and Instagram are 9:16
+    }
+  
+    const videoClass = isPortrait ? "video portrait" : "video";
+  
     if (url.includes('youtube.com') || url.includes('youtu.be')) {
       return (
-        <iframe
-          src={`https://www.youtube.com/embed/${url.split('v=')[1]?.split('&')[0]}`}
-          title="YouTube video"
-          className="video"
-          allowFullScreen
-        />
+        <div className={videoClass}>
+          <iframe
+            src={`https://www.youtube.com/embed/${url.split('v=')[1]?.split('&')[0]}`}
+            title="YouTube video"
+            allowFullScreen
+          />
+        </div>
       );
     } else if (url.includes('tiktok.com')) {
       return (
-        <iframe
-          src={url.replace('tiktok.com', 't.tiktok.com')}
-          title="TikTok video"
-          className="video"
-          allowFullScreen
-        />
+        <div className={videoClass}>
+          <iframe
+            src={url.replace('tiktok.com', 't.tiktok.com')}
+            title="TikTok video"
+            allowFullScreen
+          />
+        </div>
+      );
+    } else if (url.includes('instagram.com')) {
+      return (
+        <div className={videoClass}>
+          <iframe
+            src={`https://instagram.com/p/${url.split('/p/')[1]}/embed`}
+            title="Instagram post"
+            allowFullScreen
+          />
+        </div>
       );
     } else if (url.includes('twitter.com')) {
       return (
         <blockquote className="twitter-tweet">
           <a href={url}>View Tweet</a>
         </blockquote>
-      );
-    } else if (url.includes('instagram.com')) {
-      return (
-        <iframe
-          src={`https://instagram.com/p/${url.split('/p/')[1]}/embed`}
-          title="Instagram post"
-          className="video"
-          allowFullScreen
-        />
       );
     } else if (url.includes('gofundme.com')) {
       return (

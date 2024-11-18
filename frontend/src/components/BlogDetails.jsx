@@ -167,7 +167,7 @@ const BlogDetails = () => {
 
   const handleCommentSubmit = async () => {
     if (!newComment.trim()) return;
-  
+
     try {
       const response = await axios.post(
         `https://sifas-heart-foundation-1.onrender.com/api/blog/user/${id}/comment`,
@@ -178,23 +178,23 @@ const BlogDetails = () => {
           },
         }
       );
-  
+
       // Update comments and clear input
       setComments([...comments, response.data]);
       setNewComment("");
       setShowSuggestions(false);
-  
+
       // Increment the local comment count
       setBlog((prevBlog) => ({
         ...prevBlog,
         commentCount: prevBlog.commentCount + 1,
       }));
-  
+
     } catch (error) {
       console.error("Error submitting comment:", error.response?.data || error.message);
     }
   };
-  
+
 
   const handleReplyChange = (e) => {
     const value = e.target.value;
@@ -647,39 +647,50 @@ const BlogDetails = () => {
   };
 
   const renderEmbeddedMedia = (url) => {
-    // Check the URL and return an iframe based on the platform
+    let isPortrait = false;
+  
+    // Check for known platforms or custom logic to detect aspect ratio
+    if (url.includes('tiktok.com') || url.includes('instagram.com')) {
+      isPortrait = true; // Assume TikTok and Instagram are 9:16
+    }
+  
+    const videoClass = isPortrait ? "video portrait" : "video";
+  
     if (url.includes('youtube.com') || url.includes('youtu.be')) {
       return (
-        <iframe
-          src={`https://www.youtube.com/embed/${url.split('v=')[1]?.split('&')[0]}`}
-          title="YouTube video"
-          className="video"
-          allowFullScreen
-        />
+        <div className={videoClass}>
+          <iframe
+            src={`https://www.youtube.com/embed/${url.split('v=')[1]?.split('&')[0]}`}
+            title="YouTube video"
+            allowFullScreen
+          />
+        </div>
       );
     } else if (url.includes('tiktok.com')) {
       return (
-        <iframe
-          src={url.replace('tiktok.com', 't.tiktok.com')}
-          title="TikTok video"
-          className="video"
-          allowFullScreen
-        />
+        <div className={videoClass}>
+          <iframe
+            src={url.replace('tiktok.com', 't.tiktok.com')}
+            title="TikTok video"
+            allowFullScreen
+          />
+        </div>
+      );
+    } else if (url.includes('instagram.com')) {
+      return (
+        <div className={videoClass}>
+          <iframe
+            src={`https://instagram.com/p/${url.split('/p/')[1]}/embed`}
+            title="Instagram post"
+            allowFullScreen
+          />
+        </div>
       );
     } else if (url.includes('twitter.com')) {
       return (
         <blockquote className="twitter-tweet">
           <a href={url}>View Tweet</a>
         </blockquote>
-      );
-    } else if (url.includes('instagram.com')) {
-      return (
-        <iframe
-          src={`https://instagram.com/p/${url.split('/p/')[1]}/embed`}
-          title="Instagram post"
-          className="video"
-          allowFullScreen
-        />
       );
     } else if (url.includes('gofundme.com')) {
       return (
