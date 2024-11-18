@@ -19,9 +19,13 @@ const Dashboard = () => {
 
   const navigate = useNavigate();
   const socket = io("https://sifas-heart-foundation-1.onrender.com");
+  const adminToken = localStorage.getItem("admin");
+
+  console.log(localStorage.getItem("admin"));
+
 
   useEffect(() => {
-    const adminToken = localStorage.getItem("admin");
+    
     if (!adminToken) {
       setError("Admin token not found. Please log in.");
       setLoading(false);
@@ -93,7 +97,11 @@ const Dashboard = () => {
   const markAsRead = async (chatId) => {
     try {
       await axios.post(
-        `https://sifas-heart-foundation-1.onrender.com/api/chat/admin/${chatId}/read`
+        `https://sifas-heart-foundation-1.onrender.com/api/chat/admin/${chatId}/read`, {
+          headers: {
+              'Authorization': `Bearer ${adminToken}`,
+          },
+      }
       );
       setUserChats((prevChats) => prevChats.filter((chat) => chat._id !== chatId));
     } catch (err) {
