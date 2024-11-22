@@ -108,7 +108,6 @@ const ChatBox = () => {
       }
     } catch (error) {
       console.error('Error setting user online:', error);
-      alert("There was an issue setting the user status to online. Please try again.");
     }
   };
   
