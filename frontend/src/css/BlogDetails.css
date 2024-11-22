@@ -23,6 +23,7 @@
   width: 100%;
   overflow: hidden; /* Prevent overflow issues */
   position: relative; /* To ensure video respects parent boundaries */
+  height: auto;
 }
 
 .video {
@@ -31,7 +32,7 @@
   align-items: center; /* Center vertically */
   background-color: black; /* Black background */
   width: 100%;
-  height: 0;
+  height: auto;
   padding-bottom: 56.25%; /* Aspect ratio for 16:9 videos */
   position: relative;
   overflow: hidden;

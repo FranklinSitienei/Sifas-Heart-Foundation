@@ -75,11 +75,18 @@ router.post(
         const instagramRegex = /(?:https?:\/\/)?(?:www\.)?instagram\.com\/p\/([a-zA-Z0-9_-]+)/;
         const twitterRegex = /(?:https?:\/\/)?(?:www\.)?twitter\.com\/(?:\w+)\/status\/([0-9]+)/;
         const facebookRegex = /(?:https?:\/\/)?(?:www\.)?facebook\.com\/(?:[a-zA-Z0-9.]+)\/posts\/([a-zA-Z0-9_-]+)/;
+        const tiktokRegex = /(?:https?:\/\/)?(?:www\.)?tiktok\.com\/(?:@[\w.-]+\/video\/)?(\d+)/;
         const imageRegex = /\.(jpeg|jpg|gif|png)$/i;
 
         if (imageRegex.test(mediaUrl)) {
           mediaPath = mediaUrl; // Treat as an image URL
-        } else if (youtubeRegex.test(mediaUrl) || instagramRegex.test(mediaUrl) || twitterRegex.test(mediaUrl) || facebookRegex.test(mediaUrl)) {
+        } else if (
+          youtubeRegex.test(mediaUrl) ||
+          instagramRegex.test(mediaUrl) ||
+          twitterRegex.test(mediaUrl) ||
+          facebookRegex.test(mediaUrl) ||
+          tiktokRegex.test(mediaUrl) // Detect TikTok URLs
+        ) {
           mediaPath = mediaUrl; // Treat as an embed URL for video
         }
       }
