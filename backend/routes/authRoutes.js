@@ -18,7 +18,7 @@ const { authMiddleware } = require("../middleware/authMiddleware");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const Notification = require("../models/Notification");
-const { notifyLogin, notifySignup } = require('../controllers/notificationController');
+const { notifyLogin, notifySignup, notifyAchievement } = require('../controllers/notificationController');
 
 const router = express.Router();
 
@@ -34,6 +34,7 @@ router.get(
       const token = generateToken(req.user);
       await handleSignupAchievements(req.user.id);
       await notifySignup(req.user.id);  // Notify user on successful signup
+      await notifyAchievement(req.user.id);
 
       // Set token in the response header instead of query param
       res.setHeader('Authorization', `Bearer ${token}`);
@@ -112,6 +113,7 @@ router.post("/signup", async (req, res) => {
 
     const token = generateToken(user);
     await handleSignupAchievements(user.id);
+    await notifyAchievement(req.user.id);
 
     const registrationMessage = "Thank you for registering! Welcome to our platform.";
     await Notification.create({ userId: user.id, message: registrationMessage, type: "signup" });
@@ -135,6 +137,7 @@ router.post("/time_spent", authMiddleware, async (req, res) => {
     if (!user) return res.status(404).json({ msg: "User not found" });
 
     await handleTimeSpentAchievements(user.id, timeSpentInMinutes); // Pass the time spent
+    await notifyAchievement(req.user.id);
     res.json({ msg: "Time spent achievement processed" });
   } catch (err) {
     res.status(500).send("Server error");
@@ -165,6 +168,7 @@ router.post("/login", async (req, res) => {
     const token = generateToken(user);
     await handleLoginAchievements(user.id);
     await notifyLogin(req.user.id);  // Notify user on successful login
+    await notifyAchievement(req.user.id);
 
     // Check and award daily visit achievement
     await handleDailyVisitAchievements(user.id);
@@ -207,6 +211,7 @@ router.put("/update_profile", upload.single("profilePicture"), authMiddleware, a
 
     await user.save();
     await handleProfileUpdateAchievements(user.id);
+    await notifyAchievement(req.user.id);
     res.json({ msg: "Profile updated successfully", user });
   } catch (err) {
     res.status(500).send("Server error");
@@ -234,6 +239,7 @@ router.get("/achievements", authMiddleware, async (req, res) => {
     const user = await User.findById(req.user.id).select("achievements badges");
     if (!user) return res.status(404).json({ msg: "User not found" });
     res.json(user);
+    await notifyAchievement(req.user.id);
   } catch (err) {
     res.status(500).send("Server error");
   }
@@ -244,6 +250,7 @@ router.post("/time_spent", authMiddleware, async (req, res) => {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ msg: "User not found" });
     await handleTimeSpentAchievements(user.id);
+    await notifyAchievement(req.user.id);
     res.json({ msg: "Time spent achievement processed" });
   } catch (err) {
     res.status(500).send("Server error");
@@ -255,6 +262,7 @@ router.post("/daily_visit", authMiddleware, async (req, res) => {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ msg: "User not found" });
     await handleDailyVisitAchievements(user.id);
+    await notifyAchievement(req.user.id);
     res.json({ msg: "Daily visit achievement processed" });
   } catch (err) {
     res.status(500).send("Server error");

@@ -24,8 +24,8 @@ const createNotification = async (userId, message, type) => {
 };
 
 // Notify user for achievements
-exports.notifyAchievement = async (userId, achievementName) => {
-  const message = `Congratulations! You've earned a new achievement: ${achievementName}`;
+exports.notifyAchievement = async (userId, title) => {
+  const message = `Congratulations! You've earned a new achievement: ${title}`;
   await createNotification(userId, message, 'achievement');
 };
 
