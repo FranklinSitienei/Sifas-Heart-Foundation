@@ -104,6 +104,8 @@ const BlogsPage = () => {
                                 <p className="date">{formatDistanceToNow(new Date(blog.date), { addSuffix: true })}</p>
                             </div>
                         </div>
+                        <h2 className="blog-title">{blog.title}</h2>
+                        <p className="blog-content">{blog.content}</p>
                         {blog.image && (
                             <div className="media-container">
                                 <img src={blog.image} alt={blog.title} className="media" />
@@ -116,8 +118,6 @@ const BlogsPage = () => {
                                 <button className="donate-button">Donate</button>
                             </div>
                         )}
-                        <h2 className="blog-title">{blog.title}</h2>
-                        <p className="blog-content">{blog.content}</p>
                         <div className="blog-footer">
                             <div className="blog-actions">
                                 <span

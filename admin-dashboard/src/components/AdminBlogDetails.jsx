@@ -682,7 +682,21 @@ const AdminBlogDetails = () => {
     <div className="blog-details-container">
       {blog && (
         <div className="blog-details-content">
-          {/* Blog Info and Comments */}
+              {/* Blog Image */}
+              <div className="blog-image-container" onDoubleClick={handleLikeToggle}>
+                {blog.image && (
+                  <div className="media-container">
+                    <img src={blog.image} alt={blog.title} className="media" />
+                  </div>
+                )}
+                {blog.video && (
+                  <div className="media-container">
+                    {renderEmbeddedMedia(blog.video)}
+                  </div>
+                )}
+              </div>
+
+              {/* Blog Info and Comments */}
           <div className="blog-info-container">
             {/* Admin Details with Profile Picture */}
             <div className="admin-info">
@@ -712,20 +726,6 @@ const AdminBlogDetails = () => {
                   ))}
                 </div>
               )}
-
-              {/* Blog Image */}
-              <div className="blog-image-container" onDoubleClick={handleLikeToggle}>
-                {blog.image && (
-                  <div className="media-container">
-                    <img src={blog.image} alt={blog.title} className="media" />
-                  </div>
-                )}
-                {blog.video && (
-                  <div className="media-container">
-                    {renderEmbeddedMedia(blog.video)}
-                  </div>
-                )}
-              </div>
 
               <div className="blog-details-actions">
                 <span onClick={handleLikeToggle} className="like-button">

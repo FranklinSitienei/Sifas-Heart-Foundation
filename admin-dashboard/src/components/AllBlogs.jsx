@@ -128,6 +128,8 @@ const AllBlogs = () => {
                                 </p>
                             </div>
                         </div>
+                        <h2 className="blog-title">{blog.title}</h2>
+                        <p className="blog-content">{blog.content}</p>
                         {blog.image && <img src={blog.image} alt={blog.title} className="media" />}
                         {blog.video && renderEmbeddedMedia(blog.video)}
                         <div className="blog-footer">
@@ -144,8 +146,6 @@ const AllBlogs = () => {
                                 </Link>
                             </div>
                         </div>
-                        <h2 className="blog-title">{blog.title}</h2>
-                        <p className="blog-content">{blog.content}</p>
                     </div>
                 ))}
             </div>
