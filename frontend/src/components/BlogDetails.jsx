@@ -666,16 +666,21 @@ const BlogDetails = () => {
           />
         </div>
       );
-    } else if (url.includes('tiktok.com')) {
-      return (
-        <div className={videoClass}>
-          <iframe
-            src={url.replace('tiktok.com', 't.tiktok.com')}
-            title="TikTok video"
-            allowFullScreen
-          />
-        </div>
-      );
+    } else if (url.includes("tiktok.com")) {
+      // TikTok embed URLs need the video ID for embedding
+      const videoId = url.match(/\/video\/(\d+)/)?.[1];
+      if (videoId) {
+        return (
+          <div className={videoClass}>
+            <iframe
+              src={`https://www.tiktok.com/embed/${videoId}`}
+              title="TikTok video"
+              allow="encrypted-media"
+              allowFullScreen
+            />
+          </div>
+        );
+      }
     } else if (url.includes('instagram.com')) {
       return (
         <div className={videoClass}>

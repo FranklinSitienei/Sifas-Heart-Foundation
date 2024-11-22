@@ -54,52 +54,68 @@ const AllBlogs = () => {
     };
 
     const renderEmbeddedMedia = (url) => {
-        // Check the URL and return an iframe based on the platform
+        let isPortrait = false;
+    
+        // Check for known platforms or custom logic to detect aspect ratio
+        if (url.includes('tiktok.com') || url.includes('instagram.com')) {
+          isPortrait = true; // Assume TikTok and Instagram are 9:16
+        }
+    
+        const videoClass = isPortrait ? "video portrait" : "video";
+    
         if (url.includes('youtube.com') || url.includes('youtu.be')) {
+          return (
+            <div className={videoClass}>
+              <iframe
+                src={`https://www.youtube.com/embed/${url.split('v=')[1]?.split('&')[0]}`}
+                title="YouTube video"
+                allowFullScreen
+              />
+            </div>
+          );
+        } else if (url.includes("tiktok.com")) {
+          // TikTok embed URLs need the video ID for embedding
+          const videoId = url.match(/\/video\/(\d+)/)?.[1];
+          if (videoId) {
             return (
+              <div className={videoClass}>
                 <iframe
-                    src={`https://www.youtube.com/embed/${url.split('v=')[1]?.split('&')[0]}`}
-                    title="YouTube video"
-                    className="video"
-                    allowFullScreen
+                  src={`https://www.tiktok.com/embed/${videoId}`}
+                  title="TikTok video"
+                  allow="encrypted-media"
+                  allowFullScreen
                 />
+              </div>
             );
-        } else if (url.includes('tiktok.com')) {
-            return (
-                <iframe
-                    src={url.replace('tiktok.com', 't.tiktok.com')}
-                    title="TikTok video"
-                    className="video"
-                    allowFullScreen
-                />
-            );
-        } else if (url.includes('twitter.com')) {
-            return (
-                <blockquote className="twitter-tweet">
-                    <a href={url}>View Tweet</a>
-                </blockquote>
-            );
+          }
         } else if (url.includes('instagram.com')) {
-            return (
-                <iframe
-                    src={`https://instagram.com/p/${url.split('/p/')[1]}/embed`}
-                    title="Instagram post"
-                    className="video"
-                    allowFullScreen
-                />
-            );
+          return (
+            <div className={videoClass}>
+              <iframe
+                src={`https://instagram.com/p/${url.split('/p/')[1]}/embed`}
+                title="Instagram post"
+                allowFullScreen
+              />
+            </div>
+          );
+        } else if (url.includes('twitter.com')) {
+          return (
+            <blockquote className="twitter-tweet">
+              <a href={url}>View Tweet</a>
+            </blockquote>
+          );
         } else if (url.includes('gofundme.com')) {
-            return (
-                <iframe
-                    src={url}
-                    title="GoFundMe"
-                    className="video"
-                    allowFullScreen
-                />
-            );
+          return (
+            <iframe
+              src={url}
+              title="GoFundMe"
+              className="video"
+              allowFullScreen
+            />
+          );
         }
         return null; // Default case
-    };
+      };
 
     return (
         <div className="all-blogs-container">
@@ -130,8 +146,16 @@ const AllBlogs = () => {
                         </div>
                         <h2 className="blog-title">{blog.title}</h2>
                         <p className="blog-content">{blog.content}</p>
-                        {blog.image && <img src={blog.image} alt={blog.title} className="media" />}
-                        {blog.video && renderEmbeddedMedia(blog.video)}
+                        {blog.image && (
+                            <div className="media-container">
+                                <img src={blog.image} alt={blog.title} className="media" />
+                            </div>
+                        )}
+                        {blog.video && (
+                            <div className="media-container">
+                                {renderEmbeddedMedia(blog.video)}
+                            </div>
+                        )}
                         <div className="blog-footer">
                             <div className="blog-actions">
                                 <span

@@ -85,7 +85,7 @@
 
 .video {
     width: 100%;
-    height: 200px;
+    height: auto;
     /* Adjust as needed */
     border-radius: 8px;
 }
