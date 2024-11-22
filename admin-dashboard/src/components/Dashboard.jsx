@@ -18,7 +18,7 @@ const Dashboard = () => {
   const [hasUnreadChats, setHasUnreadChats] = useState(false);
 
   const navigate = useNavigate();
-  const socket = io("https://sifas-heart-foundation-1.onrender.com");
+  const socket = io("https://sifas-heart-foundation.onrender.com");
   const adminToken = localStorage.getItem("admin");
 
   console.log(localStorage.getItem("admin"));
@@ -44,12 +44,12 @@ const Dashboard = () => {
           chatsResponse,
           paymentMethodsResponse,
         ] = await Promise.all([
-          axios.get("https://sifas-heart-foundation-1.onrender.com/api/donations/overview", config),
-          axios.get("https://sifas-heart-foundation-1.onrender.com/api/donations/monthly", config),
-          axios.get("https://sifas-heart-foundation-1.onrender.com/api/auth/total", config),
-          axios.get("https://sifas-heart-foundation-1.onrender.com/api/donations/recent", config),
-          axios.get("https://sifas-heart-foundation-1.onrender.com/api/chat/admin/all", config),
-          axios.get("https://sifas-heart-foundation-1.onrender.com/api/donations/payment-methods", config),
+          axios.get("https://sifas-heart-foundation.onrender.com/api/donations/overview", config),
+          axios.get("https://sifas-heart-foundation.onrender.com/api/donations/monthly", config),
+          axios.get("https://sifas-heart-foundation.onrender.com/api/auth/total", config),
+          axios.get("https://sifas-heart-foundation.onrender.com/api/donations/recent", config),
+          axios.get("https://sifas-heart-foundation.onrender.com/api/chat/admin/all", config),
+          axios.get("https://sifas-heart-foundation.onrender.com/api/donations/payment-methods", config),
         ]);
 
         setDonationOverview(overviewResponse.data);
@@ -97,7 +97,7 @@ const Dashboard = () => {
   const markAsRead = async (chatId) => {
     try {
       await axios.post(
-        `https://sifas-heart-foundation-1.onrender.com/api/chat/admin/${chatId}/read`, {
+        `https://sifas-heart-foundation.onrender.com/api/chat/admin/${chatId}/read`, {
           headers: {
               'Authorization': `Bearer ${adminToken}`,
           },

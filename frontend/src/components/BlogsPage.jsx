@@ -15,7 +15,7 @@ const BlogsPage = () => {
     useEffect(() => {
         const fetchBlogs = async () => {
             try {
-                const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/blog/all');
+                const response = await fetch('https://sifas-heart-foundation.onrender.com/api/blog/all');
                 const data = await response.json();
                 setBlogs(data);
                 
@@ -32,7 +32,7 @@ const BlogsPage = () => {
     const handleLike = async (blogId) => {
         try {
             const response = await axios.post(
-                `https://sifas-heart-foundation-1.onrender.com/api/blog/user/${blogId}/like`,
+                `https://sifas-heart-foundation.onrender.com/api/blog/user/${blogId}/like`,
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );

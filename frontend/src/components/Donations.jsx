@@ -31,7 +31,7 @@ const Donations = () => {
       }
 
       try {
-        const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/auth/profile', {
+        const response = await fetch('https://sifas-heart-foundation.onrender.com/api/auth/profile', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -91,7 +91,7 @@ const Donations = () => {
       }
 
       // Update the mobile number in the user's profile
-      const updateResponse = await fetch('https://sifas-heart-foundation-1.onrender.com/api/auth/update_mobile', {
+      const updateResponse = await fetch('https://sifas-heart-foundation.onrender.com/api/auth/update_mobile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ const Donations = () => {
           amount: donation.amount,
           phoneNumber: donation.phoneNumber, // Use the phone number provided
         };
-        response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/lipa/stk', {
+        response = await fetch('https://sifas-heart-foundation.onrender.com/api/lipa/stk', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -131,7 +131,7 @@ const Donations = () => {
 
           // Polling to check status after STK push
           const checkDonationStatus = async () => {
-            const statusResponse = await fetch(`https://sifas-heart-foundation-1.onrender.com/api/donations/status/${data.CheckoutRequestID}`, {
+            const statusResponse = await fetch(`https://sifas-heart-foundation.onrender.com/api/donations/status/${data.CheckoutRequestID}`, {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
@@ -166,7 +166,7 @@ const Donations = () => {
           cvv: donation.cvv,
           paymentMethod: donation.paymentMethod,
         };
-        response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/donations/donate', {
+        response = await fetch('https://sifas-heart-foundation.onrender.com/api/donations/donate', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

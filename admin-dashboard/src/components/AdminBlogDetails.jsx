@@ -63,7 +63,7 @@ const AdminBlogDetails = () => {
   const fetchUserProfile = async () => {
     try {
       const response = await axios.get(
-        "https://sifas-heart-foundation-1.onrender.com/api/admin/profile",
+        "https://sifas-heart-foundation.onrender.com/api/admin/profile",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -95,7 +95,7 @@ const AdminBlogDetails = () => {
 
   const fetchBlogDetails = async () => {
     try {
-      const response = await axios.get(`https://sifas-heart-foundation-1.onrender.com/api/blog/${id}`, {
+      const response = await axios.get(`https://sifas-heart-foundation.onrender.com/api/blog/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -129,7 +129,7 @@ const AdminBlogDetails = () => {
   const handleLikeToggle = async () => {
     try {
       await axios.post(
-        `https://sifas-heart-foundation-1.onrender.com/api/blog/admin/${id}/like`,
+        `https://sifas-heart-foundation.onrender.com/api/blog/admin/${id}/like`,
         {},
         {
           headers: {
@@ -170,7 +170,7 @@ const AdminBlogDetails = () => {
 
     try {
       const response = await axios.post(
-        `https://sifas-heart-foundation-1.onrender.com/api/blog/admin/${id}/comment`,
+        `https://sifas-heart-foundation.onrender.com/api/blog/admin/${id}/comment`,
         { content: newComment },
         {
           headers: {
@@ -206,7 +206,7 @@ const AdminBlogDetails = () => {
 
     try {
       const response = await axios.post(
-        `https://sifas-heart-foundation-1.onrender.com/api/blog/admin/${id}/comment/${replyingTo}/reply`,
+        `https://sifas-heart-foundation.onrender.com/api/blog/admin/${id}/comment/${replyingTo}/reply`,
         { content: replyContent },
         {
           headers: {
@@ -242,7 +242,7 @@ const AdminBlogDetails = () => {
   const handleLikeComment = async (commentId) => {
     try {
       await axios.post(
-        `https://sifas-heart-foundation-1.onrender.com/api/blog/admin/${id}/comment/${commentId}/like`,
+        `https://sifas-heart-foundation.onrender.com/api/blog/admin/${id}/comment/${commentId}/like`,
         {},
         {
           headers: {
@@ -286,7 +286,7 @@ const AdminBlogDetails = () => {
   const handleUnlikeComment = async (commentId) => {
     try {
       await axios.post(
-        `https://sifas-heart-foundation-1.onrender.com/api/blog/admin/${id}/comment/${commentId}/unlike`,
+        `https://sifas-heart-foundation.onrender.com/api/blog/admin/${id}/comment/${commentId}/unlike`,
         {},
         {
           headers: {
@@ -328,7 +328,7 @@ const AdminBlogDetails = () => {
   const handleLikeReply = async (commentId, replyId) => {
     try {
       await axios.post(
-        `https://sifas-heart-foundation-1.onrender.com/api/blog/admin/${id}/comment/${commentId}/reply/${replyId}/like`,
+        `https://sifas-heart-foundation.onrender.com/api/blog/admin/${id}/comment/${commentId}/reply/${replyId}/like`,
         {},
         {
           headers: {
@@ -371,7 +371,7 @@ const AdminBlogDetails = () => {
   const handleUnlikeReply = async (commentId, replyId) => {
     try {
       await axios.post(
-        `https://sifas-heart-foundation-1.onrender.com/api/blog/admin/${id}/comment/${commentId}/reply/${replyId}/unlike`,
+        `https://sifas-heart-foundation.onrender.com/api/blog/admin/${id}/comment/${commentId}/reply/${replyId}/unlike`,
         {},
         {
           headers: {
@@ -414,7 +414,7 @@ const AdminBlogDetails = () => {
   const handleApproveReply = async (commentId, replyId) => { // Changed function name
     try {
       await axios.post(
-        `https://sifas-heart-foundation-1.onrender.com/api/blog/admin/${id}/comment/${commentId}/reply/${replyId}/approve`, // Updated route to 'approve'
+        `https://sifas-heart-foundation.onrender.com/api/blog/admin/${id}/comment/${commentId}/reply/${replyId}/approve`, // Updated route to 'approve'
         {},
         {
           headers: {
@@ -439,7 +439,7 @@ const AdminBlogDetails = () => {
     const newContent = prompt("Edit your comment:", comment.content);
     if (newContent) {
       // Call the API to update the comment
-      fetch(`https://sifas-heart-foundation-1.onrender.com/api/blog/${id}/comment/${comment._id}/edit`, {
+      fetch(`https://sifas-heart-foundation.onrender.com/api/blog/${id}/comment/${comment._id}/edit`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -466,7 +466,7 @@ const AdminBlogDetails = () => {
     const confirmDelete = window.confirm("Are you sure you want to delete this comment?");
     if (confirmDelete) {
       try {
-        const response = await fetch(`https://sifas-heart-foundation-1.onrender.com/api/blog/admin/${id}/comment/${commentId}/delete`, {
+        const response = await fetch(`https://sifas-heart-foundation.onrender.com/api/blog/admin/${id}/comment/${commentId}/delete`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -487,7 +487,7 @@ const AdminBlogDetails = () => {
   const handleEditReply = (reply) => {
     const newContent = prompt("Edit your reply:", reply.content);
     if (newContent) {
-      fetch(`https://sifas-heart-foundation-1.onrender.com/api/blog/admin/${id}/comment/${reply.commentId}/reply/${reply._id}/edit`, {
+      fetch(`https://sifas-heart-foundation.onrender.com/api/blog/admin/${id}/comment/${reply.commentId}/reply/${reply._id}/edit`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -521,7 +521,7 @@ const AdminBlogDetails = () => {
     const confirmDelete = window.confirm("Are you sure you want to delete this reply?");
     if (confirmDelete) {
       try {
-        const response = await fetch(`https://sifas-heart-foundation-1.onrender.com/api/blog/admin/${id}/comment/${commentId}/reply/${replyId}/delete`, {
+        const response = await fetch(`https://sifas-heart-foundation.onrender.com/api/blog/admin/${id}/comment/${commentId}/reply/${replyId}/delete`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -552,7 +552,7 @@ const AdminBlogDetails = () => {
   const fetchMentionSuggestions = async (query) => {
     if (query.trim().length > 1) {
       try {
-        const response = await axios.get(`https://sifas-heart-foundation-1.onrender.com/api/blog/users/search?query=${query}`, {
+        const response = await axios.get(`https://sifas-heart-foundation.onrender.com/api/blog/users/search?query=${query}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -621,14 +621,14 @@ const AdminBlogDetails = () => {
 
   const renderEmbeddedMedia = (url) => {
     let isPortrait = false;
-  
+
     // Check for known platforms or custom logic to detect aspect ratio
     if (url.includes('tiktok.com') || url.includes('instagram.com')) {
       isPortrait = true; // Assume TikTok and Instagram are 9:16
     }
-  
+
     const videoClass = isPortrait ? "video portrait" : "video";
-  
+
     if (url.includes('youtube.com') || url.includes('youtu.be')) {
       return (
         <div className={videoClass}>
@@ -682,20 +682,6 @@ const AdminBlogDetails = () => {
     <div className="blog-details-container">
       {blog && (
         <div className="blog-details-content">
-          {/* Blog Image */}
-          <div className="blog-image-container" onDoubleClick={handleLikeToggle}>
-            {blog.image && (
-              <div className="media-container">
-                <img src={blog.image} alt={blog.title} className="media" />
-              </div>
-            )}
-            {blog.video && (
-              <div className="media-container">
-                {renderEmbeddedMedia(blog.video)}
-              </div>
-            )}
-          </div>
-
           {/* Blog Info and Comments */}
           <div className="blog-info-container">
             {/* Admin Details with Profile Picture */}
@@ -726,6 +712,20 @@ const AdminBlogDetails = () => {
                   ))}
                 </div>
               )}
+
+              {/* Blog Image */}
+              <div className="blog-image-container" onDoubleClick={handleLikeToggle}>
+                {blog.image && (
+                  <div className="media-container">
+                    <img src={blog.image} alt={blog.title} className="media" />
+                  </div>
+                )}
+                {blog.video && (
+                  <div className="media-container">
+                    {renderEmbeddedMedia(blog.video)}
+                  </div>
+                )}
+              </div>
 
               <div className="blog-details-actions">
                 <span onClick={handleLikeToggle} className="like-button">

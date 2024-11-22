@@ -12,7 +12,7 @@ const Achievements = () => {
     const fetchAchievements = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("https://sifas-heart-foundation-2.onrender.com/api/auth/achievements", {
+        const response = await axios.get("https://sifas-heart-foundation.onrender.com/api/auth/achievements", {
           headers: {
             Authorization: `Bearer ${token}`,
           },

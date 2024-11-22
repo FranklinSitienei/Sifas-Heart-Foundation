@@ -15,7 +15,7 @@ const PasswordSetup = () => {
             return;
         }
 
-        const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/auth/password-setup', {
+        const response = await fetch('https://sifas-heart-foundation.onrender.com/api/auth/password-setup', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

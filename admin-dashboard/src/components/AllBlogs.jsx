@@ -14,7 +14,7 @@ const AllBlogs = () => {
     useEffect(() => {
         const fetchBlogs = async () => {
             try {
-                const response = await fetch('https://sifas-heart-foundation-1.onrender.com/api/blog/all');
+                const response = await fetch('https://sifas-heart-foundation.onrender.com/api/blog/all');
                 const data = await response.json();
                 setBlogs(data);
                 const storedLikes = new Set(JSON.parse(localStorage.getItem("likedBlogs")) || []);
@@ -29,7 +29,7 @@ const AllBlogs = () => {
 
     const handleLike = async (blogId) => {
         try {
-            await fetch(`https://sifas-heart-foundation-1.onrender.com/api/blog/admin/${blogId}/like`, {
+            await fetch(`https://sifas-heart-foundation.onrender.com/api/blog/admin/${blogId}/like`, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${token}`,

@@ -21,7 +21,7 @@ const Account = () => {
 
   useEffect(() => {
     if (token) {
-      fetch('https://sifas-heart-foundation-1.onrender.com/api/admin/profile', {
+      fetch('https://sifas-heart-foundation.onrender.com/api/admin/profile', {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -86,7 +86,7 @@ const Account = () => {
       formData.append('profilePicture', profilePictureFile);
     }
 
-    fetch('https://sifas-heart-foundation-1.onrender.com/api/admin/update_profile', {
+    fetch('https://sifas-heart-foundation.onrender.com/api/admin/update_profile', {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
