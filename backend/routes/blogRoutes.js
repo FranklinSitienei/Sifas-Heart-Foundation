@@ -77,9 +77,14 @@ router.post(
         const facebookRegex = /(?:https?:\/\/)?(?:www\.)?facebook\.com\/(?:[a-zA-Z0-9.]+)\/posts\/([a-zA-Z0-9_-]+)/;
         const tiktokRegex = /(?:https?:\/\/)?(?:www\.)?tiktok\.com\/(?:@[\w.-]+\/video\/)?(\d+)/;
         const imageRegex = /\.(jpeg|jpg|gif|png)$/i;
+        const videoRegex = /\.(mp4|mov|avi|mkv)$/i;
 
         if (imageRegex.test(mediaUrl)) {
-          mediaPath = mediaUrl; // Treat as an image URL
+          mediaPath = mediaUrl;
+          isImage = true;
+        } else if (videoRegex.test(mediaUrl)) {
+          mediaPath = mediaUrl;
+          isVideo = true;
         } else if (
           youtubeRegex.test(mediaUrl) ||
           instagramRegex.test(mediaUrl) ||
@@ -88,6 +93,7 @@ router.post(
           tiktokRegex.test(mediaUrl) // Detect TikTok URLs
         ) {
           mediaPath = mediaUrl; // Treat as an embed URL for video
+          isVideo = true;
         }
       }
 
@@ -97,7 +103,7 @@ router.post(
         content,
         tags: tags ? tags.split(",").map((tag) => tag.trim()) : [],
         image: mediaPath && mediaPath.match(/\.(jpeg|jpg|gif|png)$/i) ? mediaPath : "",
-        video: mediaPath && !mediaPath.match(/\.(jpeg|jpg|gif|png)$/i) ? mediaPath : "",
+        video: mediaPath && !mediaPath.match(/\.(mp4|mov|avi|mkv)$/i) ? mediaPath : "",
       });
 
       await newBlog.save();
