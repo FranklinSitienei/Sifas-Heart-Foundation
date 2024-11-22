@@ -125,7 +125,6 @@ const ChatBox = () => {
       }
     } catch (error) {
       console.error('Error setting user offline:', error);
-      alert("There was an issue setting the user status to offline. Please try again.");
     }
   };  
 
