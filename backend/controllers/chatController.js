@@ -3,6 +3,7 @@ const { io } = require('../server');
 const Admin = require("../models/Admin");
 const Notification = require("../models/Notification");
 const { handleAdminChatAchievements } = require("../utils/achievementUtils");
+const { notifyAdminChat, notifyAdminOnline } = require('../controllers/notificationController');
 const User = require("../models/User");
 
 // Send a message from the user
@@ -26,6 +27,8 @@ exports.sendMessage = async (req, res) => {
     chat.messages.push(newMessage);
     chat.lastActive = Date.now();
     await chat.save();
+    // Notify admin
+    await notifyAdminChat(userId, message);
 
     io.emit('message', { userId, ...newMessage }); 
 
@@ -314,6 +317,8 @@ exports.setAdminOnline = async (req, res) => {
 
     admin.isOnline = true;
     await admin.save();
+    // Notify all users
+    await notifyAdminOnline(adminId);
 
     io.emit('adminOnline', { adminId, isOnline: true });
     res.json({ msg: 'Admin is now online' });

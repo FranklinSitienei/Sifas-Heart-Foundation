@@ -8,6 +8,7 @@ const { sendDonationEmail } = require('../utils/sendEmail');
 const { generatePayslipTemplate } = require('../utils/payslipTemplate');
 const { updateUserDonation } = require('../utils/leaderBoard');
 const { handleDonationAchievements } = require('../utils/achievementUtils');
+const { notifyDonation } = require('../controllers/notificationController');
 const Notification = require('../models/Notification');
 
 const flw = new Flutterwave(process.env.FLW_PUBLIC_KEY, process.env.FLW_SECRET_KEY);
@@ -81,6 +82,8 @@ exports.makeDonation = async (req, res) => {
       await donation.save();
       await updateUserDonation(req.user.id, amount);
       await handleDonationAchievements(req.user.id, amount);
+      // Notify the user of the successful donation
+      await notifyDonation(req.user.id, amount, transactionId);
 
       // Send notification
       const donationMessage = `Thank you for your donation of $${amount}. Your transaction ID is ${transactionId}.`;

@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { FaTimes } from 'react-icons/fa';
 import { RiDeleteBin5Line } from "react-icons/ri";
+import { io } from 'socket.io-client';  // Import Socket.IO client
 import '../css/NotificationModal.css';
 
 const NotificationModal = ({ token, onClose }) => {
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
+    const socket = io("https://sifas-heart-foundation.onrender.com"); // Connect to the server
 
+    // Fetch notifications on mount and whenever the token changes
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
                 const response = await fetch(
-                    "https://sifas-heart-foundation.onrender.com/api/notifications",
+                    "https://sifas-heart-foundation.onrender.com/api/notifications/user",
                     {
                         method: "GET",
                         headers: {
@@ -34,12 +37,21 @@ const NotificationModal = ({ token, onClose }) => {
         };
 
         fetchNotifications();
+
+        // Listen for real-time notifications
+        socket.on('newNotification', (notification) => {
+            setNotifications((prevNotifications) => [notification, ...prevNotifications]);
+        });
+
+        return () => {
+            socket.off('newNotification'); // Cleanup socket on unmount
+        };
     }, [token]);
 
     const markAsRead = async (id) => {
         try {
             const response = await fetch(
-                `https://sifas-heart-foundation.onrender.com/api/notifications/${id}`,
+                `https://sifas-heart-foundation.onrender.com/api/notifications/mark-as-read/${id}`,
                 {
                     method: "PUT",
                     headers: {
@@ -67,7 +79,7 @@ const NotificationModal = ({ token, onClose }) => {
     const deleteNotification = async (id) => {
         try {
             const response = await fetch(
-                `https://sifas-heart-foundation.onrender.com/api/notifications/${id}`,
+                `https://sifas-heart-foundation.onrender.com/api/notifications/delete/${id}`,
                 {
                     method: "DELETE",
                     headers: {

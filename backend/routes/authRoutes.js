@@ -18,6 +18,7 @@ const { authMiddleware } = require("../middleware/authMiddleware");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const Notification = require("../models/Notification");
+const { notifyLogin, notifySignup } = require('../controllers/notificationController');
 
 const router = express.Router();
 
@@ -32,6 +33,7 @@ router.get(
     try {
       const token = generateToken(req.user);
       await handleSignupAchievements(req.user.id);
+      await notifySignup(req.user.id);  // Notify user on successful signup
 
       // Set token in the response header instead of query param
       res.setHeader('Authorization', `Bearer ${token}`);
@@ -106,6 +108,7 @@ router.post("/signup", async (req, res) => {
     });
 
     await user.save();
+    await notifySignup(req.user.id);  // Notify user on successful signup
 
     const token = generateToken(user);
     await handleSignupAchievements(user.id);
@@ -161,6 +164,7 @@ router.post("/login", async (req, res) => {
 
     const token = generateToken(user);
     await handleLoginAchievements(user.id);
+    await notifyLogin(req.user.id);  // Notify user on successful login
 
     // Check and award daily visit achievement
     await handleDailyVisitAchievements(user.id);
