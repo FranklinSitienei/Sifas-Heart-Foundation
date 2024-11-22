@@ -57,7 +57,7 @@ const Navbar = () => {
       const fetchUnreadCount = async () => {
         try {
           const response = await fetch(
-            "https://sifas-heart-foundation.onrender.com/api/notifications/unread-count",
+            "https://sifas-heart-foundation.onrender.com/api/notifications/user/unread",
             {
               method: "GET",
               headers: {
