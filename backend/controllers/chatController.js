@@ -2,9 +2,9 @@ const Chat = require("../models/Chat");
 const { io } = require('../server');
 const Admin = require("../models/Admin");
 const Notification = require("../models/Notification");
+const User = require("../models/User");
 const { handleAdminChatAchievements } = require("../utils/achievementUtils");
 const { notifyAdminChat, notifyAdminOnline } = require('../controllers/notificationController');
-const User = require("../models/User");
 
 // Send a message from the user
 exports.sendMessage = async (req, res) => {
@@ -27,10 +27,10 @@ exports.sendMessage = async (req, res) => {
     chat.messages.push(newMessage);
     chat.lastActive = Date.now();
     await chat.save();
-    // Notify admin
+
     await notifyAdminChat(userId, message);
 
-    io.emit('message', { userId, ...newMessage }); 
+    io.emit('message', { userId, ...newMessage });
 
     // Increment chat count for user achievements
     const user = await User.findById(userId);
@@ -44,6 +44,8 @@ exports.sendMessage = async (req, res) => {
     if (complexKeywords.some((keyword) => message.toLowerCase().includes(keyword))) {
       chat.isComplex = true;
       await chat.save();
+
+      // Automatically notify admin about complex message
       const admin = await Admin.findOne({ isOnline: true });
       if (admin) {
         await Notification.create({
@@ -51,9 +53,24 @@ exports.sendMessage = async (req, res) => {
           message: "A complex query requires your attention.",
           type: "admin_chat",
         });
+
+        // Automated admin reply if no previous reply
+        const lastAdminMessage = chat.messages.reverse().find(msg => msg.from === 'admin');
+        if (!lastAdminMessage || !lastAdminMessage.text) {
+          const autoResponse = "Hello, your query is being reviewed. An admin will assist you shortly.";
+          const adminReply = {
+            from: "admin",
+            text: autoResponse,
+            createdAt: new Date(),
+          };
+          chat.messages.push(adminReply);
+          await chat.save();
+          io.emit('message', { userId: chat.userId, ...adminReply });
+        }
       }
     }
 
+    // Send the message response back
     res.json({ from: 'user', text: message, emoji, createdAt: new Date() });
   } catch (error) {
     console.error("Error sending message:", error);
@@ -171,7 +188,7 @@ exports.fetchChatMessages = async (req, res) => {
           createdAt: new Date(),
         });
         await chat.save();
-        await handleAdminChatAchievements(userId);
+        io.emit('message', { userId: chat.userId, from: "admin", text: autoResponse, createdAt: new Date() });
       }
     }
 
