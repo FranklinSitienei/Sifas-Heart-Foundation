@@ -37,7 +37,7 @@ app.use(cookieParser());  // Use cookie-parser
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/donations', donationRoutes);
-app.use('/api/notifications', authMiddleware, notificationRoutes);
+app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/emoji', emojiRoutes);
 app.use('/api/leaderboards', leaderboardRoutes);

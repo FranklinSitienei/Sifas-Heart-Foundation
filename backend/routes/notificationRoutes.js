@@ -11,7 +11,7 @@ router.post('/mark-as-read/:id', authMiddleware, notificationController.markAsRe
 router.delete('/delete/:id', authMiddleware, deleteNotification);
 
 // Admin Routes
-router.get('/admin', adminMiddleware, notificationController.getAdminNotifications);
+router.get('/admin/all', adminMiddleware, notificationController.getAdminNotifications);
 router.get('/admin/unread', authMiddleware, notificationController.getAdminUnreadNotifications);
 router.post('/admin/mark-all-as-read', adminMiddleware, notificationController.markAllAsReadAdmin);
 router.delete('/admin/delete/:id', adminMiddleware, deleteNotification);
