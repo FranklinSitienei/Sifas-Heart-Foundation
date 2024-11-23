@@ -194,22 +194,3 @@ exports.deleteNotification = async (req, res) => {
     }
 };
 
-module.exports = {
-    notifyAchievement,
-    notifyDonation,
-    notifyAdminChat,
-    notifyLogin,
-    notifyNewReply,
-    notifyAdminOnline,
-    notifySignup,
-    notifyEmailRecovery,
-    getUnreadNotifications,
-    getAdminUnreadNotifications,
-    markAsRead,
-    getAllNotifications,
-    getAdminNotifications,
-    markAllAsReadAdmin,
-    deleteNotification
-};
-
-console.log('Exports:', { notifyAchievement }); // Check if undefined
