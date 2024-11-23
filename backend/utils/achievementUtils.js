@@ -15,6 +15,8 @@ const addAchievement = async (userId, title, description, icon) => {
         user.achievements.push({ title, description, icon });
         await user.save();
     }
+
+    await notifyAchievement(user.id);
 };
 
 // Function to add a badge to the user
@@ -26,6 +28,8 @@ const addBadge = async (userId, title, icon) => {
         user.badges.push({ title, icon });
         await user.save();
     }
+
+    await notifyAchievement(user.id);
 };
 
 // Achievements when a user logs in
@@ -58,6 +62,8 @@ const handleLoginAchievements = async (userId) => {
     if (lastLoginDate && (currentLoginDate - lastLoginDate < 24 * 60 * 60 * 1000)) {
         await addAchievement(userId, 'Daily Login', 'Logged in daily', '/images/schedule.png');
     }
+
+    await notifyAchievement(user.id);
 };
 
 // Achievements when a user donates
@@ -89,6 +95,8 @@ const handleDonationAchievements = async (userId, amount) => {
     if (user.totalDonated >= 500 && !user.badges.some(b => b.title === 'Half a Grand')) {
         await addBadge(userId, 'Half a Grand', '/images/charity.png');
     }
+
+    await notifyAchievement(user.id);
 };
 
 // Achievements when a user stays on the site for over an hour
@@ -100,6 +108,8 @@ const handleTimeSpentAchievements = async (userId, timeSpentInMinutes) => {
     if (timeSpentInMinutes >= 60) {
         await addAchievement(userId, 'Site Enthusiast', 'Spent over an hour on the site in a day', '/images/time.png');
     }
+
+    await notifyAchievement(user.id);
 };
 
 // Achievements for daily visits
@@ -115,6 +125,8 @@ const handleDailyVisitAchievements = async (userId) => {
 
         await addAchievement(userId, 'Daily Visitor', 'Visited the app daily', '/images/24-hours.png');
     }
+
+    await notifyAchievement(user.id);
 };
 
 // Achievements for profile update
@@ -123,6 +135,8 @@ const handleProfileUpdateAchievements = async (userId) => {
     if (!user) return;
 
     await addAchievement(userId, 'Profile Updated', 'Successfully updated your profile', '/images/profile.png');
+
+    await notifyAchievement(user.id);
 };
 
 // Achievements for chatting with the admin
@@ -142,11 +156,15 @@ const handleAdminChatAchievements = async (userId) => {
 
     user.chatCount += 1; // Increment chat count
     await user.save();
+
+    await notifyAchievement(user.id);
 };
 
 // New function for user signup achievements
 const handleSignupAchievements = async (userId) => {
     await addAchievement(userId, 'Welcome Aboard', 'Signed up as a new user', '/images/welcome.png');
+
+    await notifyAchievement(user.id);
 };
 
 module.exports = {
