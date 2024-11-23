@@ -6,8 +6,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
       origin: [
-        "http://localhost:3003",
-        "http://localhost:3004",
+        'https://sifas-heart-foundation.onrender.com',
       ],
       methods: ["GET", "POST", "DELETE", "PUT"],
       credentials: true, // Allow credentials if necessary
