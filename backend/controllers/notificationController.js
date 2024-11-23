@@ -211,3 +211,5 @@ module.exports = {
     markAllAsReadAdmin,
     deleteNotification
 };
+
+console.log('Exports:', { notifyAchievement }); // Check if undefined
