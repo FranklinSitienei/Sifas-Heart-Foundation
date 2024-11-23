@@ -14,7 +14,7 @@ const NotificationModal = ({ token, onClose }) => {
         const fetchNotifications = async () => {
             try {
                 const response = await fetch(
-                    "https://sifas-heart-foundation.onrender.com/api/notifications/user",
+                    "https://sifas-heart-foundation.onrender.com/api/auth/notifications",
                     {
                         method: "GET",
                         headers: {

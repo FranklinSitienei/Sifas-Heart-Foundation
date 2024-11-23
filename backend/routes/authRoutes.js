@@ -109,11 +109,11 @@ router.post("/signup", async (req, res) => {
     });
 
     await user.save();
-    await notifySignup(req.user.id);  // Notify user on successful signup
+    await notifySignup(user.id);  // Notify user on successful signup
 
     const token = generateToken(user);
     await handleSignupAchievements(user.id);
-    await notifyAchievement(req.user.id);
+    await notifyAchievement(user.id);
 
     const registrationMessage = "Thank you for registering! Welcome to our platform.";
     await Notification.create({ userId: user.id, message: registrationMessage, type: "signup" });
@@ -125,22 +125,23 @@ router.post("/signup", async (req, res) => {
 });
 
 // Time Spent Achievement Route
-router.post("/time_spent", authMiddleware, async (req, res) => {
-  const { timeSpentInMinutes } = req.body; // Expecting time spent in minutes
+router.post('/time_spent', authMiddleware, async (req, res) => {
+  const { timeSpentInMinutes } = req.body;
 
   if (typeof timeSpentInMinutes !== 'number' || timeSpentInMinutes < 0) {
-    return res.status(400).json({ msg: "Invalid time spent value" });
+    return res.status(400).json({ msg: 'Invalid time spent value' });
   }
 
   try {
     const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ msg: "User not found" });
+    if (!user) throw new Error('User not found.');
 
-    await handleTimeSpentAchievements(user.id, timeSpentInMinutes); // Pass the time spent
-    await notifyAchievement(req.user.id);
-    res.json({ msg: "Time spent achievement processed" });
+    await handleTimeSpentAchievements(user._id, timeSpentInMinutes);
+    await notifyAchievement(user._id, `Time Spent: ${timeSpentInMinutes} minutes`);
+    res.json({ msg: 'Time spent achievement processed.' });
   } catch (err) {
-    res.status(500).send("Server error");
+    console.error('Error processing time spent:', err.message);
+    res.status(500).send('Server error');
   }
 });
 
@@ -167,8 +168,8 @@ router.post("/login", async (req, res) => {
 
     const token = generateToken(user);
     await handleLoginAchievements(user.id);
-    await notifyLogin(req.user.id);  // Notify user on successful login
-    await notifyAchievement(req.user.id);
+    await notifyLogin(user.id);  // Notify user on successful login
+    await notifyAchievement(user.id);
 
     // Check and award daily visit achievement
     await handleDailyVisitAchievements(user.id);
@@ -211,7 +212,7 @@ router.put("/update_profile", upload.single("profilePicture"), authMiddleware, a
 
     await user.save();
     await handleProfileUpdateAchievements(user.id);
-    await notifyAchievement(req.user.id);
+    await notifyAchievement(user.id);
     res.json({ msg: "Profile updated successfully", user });
   } catch (err) {
     res.status(500).send("Server error");
@@ -239,7 +240,6 @@ router.get("/achievements", authMiddleware, async (req, res) => {
     const user = await User.findById(req.user.id).select("achievements badges");
     if (!user) return res.status(404).json({ msg: "User not found" });
     res.json(user);
-    await notifyAchievement(req.user.id);
   } catch (err) {
     res.status(500).send("Server error");
   }
@@ -250,7 +250,7 @@ router.post("/time_spent", authMiddleware, async (req, res) => {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ msg: "User not found" });
     await handleTimeSpentAchievements(user.id);
-    await notifyAchievement(req.user.id);
+    await notifyAchievement(user.id);
     res.json({ msg: "Time spent achievement processed" });
   } catch (err) {
     res.status(500).send("Server error");
@@ -262,7 +262,7 @@ router.post("/daily_visit", authMiddleware, async (req, res) => {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ msg: "User not found" });
     await handleDailyVisitAchievements(user.id);
-    await notifyAchievement(req.user.id);
+    await notifyAchievement(user.id);
     res.json({ msg: "Daily visit achievement processed" });
   } catch (err) {
     res.status(500).send("Server error");
