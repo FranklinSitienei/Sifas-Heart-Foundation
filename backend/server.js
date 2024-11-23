@@ -5,10 +5,9 @@ const { Server } = require('socket.io');
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-      origin: [
-        'https://sifas-heart-foundation.onrender.com',
-      ],
-      methods: ["GET", "POST", "DELETE", "PUT"],
+      origin: 
+        '*',
+        methods: ["GET", "POST", "DELETE", "PUT"],
       credentials: true, // Allow credentials if necessary
     },
   });
