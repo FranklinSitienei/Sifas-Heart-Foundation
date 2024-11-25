@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const User = require('../models/User');
+const { notifyAchievement } = require('../controllers/notificationController');
 
 // Helper function to check if an achievement already exists
 const hasAchievement = (user, title) => {
