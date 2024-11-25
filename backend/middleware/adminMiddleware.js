@@ -11,7 +11,7 @@ const adminMiddleware = async (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.ADMIN_JWT_SECRET); // Use admin secret for verification
-        console.log("Decoded token:", decoded); // Log decoded payload for debugging
+        
         
         const admin = await Admin.findById(decoded.admin.id); // Ensure this matches your payload structure
         
