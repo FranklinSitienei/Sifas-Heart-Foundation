@@ -14,8 +14,8 @@ const ChatBox = () => {
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isAdminOnline, setIsAdminOnline] = useState(false);
-  const [adminDetails, setAdminDetails] = useState({});
+  const [isUserOnline, setIsUserOnline] = useState(false);
+  const [UserDetails, setUserDetails] = useState({});
   const [editMessageId, setEditMessageId] = useState(null);
   const [emojiList, setEmojiList] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -23,49 +23,15 @@ const ChatBox = () => {
   const chatBodyRef = useRef(null);
 
   useEffect(() => {
-    socket.on('message', (newMessage) => {
-      setMessages((prevMessages) => [...prevMessages, newMessage]);
-    });
-
-    socket.on('messageEdited', (updatedMessage) => {
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) =>
-          msg._id === updatedMessage._id ? updatedMessage : msg
-        )
-      );
-    });
-
-    socket.on('messageDeleted', (deletedMessageId) => {
-      setMessages((prevMessages) =>
-        prevMessages.filter((msg) => msg._id !== deletedMessageId)
-      );
-    });
-
-    socket.on('adminOnline', ({ adminId }) => {
-      setIsAdminOnline(true);
-    });
-
-    socket.on('adminOffline', ({ adminId }) => {
-      setIsAdminOnline(false);
-    });
-
-    return () => {
-      socket.off('message');
-      socket.off('messageEdited');
-      socket.off('messageDeleted');
-      socket.off('adminOnline');
-      socket.off('adminOffline');
-    };
-  }, []);
-
-  useEffect(() => {
     if (isOpen) {
       fetchChatHistory();
-      checkAdminStatus();
+      checkUserStatus();
       addGreetingMessage();
       setUserOnline();
+      socket.emit('userOnline', { chatId: "userChatId" }); // Change chatId if necessary
     } else {
       setUserOffline();
+      socket.emit('userOffline', { chatId: "userChatId" }); // Change chatId if necessary
     }
   }, [isOpen]);
 
@@ -73,6 +39,7 @@ const ChatBox = () => {
     return () => {
       if (isOpen) {
         setUserOffline();
+        socket.emit('userOffline', { chatId: "userChatId" }); // Change chatId if necessary
       }
     };
   }, []);
@@ -148,7 +115,7 @@ const ChatBox = () => {
     }
   };
 
-  const checkAdminStatus = async () => {
+  const checkUserStatus = async () => {
     try {
       const response = await fetch('https://sifas-heart-foundation.onrender.com/api/chat/secretary-status', {
         headers: {
@@ -160,17 +127,16 @@ const ChatBox = () => {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
 
-      const adminStatus = await response.json();
-      setIsAdminOnline(adminStatus.isOnline);
-      if (adminStatus.isOnline) {
-        setAdminDetails(adminStatus.secretary);
+      const UserStatus = await response.json();
+      setIsUserOnline(UserStatus.isOnline);
+      if (UserStatus.isOnline) {
+        setUserDetails(UserStatus.secretary);
       }
     } catch (error) {
-      console.error('Error checking admin status:', error);
-      alert("There was an issue checking the admin status.");
+      console.error('Error checking User status:', error);
+      alert("There was an issue checking the User status.");
     }
   };
-
 
   const handleSend = async () => {
     if (message.trim()) {
@@ -242,7 +208,7 @@ const ChatBox = () => {
 
   const addGreetingMessage = () => {
     if (messages.length === 0) {
-      const greetingMessage = { from: 'admin', text: 'Hello! How can I assist you today?', createdAt: new Date() };
+      const greetingMessage = { from: 'User', text: 'Hello! How can I assist you today?', createdAt: new Date() };
       setMessages([greetingMessage]);
     }
   };
@@ -261,17 +227,17 @@ const ChatBox = () => {
         <div className="chatbox">
           <div className="chatbox-header">
             <div className="chatbox-title">
-              {isAdminOnline && (
-                <div className="admin-info">
-                  <div className="admin-profile">
-                    <img src={adminDetails.profilePicture || FaUserCircle} alt="Admin" className="admin-avatar" />
-                    <div className="admin-name">
-                      <span>{adminDetails.firstName} {adminDetails.lastName}</span>
+              {isUserOnline && (
+                <div className="User-info">
+                  <div className="User-profile">
+                    <img src={UserDetails.profilePicture || FaUserCircle} alt="User" className="User-avatar" />
+                    <div className="User-name">
+                      <span>{UserDetails.firstName} {UserDetails.lastName}</span>
                       <MdVerified className="verified-icon" />
                     </div>
                   </div>
-                  <div className="admin-status">
-                    {isAdminOnline ? <span>Online</span> : <span>Offline</span>}
+                  <div className="User-status">
+                    {isUserOnline ? <span>Online</span> : <span>Offline</span>}
                   </div>
                 </div>
               )}
@@ -315,3 +281,4 @@ const ChatBox = () => {
 };
 
 export default ChatBox;
+
