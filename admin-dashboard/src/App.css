@@ -45,10 +45,31 @@ body {
   }
 }
 
+/* Adjust content margin for mobile */
 .content {
-  margin-left: 250px; /* Leave space for the sidebar */
-  padding: 20px; /* General padding */
-
-  align-items: center;
-  justify-content: center;
+  margin-left: 250px; /* For Sidebar */
+  padding: 20px;
+  transition: margin-left 0.3s ease;
 }
+
+.mobile-content {
+  margin-left: 0; /* Remove sidebar margin for mobile */
+  padding-bottom: 70px; /* Space for the bottom navbar */
+}
+
+/* Mobile navbar adjustments */
+.mobile-navbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #f4f4f4;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px 0;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+
