@@ -27,10 +27,8 @@ const ChatBox = () => {
       fetchChatHistory();
       checkUserStatus();
       addGreetingMessage();
-      setUserOnline();
       socket.emit('userOnline', { chatId: "userChatId" }); // Change chatId if necessary
-    } else {
-      setUserOffline();
+    } else { 
       socket.emit('userOffline', { chatId: "userChatId" }); // Change chatId if necessary
     }
   }, [isOpen]);
@@ -38,7 +36,6 @@ const ChatBox = () => {
   useEffect(() => {
     return () => {
       if (isOpen) {
-        setUserOffline();
         socket.emit('userOffline', { chatId: "userChatId" }); // Change chatId if necessary
       }
     };
@@ -60,40 +57,6 @@ const ChatBox = () => {
       console.error('Error fetching emojis:', error);
     }
   };
-
-  const setUserOnline = async () => {
-    try {
-      const response = await fetch('https://sifas-heart-foundation.onrender.com/api/chat/user/online', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-    } catch (error) {
-      console.error('Error setting user online:', error);
-    }
-  };
-  
-  const setUserOffline = async () => {
-    try {
-      const response = await fetch('https://sifas-heart-foundation.onrender.com/api/chat/user/offline', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-    } catch (error) {
-      console.error('Error setting user offline:', error);
-    }
-  };  
 
   useEffect(() => {
     if (chatBodyRef.current) {
