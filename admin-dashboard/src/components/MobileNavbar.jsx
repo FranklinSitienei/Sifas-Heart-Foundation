@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { FaTachometerAlt, FaDonate, FaBlog } from 'react-icons/fa';
+import { FaTachometerAlt, FaDonate, FaBlog, FaSearch } from 'react-icons/fa';
 import { BiChart, BiTable } from 'react-icons/bi';
 import { MdCreate, MdEdit, MdViewList, MdChat, MdMenu, MdOutlineLogout, MdAccountCircle } from 'react-icons/md';
 import '../css/MobileNavbar.css';
 import axios from 'axios';
 
-const MobileNavbar = () => {
+const MobileNavbar = ({ toggleSearch }) => {
     const [messageCount, setMessageCount] = useState(0);
     const [showMore, setShowMore] = useState(false); // To toggle extra icons
     const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
@@ -85,6 +85,11 @@ const MobileNavbar = () => {
 
     return (
         <div className="mobile-navbar">
+            {/* Search Icon */}
+            <button onClick={toggleSearch} className="navbar-icon">
+                <FaSearch />
+            </button>
+
             {mainIcons.map((item, index) => (
                 <NavLink key={index} to={item.path} className="navbar-icon">
                     {item.icon}

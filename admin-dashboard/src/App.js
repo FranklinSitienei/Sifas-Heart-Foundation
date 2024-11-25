@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
-import MobileNavbar from './components/MobileNavbar'; // Import the mobile navbar
+import MobileNavbar from './components/MobileNavbar';
 import Dashboard from './components/Dashboard';
 import Donations from './components/Donations';
 import CreateBlog from './components/CreateBlog';
@@ -29,25 +29,35 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const App = () => {
-    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768); // Initialize with current width
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    const [searchActive, setSearchActive] = useState(false);
 
     useEffect(() => {
         const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768); // Update state on resize
+            setIsMobile(window.innerWidth <= 768);
         };
 
         window.addEventListener('resize', handleResize);
 
         return () => {
-            window.removeEventListener('resize', handleResize); // Clean up event listener
+            window.removeEventListener('resize', handleResize);
         };
     }, []);
 
+    const toggleSearch = () => setSearchActive(!searchActive);
+
     return (
         <Router>
-            <Navbar />
-            {/* Render Sidebar or MobileNavbar based on screen size */}
-            {isMobile ? <MobileNavbar /> : <Sidebar />}
+            {/* Show search bar in place of navbar if search is active */}
+            {!searchActive && <Navbar />}
+            {isMobile && searchActive && (
+                <div className="mobile-search">
+                    <input type="text" placeholder="Search..." className="search-input" />
+                    <button onClick={toggleSearch} className="close-search">X</button>
+                </div>
+            )}
+            {/* Render Sidebar or MobileNavbar */}
+            {isMobile ? <MobileNavbar toggleSearch={toggleSearch} /> : <Sidebar />}
             <div className={`content ${isMobile ? 'mobile-content' : ''}`}>
                 <Routes>
                     <Route path="/login" element={<Login />} />

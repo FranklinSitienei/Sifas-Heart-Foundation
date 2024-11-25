@@ -25,21 +25,6 @@ const Navbar = () => {
     const [profile, setProfile] = useState(null);
     const [activeDropdown, setActiveDropdown] = useState(null);
     const token = localStorage.getItem("admin");
-    const [showSearchBar, setShowSearchBar] = useState(false);
-
-    // Update the `showSearchBar` state based on window width
-    useEffect(() => {
-        const handleResize = () => {
-            setShowSearchBar(window.innerWidth <= 768);
-        };
-
-        handleResize(); // Initialize the state
-        window.addEventListener("resize", handleResize);
-
-        return () => {
-            window.removeEventListener("resize", handleResize);
-        };
-    }, []);
 
     useEffect(() => {
         if (token) {
