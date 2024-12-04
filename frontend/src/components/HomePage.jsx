@@ -8,7 +8,7 @@ import Water from '../images/water.jpeg';
 import Students from '../images/students.jpeg';
 import CleanWater from '../images/clean.jpeg';
 import Profile1 from '../images/CEO.jpg';
-import Profile2 from '../images/profile2.jpeg';
+import Profile2 from '../images/COO.jpg';
 import Profile3 from '../images/profile3.jpeg';
 
 const HomePage = () => {
@@ -75,7 +75,7 @@ const HomePage = () => {
 
           <div className="committee-card">
             <img src={Profile2} alt="Committee Member" />
-            <h4 className="committee-card-name">Jane Smith</h4>
+            <h4 className="committee-card-name">Chris Smith</h4>
             <p className="committee-card-role">Chief Operations Officer</p>
           </div>
 

@@ -241,6 +241,8 @@
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   text-decoration: none;
+  width: 50%;
+  margin: 0 auto;
 }
 
 .cta-button:hover {
