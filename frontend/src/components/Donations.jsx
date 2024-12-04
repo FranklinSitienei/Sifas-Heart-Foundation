@@ -71,124 +71,124 @@ const Donations = () => {
     setDonation({ ...donation, currency: value });
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setIsProcessing(true);
+  // const handleSubmit = async (event) => {
+  //   event.preventDefault();
+  //   setIsProcessing(true);
   
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('You need to be logged in to make a donation');
-      navigate('/login');
-      return;
-    }
+  //   const token = localStorage.getItem('token');
+  //   if (!token) {
+  //     alert('You need to be logged in to make a donation');
+  //     navigate('/login');
+  //     return;
+  //   }
   
-    try {
-      // Ensure phone number is provided
-      if (!donation.phoneNumber) {
-        alert('Phone number is required.');
-        setIsProcessing(false);
-        return;
-      }
+  //   try {
+  //     // Ensure phone number is provided
+  //     if (!donation.phoneNumber) {
+  //       alert('Phone number is required.');
+  //       setIsProcessing(false);
+  //       return;
+  //     }
 
-      // Update the mobile number in the user's profile
-      const updateResponse = await fetch('https://sifas-heart-foundation.onrender.com/api/auth/update_mobile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ mobileNumber: donation.phoneNumber }),
-      });
+  //     // Update the mobile number in the user's profile
+  //     const updateResponse = await fetch('https://sifas-heart-foundation.onrender.com/api/auth/update_mobile', {
+  //       method: 'PUT',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       body: JSON.stringify({ mobileNumber: donation.phoneNumber }),
+  //     });
   
-      if (!updateResponse.ok) {
-        const errorResponse = await updateResponse.json();
-        alert(`Failed to update mobile number: ${errorResponse.msg}`);
-        setIsProcessing(false);
-        return;
-      }
+  //     if (!updateResponse.ok) {
+  //       const errorResponse = await updateResponse.json();
+  //       alert(`Failed to update mobile number: ${errorResponse.msg}`);
+  //       setIsProcessing(false);
+  //       return;
+  //     }
 
-      let response;
-      let payload;
+  //     let response;
+  //     let payload;
   
-      if (donation.paymentMethod === 'M-Pesa') {
-        // Initiating M-Pesa STK push
-        payload = {
-          amount: donation.amount,
-          phoneNumber: donation.phoneNumber, // Use the phone number provided
-        };
-        response = await fetch('https://sifas-heart-foundation.onrender.com/api/lipa/stk', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        });
+  //     if (donation.paymentMethod === 'M-Pesa') {
+  //       // Initiating M-Pesa STK push
+  //       payload = {
+  //         amount: donation.amount,
+  //         phoneNumber: donation.phoneNumber, // Use the phone number provided
+  //       };
+  //       response = await fetch('https://sifas-heart-foundation.onrender.com/api/lipa/stk', {
+  //         method: 'POST',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         body: JSON.stringify(payload),
+  //       });
 
-        if (response.ok) {
-          setConfirmationMessage('WAITING FOR YOUR CONFIRMATION...');
-          const { data } = await response.json();
+  //       if (response.ok) {
+  //         setConfirmationMessage('WAITING FOR YOUR CONFIRMATION...');
+  //         const { data } = await response.json();
 
-          // Polling to check status after STK push
-          const checkDonationStatus = async () => {
-            const statusResponse = await fetch(`https://sifas-heart-foundation.onrender.com/api/donations/status/${data.CheckoutRequestID}`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-            const statusData = await statusResponse.json();
+  //         // Polling to check status after STK push
+  //         const checkDonationStatus = async () => {
+  //           const statusResponse = await fetch(`https://sifas-heart-foundation.onrender.com/api/donations/status/${data.CheckoutRequestID}`, {
+  //             headers: {
+  //               Authorization: `Bearer ${token}`,
+  //             },
+  //           });
+  //           const statusData = await statusResponse.json();
             
-            if (statusData.donationStatus === 'Completed') {
-              setConfirmationMessage(`Thank you for your donation of ${donation.currency} ${donation.amount}`);
-            } else if (statusData.donationStatus === 'Canceled') {
-              setConfirmationMessage('Donation canceled by user.');
-            }
-          };
+  //           if (statusData.donationStatus === 'Completed') {
+  //             setConfirmationMessage(`Thank you for your donation of ${donation.currency} ${donation.amount}`);
+  //           } else if (statusData.donationStatus === 'Canceled') {
+  //             setConfirmationMessage('Donation canceled by user.');
+  //           }
+  //         };
 
-          // Poll every 5 seconds to check the status
-          const intervalId = setInterval(checkDonationStatus, 5000);
+  //         // Poll every 5 seconds to check the status
+  //         const intervalId = setInterval(checkDonationStatus, 5000);
 
-          // Stop polling once payment is confirmed or canceled
-          if (confirmationMessage.includes('Thank you') || confirmationMessage.includes('canceled')) {
-            clearInterval(intervalId);
-          }
-        } else {
-          setConfirmationMessage('Payment initiation failed.');
-        }
-      } else {
-        // Other payment methods (Visa, Mastercard)
-        payload = {
-          amount: donation.amount,
-          fullName: donation.fullName,
-          email: donation.email,
-          cardNumber: donation.cardNumber,
-          expiryDate: donation.expiryDate,
-          cvv: donation.cvv,
-          paymentMethod: donation.paymentMethod,
-        };
-        response = await fetch('https://sifas-heart-foundation.onrender.com/api/donations/donate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        });
+  //         // Stop polling once payment is confirmed or canceled
+  //         if (confirmationMessage.includes('Thank you') || confirmationMessage.includes('canceled')) {
+  //           clearInterval(intervalId);
+  //         }
+  //       } else {
+  //         setConfirmationMessage('Payment initiation failed.');
+  //       }
+  //     } else {
+  //       // Other payment methods (Visa, Mastercard)
+  //       payload = {
+  //         amount: donation.amount,
+  //         fullName: donation.fullName,
+  //         email: donation.email,
+  //         cardNumber: donation.cardNumber,
+  //         expiryDate: donation.expiryDate,
+  //         cvv: donation.cvv,
+  //         paymentMethod: donation.paymentMethod,
+  //       };
+  //       response = await fetch('https://sifas-heart-foundation.onrender.com/api/donations/donate', {
+  //         method: 'POST',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         body: JSON.stringify(payload),
+  //       });
 
-        if (response.ok) {
-          setConfirmationMessage(`Thank you for your donation of ${donation.currency} ${donation.amount}`);
-        } else {
-          const errorResponse = await response.json();
-          alert(`Donation failed: ${errorResponse.msg}`);
-        }
-      }
+  //       if (response.ok) {
+  //         setConfirmationMessage(`Thank you for your donation of ${donation.currency} ${donation.amount}`);
+  //       } else {
+  //         const errorResponse = await response.json();
+  //         alert(`Donation failed: ${errorResponse.msg}`);
+  //       }
+  //     }
 
-      setIsProcessing(false);
-    } catch (error) {
-      setIsProcessing(false);
-      alert('Donation failed');
-    }
-  };
+  //     setIsProcessing(false);
+  //   } catch (error) {
+  //     setIsProcessing(false);
+  //     alert('Donation failed');
+  //   }
+  // };
 
   if (authError) {
     return <p>Error: Authentication failed. Please log in again.</p>;
@@ -197,8 +197,9 @@ const Donations = () => {
   return (
     <div className="donations-container">
       <h2 className="title">Make a Donation</h2>
-      <form className="donations-form" onSubmit={handleSubmit}>
-        <div className="amount">
+      <form className="donations-form">
+        {/* <form className="donations-form" onSubmit={handleSubmit}>
+         <div className="amount">
           <select
             name="currency"
             value={donation.currency}
@@ -253,7 +254,7 @@ const Donations = () => {
           </div>
         </div>
 
-        {/* Conditional rendering based on payment method */}
+        Conditional rendering based on payment method
         {donation.paymentMethod === 'Visa' || donation.paymentMethod === 'Mastercard' ? (
           <div className="payment-details">
             <input
@@ -298,9 +299,45 @@ const Donations = () => {
 
         <button type="submit" className="submit-button" disabled={isProcessing}>
           {isProcessing ? 'Processing...' : 'Donate Now'}
-        </button>
+        </button> */}
+        <div className="options">
+          <select
+            name="paymentMethod"
+            value={donation.paymentMethod}
+            onChange={handlePaymentMethodChange}
+          >
+            <option value="Visa">Visa</option>
+            <option value="Mastercard">Mastercard</option>
+            <option value="M-Pesa">M-Pesa</option>
+          </select>
+          <div className="payment-icons">
+            {donation.paymentMethod === 'Visa' && <FaCcVisa className="payment-icon" />}
+            {donation.paymentMethod === 'Mastercard' && <FaCcMastercard className="payment-icon" />}
+            {donation.paymentMethod === 'M-Pesa' && <FaMobileAlt className="payment-icon" />}
+          </div>
+        </div>
+
+        {/* Bank account details for Visa/Mastercard */}
+        {donation.paymentMethod === 'Visa' || donation.paymentMethod === 'Mastercard' ? (
+          <div className="bank-details">
+            <p><strong>Account Name:</strong> Otto Benecker Foundation</p>
+            <p><strong>Account Number:</strong> 0630285541693 (KSH)</p>
+            <p><strong>Swift Code:</strong> EQBLKENA</p>
+            <p><strong>Bank Code:</strong> 68</p>
+            <p><strong>Branch Code:</strong> 063</p>
+          </div>
+        ) : null}
+
+        {/* M-Pesa details */}
+        {donation.paymentMethod === 'M-Pesa' ? (
+          <div className="mpesa-details">
+            <p><strong>Paybill/Business No:</strong> 247247</p>
+            <p><strong>Account No:</strong> 333511</p>
+            <p><strong>Amount:</strong> Ksh (Any Amount)</p>
+          </div>
+        ) : null}
       </form>
-      {/* Confirmation message displayed after initiating the STK push */}
+      Confirmation message displayed after initiating the STK push
       {confirmationMessage && (
         <p className="confirmation-message">{confirmationMessage}</p>
       )}

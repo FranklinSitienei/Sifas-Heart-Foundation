@@ -23,6 +23,7 @@ import BlogsPage from "./components/BlogsPage";
 import BlogDetails from "./components/BlogDetails";
 import CookieBanner from "./components/CookieBanner"; 
 import "./App.css";
+import ResetPassword from "./components/ResetPassword";
 
 function App() {
   return (
@@ -53,6 +54,7 @@ function App() {
             <Route path="/campaigns" element={<Campaigns />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/blogs" element={<BlogsPage />} /> 
+            <Route path="/reset-password" element={<ResetPassword />} /> 
             <Route path="/blog/:id" element={<BlogDetails />} />{" "}
           </Routes>
           <Footer />

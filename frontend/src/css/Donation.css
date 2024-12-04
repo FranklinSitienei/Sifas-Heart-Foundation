@@ -105,6 +105,19 @@
   text-align: center;
 }
 
+.bank-details, .mpesa-details {
+  margin: 20px 0;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.bank-details p, .mpesa-details p {
+  margin: 5px 0;
+  color: #000000;
+}
+
 /* Adjusting for smaller screens */
 @media (max-width: 768px) {
   .donations-container {

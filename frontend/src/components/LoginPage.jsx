@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
 import '../css/Login.css';
-import { FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa'; // Import the icons
+import { FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [recoveryEmail, setRecoveryEmail] = useState('');
+    const [recoveryContact, setRecoveryContact] = useState('');
     const [showRecovery, setShowRecovery] = useState(false);
 
     // Handle login form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true); // Start loading
+        setLoading(true);
 
         const response = await fetch('https://sifas-heart-foundation.onrender.com/api/auth/login', {
             method: 'POST',
@@ -26,13 +26,13 @@ const Login = () => {
         if (response.ok) {
             const data = await response.json();
             localStorage.setItem('token', data.token); // Store JWT token in local storage
-            window.location.href = '/donations'; // Redirect to account page
+            window.location.href = '/donations'; // Redirect to donations page
         } else {
             const error = await response.json();
             alert(`Login failed: ${error.msg}`);
         }
 
-        setLoading(false); // Stop loading
+        setLoading(false);
     };
 
     // Handle Google Login
@@ -47,23 +47,27 @@ const Login = () => {
     // Handle password recovery form submission
     const handleRecoverySubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
 
         const response = await fetch('https://sifas-heart-foundation.onrender.com/api/auth/recover', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ email: recoveryEmail }),
+            body: JSON.stringify({ contact: recoveryContact }), // Accept email or phone number
         });
 
         if (response.ok) {
-            alert('Password recovery instructions sent to your email.');
-            setRecoveryEmail('');
+            alert('A reset link has been sent to your email or phone number.');
+            setRecoveryContact('');
             setShowRecovery(false);
+            window.location.href = '/reset-password'; // Navigate to ResetPassword.jsx
         } else {
             const error = await response.json();
-            alert(`Password recovery failed: ${error.msg}`);
+            alert(`Recovery failed: ${error.msg}`);
         }
+
+        setLoading(false);
     };
 
     return (
@@ -102,7 +106,7 @@ const Login = () => {
                             {loading ? <FaSpinner className="spinner" /> : 'Login'}
                         </button>
                         <div className="recover-link">
-                            <button type="button" onClick={() => setShowRecovery(true)} className='button'>
+                            <button type="button" onClick={() => setShowRecovery(true)} className="button">
                                 Forgot Password?
                             </button>
                         </div>
@@ -115,16 +119,16 @@ const Login = () => {
                 ) : (
                     <form onSubmit={handleRecoverySubmit} className="recovery-form">
                         <div className="input-group">
-                            <label>Enter your email for password recovery</label>
+                            <label>Enter your email or phone number</label>
                             <input
-                                type="email"
-                                value={recoveryEmail}
-                                onChange={(e) => setRecoveryEmail(e.target.value)}
+                                type="text"
+                                value={recoveryContact}
+                                onChange={(e) => setRecoveryContact(e.target.value)}
                                 required
                             />
                         </div>
-                        <button type="submit" className="recover-button">
-                            Send Recovery Email
+                        <button type="submit" className="recover-button" disabled={loading}>
+                            {loading ? <FaSpinner className="spinner" /> : 'Send Reset Link'}
                         </button>
                         <button type="button" onClick={() => setShowRecovery(false)} className="cancel-recovery">
                             Cancel
