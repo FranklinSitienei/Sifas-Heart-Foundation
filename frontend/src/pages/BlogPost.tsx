@@ -111,7 +111,7 @@ This emergency response is just the beginning. We are now working on longer-term
 • Providing skills training for adults to rebuild their livelihoods
 
 Your continued support makes missions like this possible. Every donation, no matter the size, directly impacts the lives of families in need.`,
-    author: "Sifa Muhindo",
+    author: "Sifa's Heart Foundation",
     date: "2024-01-15",
     image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800&h=400&fit=crop",
     verified: true,
