@@ -37,8 +37,8 @@ const Footer = () => {
             <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Contact Info</h3>
             <ul className="space-y-2 text-gray-600 dark:text-gray-400">
               <li>Email: info@sifasheart.org</li>
-              <li>Phone: +1 (555) 123-4567</li>
-              <li>Address: 123 Charity St, Hope City</li>
+              <li>Phone: +254 (070) 811-8654</li>
+              <li>Address: 123 Nairobi, Kenya</li>
             </ul>
           </div>
         </div>
