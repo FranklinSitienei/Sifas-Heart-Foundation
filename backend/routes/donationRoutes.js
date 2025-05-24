@@ -43,4 +43,13 @@ router.post('/send-payslip', async (req, res) => {
   }
 });
 
+router.get('/user/:id/donations', async (req, res) => {
+  try {
+    const donations = await Donation.find({ userId: req.params.id }).sort({ date: -1 });
+    res.json(donations);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching user donations' });
+  }
+});
+
 module.exports = router;

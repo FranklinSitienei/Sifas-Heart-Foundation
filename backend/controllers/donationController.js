@@ -70,13 +70,18 @@ exports.makeDonation = async (req, res) => {
 
       // Save donation in the database
       const donation = new Donation({
-          userId: user._id, // Ensure userId is set correctly
-          amount,
-          paymentMethod,
-          transactionId,
-          userFullName,
-          userEmail,
-          userMobileNumber
+        userId: user._id,
+        donorName: userFullName,
+        donorEmail: userEmail,
+        amount,
+        currency,
+        paymentMethod,
+        phoneNumber,
+        paypalEmail,
+        cardNumber,
+        expiryDate,
+        cvv,
+        transactionId,
       });
 
       await donation.save();
