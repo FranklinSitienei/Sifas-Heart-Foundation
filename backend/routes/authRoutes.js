@@ -224,11 +224,21 @@ router.get("/profile", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id)
       .select("-password")
-      .populate("achievements")
+      .lean();
 
     if (!user) return res.status(404).json({ msg: "User not found" });
 
-    res.json(user);
+    // Return profile data with additional computed fields
+    const achievements = user.achievements || [];
+
+    const stats = {
+      totalDonations: user.donations?.length || 0,
+      totalAmount: user.totalDonated || 0,
+      commentsPosted: user.commentsPosted || 0,
+      achievementsEarned: achievements.length,
+    };
+
+    res.json({ user, achievements, stats });
   } catch (err) {
     res.status(500).send("Server error");
   }
