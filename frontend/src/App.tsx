@@ -18,6 +18,7 @@ import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
+import { ChatBox } from './components/ChatBox';
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,7 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>
+              <ChatBox />
               <Footer />
             </div>
           </BrowserRouter>
