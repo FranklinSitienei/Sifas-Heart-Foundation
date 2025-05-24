@@ -1,37 +1,42 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const CommentSchema = new Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+const ReplySchema = new Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   admin: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
   content: { type: String, required: true },
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   likeCount: { type: Number, default: 0 },
-  mentions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Admin' }],
-  replies: [
-    {
-      user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-      admin: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
-      content: { type: String, required: true },
-      likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-      likeCount: { type: Number, default: 0 },
-      replyCount: { type: Number, default: 0 },
-      createdAt: { type: Date, default: Date.now },
-      mentions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Admin' }],
-      reported: { type: Boolean, default: false }
-    }
+  createdAt: { type: Date, default: Date.now },
+  mentions: [
+    { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
+    { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
   ],
+  reported: { type: Boolean, default: false }
+}, { _id: true });
+
+const CommentSchema = new Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  admin: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
+  content: { type: String, required: true },
+  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  likeCount: { type: Number, default: 0 },
+  mentions: [
+    { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
+    { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+  ],
+  replies: [ReplySchema],
   createdAt: { type: Date, default: Date.now },
   reported: { type: Boolean, default: false }
-});
+}, { _id: true });
 
 const BlogSchema = new Schema({
   admin: { type: mongoose.Schema.Types.ObjectId, ref: "Admin", required: true },
   title: { type: String, required: true },
-  excerpt: { type: String, required: true }, // New field
-  author: { type: String, default: "Sifa's Heart Foundation" }, // New field
-  verified: { type: Boolean, default: true }, // New field
-  category: { type: String, required: true }, // New field
+  excerpt: { type: String, required: true },
+  author: { type: String, default: "Sifa's Heart Foundation" },
+  verified: { type: Boolean, default: true },
+  category: { type: String, required: true },
   content: { type: String, required: true },
   image: { type: String },
   video: { type: String },

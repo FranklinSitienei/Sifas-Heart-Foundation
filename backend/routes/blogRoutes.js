@@ -29,22 +29,73 @@ router.get("/all", async (req, res) => {
 });
 
 // View a single blog by ID (Public or authenticated users based on your requirement)
-router.get("/:id", async (req, res) => {
+router.get("/blog/:id", async (req, res) => {
   try {
     const blog = await Blog.findById(req.params.id)
       .populate("admin", "firstName lastName profilePicture")
-      .populate("comments.admin", "firstName lastName profilePicture")
       .populate("comments.user", "firstName lastName profilePicture")
+      .populate("comments.admin", "firstName lastName profilePicture")
       .populate("comments.replies.user", "firstName lastName profilePicture")
-      .populate("comments.replies.admin", "firstName lastName profilePicture");;
+      .populate("comments.replies.admin", "firstName lastName profilePicture");
 
     if (!blog) return res.status(404).json({ message: "Blog not found" });
-    res.status(200).json(blog);
+
+    // Transform comments for frontend
+    const transformedComments = blog.comments.map((comment) => {
+      const authorData = comment.user || comment.admin || {};
+      const author =
+        comment.user
+          ? `${authorData.firstName} ${authorData.lastName}`
+          : "Admin";
+      const profilePicture = authorData.profilePicture || "";
+
+      const adminReply = comment.replies.find((r) => r.admin) || null;
+
+      return {
+        id: comment._id,
+        author,
+        profilePicture,
+        content: comment.content,
+        timestamp: comment.createdAt,
+        likes: comment.likeCount,
+        replies: comment.replies
+          .filter((r) => r.user || r.admin)
+          .map((reply) => {
+            const replyAuthorData = reply.user || reply.admin || {};
+            const replyAuthor =
+              reply.user
+                ? `${replyAuthorData.firstName} ${replyAuthorData.lastName}`
+                : "Admin";
+            return {
+              id: reply._id,
+              author: replyAuthor,
+              content: reply.content,
+              timestamp: reply.createdAt,
+              likes: reply.likeCount,
+              profilePicture: replyAuthorData.profilePicture || "",
+            };
+          }),
+        adminReply: adminReply
+          ? {
+              content: adminReply.content,
+              timestamp: adminReply.createdAt,
+              profilePicture:
+                adminReply.admin?.profilePicture || "",
+            }
+          : null,
+      };
+    });
+
+    res.status(200).json({
+      ...blog.toObject(),
+      comments: transformedComments,
+    });
   } catch (err) {
     console.error("Error fetching blog details:", err);
     res.status(500).json({ message: "Server error", error: err });
   }
 });
+
 
 /* Admin Routes */
 
@@ -102,13 +153,13 @@ router.post(
         title,
         content,
         excerpt,
-        category, 
+        category,
         author: "Sifa's Heart Foundation",
         verified: true,
         tags: tags ? tags.split(",").map(tag => tag.trim()) : [],
         image: mediaPath && mediaPath.match(/\.(jpeg|jpg|gif|png)$/i) ? mediaPath : "",
         video: mediaPath && !mediaPath.match(/\.(mp4|mov|avi|mkv)$/i) ? mediaPath : "",
-      });      
+      });
 
       await newBlog.save();
       res
