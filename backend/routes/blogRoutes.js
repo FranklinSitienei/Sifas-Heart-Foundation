@@ -53,7 +53,7 @@ router.post(
   "/admin/create",
   [adminMiddleware, upload.single("media")],
   async (req, res) => {
-    const { title, content, mediaUrl, tags } = req.body;
+    const { title, content, mediaUrl, tags, excerpt, category } = req.body;
 
     try {
       let mediaPath = "";
@@ -98,13 +98,17 @@ router.post(
       }
 
       const newBlog = new Blog({
-        admin: req.admin.id, // Admin's ID
+        admin: req.admin.id,
         title,
         content,
-        tags: tags ? tags.split(",").map((tag) => tag.trim()) : [],
+        excerpt,
+        category, 
+        author: "Sifa's Heart Foundation",
+        verified: true,
+        tags: tags ? tags.split(",").map(tag => tag.trim()) : [],
         image: mediaPath && mediaPath.match(/\.(jpeg|jpg|gif|png)$/i) ? mediaPath : "",
         video: mediaPath && !mediaPath.match(/\.(mp4|mov|avi|mkv)$/i) ? mediaPath : "",
-      });
+      });      
 
       await newBlog.save();
       res
