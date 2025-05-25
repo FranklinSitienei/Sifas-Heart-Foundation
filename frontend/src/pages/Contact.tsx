@@ -134,9 +134,9 @@ const Contact = () => {
                 <div>
                   <h3 className="font-semibold text-gray-900 dark:text-white">Address</h3>
                   <p className="text-gray-600 dark:text-gray-400">
-                    123 Charity Street<br />
-                    Hope City, HC 12345<br />
-                    Democratic Republic of Congo
+                    123 Available Street<br />
+                    Nairobi<br />
+                    Kenya
                   </p>
                 </div>
               </div>
@@ -146,8 +146,8 @@ const Contact = () => {
                 <div>
                   <h3 className="font-semibold text-gray-900 dark:text-white">Phone</h3>
                   <p className="text-gray-600 dark:text-gray-400">
-                    +243 (0) 123-456-789<br />
-                    +1 (555) 123-4567
+                    +254 (0) 708-118-654<br />
+                    +1 (123) 4567-8910
                   </p>
                 </div>
               </div>
@@ -169,8 +169,8 @@ const Contact = () => {
                 <div>
                   <h3 className="font-semibold text-gray-900 dark:text-white">Office Hours</h3>
                   <p className="text-gray-600 dark:text-gray-400">
-                    Monday - Friday: 8:00 AM - 6:00 PM CAT<br />
-                    Saturday: 9:00 AM - 3:00 PM CAT<br />
+                    Monday - Friday: 8:00 AM - 6:00 PM EST<br />
+                    Saturday: 9:00 AM - 3:00 PM EST<br />
                     Sunday: Emergency only
                   </p>
                 </div>
@@ -189,7 +189,7 @@ const Contact = () => {
               </p>
               <div className="space-y-2">
                 <p className="font-semibold text-red-800 dark:text-red-200">
-                  Emergency Hotline: +243 (0) 999-HELP
+                  Emergency Hotline: +254 (0) 708-HELP
                 </p>
                 <p className="font-semibold text-red-800 dark:text-red-200">
                   Email: emergency@sifasheart.org
