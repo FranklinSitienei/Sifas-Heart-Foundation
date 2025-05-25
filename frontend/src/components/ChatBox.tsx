@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,129 +5,88 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageCircle, Send, X, Minimize2, Phone, Video } from 'lucide-react';
+import { MessageCircle, Send, X, Minimize2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Message {
-  id: string;
+  _id: string;
   text: string;
-  sender: 'user' | 'admin';
-  timestamp: Date;
+  senderType: 'user' | 'admin';
+  senderId: string;
+  receiverId: string;
+  timestamp: string;
   isRead: boolean;
 }
 
-const mockMessages: Message[] = [
-  {
-    id: '1',
-    text: 'Hello! How can I help you today?',
-    sender: 'admin',
-    timestamp: new Date(Date.now() - 300000),
-    isRead: true,
-  },
-  {
-    id: '2', 
-    text: 'Hi, I wanted to know more about your water well project.',
-    sender: 'user',
-    timestamp: new Date(Date.now() - 240000),
-    isRead: true,
-  },
-  {
-    id: '3',
-    text: 'Great question! Our water well project aims to provide clean drinking water to rural communities. Would you like me to share more details or connect you with our project coordinator?',
-    sender: 'admin',
-    timestamp: new Date(Date.now() - 180000),
-    isRead: true,
-  },
-];
-
 export const ChatBox = () => {
+  const { user } = useAuth();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [messages, setMessages] = useState<Message[]>(mockMessages);
-  const [newMessage, setNewMessage] = useState('');
-  const [isOnline, setIsOnline] = useState(true);
-  const [adminOnline, setAdminOnline] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isTyping, setIsTyping] = useState(false); // future: socket
+  const [adminOnline, setAdminOnline] = useState(true); // future: socket
 
+  // Scroll to bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // Fetch messages from backend
+  const fetchMessages = async () => {
+    try {
+      const res = await fetch(`/api/chat/conversation/${user.id}`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
+      const data = await res.json();
+      setMessages(data);
+    } catch (err) {
+      console.error('Failed to load messages:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchMessages();
+      setUnreadCount(0);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  useEffect(() => {
-    // Simulate user going online when chat is opened
-    if (isOpen) {
-      setIsOnline(true);
-      // Mark messages as read when chat is opened
-      setUnreadCount(0);
-      setMessages(prev => prev.map(msg => ({ ...msg, isRead: true })));
-    }
-  }, [isOpen]);
+  // Send message to backend
+  const handleSendMessage = async () => {
+    if (!newMessage.trim()) return;
 
-  useEffect(() => {
-    // Simulate receiving new messages and admin typing
-    const interval = setInterval(() => {
-      if (Math.random() > 0.95 && adminOnline) {
-        setIsTyping(true);
-        setTimeout(() => {
-          const newMsg: Message = {
-            id: Date.now().toString(),
-            text: 'Is there anything else I can help you with?',
-            sender: 'admin',
-            timestamp: new Date(),
-            isRead: isOpen,
-          };
-          setMessages(prev => [...prev, newMsg]);
-          setIsTyping(false);
-          if (!isOpen) {
-            setUnreadCount(prev => prev + 1);
-          }
-        }, 2000);
-      }
-    }, 10000);
+    try {
+      const res = await fetch('/api/chat/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({
+          text: newMessage,
+          receiverId: 'admin-id', // TODO: replace with actual admin ID
+        }),
+      });
 
-    return () => clearInterval(interval);
-  }, [isOpen, adminOnline]);
-
-  const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      const message: Message = {
-        id: Date.now().toString(),
-        text: newMessage,
-        sender: 'user',
-        timestamp: new Date(),
-        isRead: true,
-      };
-      setMessages(prev => [...prev, message]);
+      const sentMsg = await res.json();
+      setMessages((prev) => [...prev, sentMsg]);
       setNewMessage('');
-
-      // Simulate admin response
-      setTimeout(() => {
-        setIsTyping(true);
-        setTimeout(() => {
-          const adminResponse: Message = {
-            id: (Date.now() + 1).toString(),
-            text: 'Thank you for your message! I\'ll get back to you shortly.',
-            sender: 'admin',
-            timestamp: new Date(),
-            isRead: isOpen,
-          };
-          setMessages(prev => [...prev, adminResponse]);
-          setIsTyping(false);
-          if (!isOpen) {
-            setUnreadCount(prev => prev + 1);
-          }
-        }, 1500);
-      }, 500);
+    } catch (err) {
+      console.error('Send message failed:', err);
     }
   };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const formatTime = (timestamp: string) => {
+    return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   if (!isOpen) {
@@ -145,9 +103,9 @@ export const ChatBox = () => {
               {unreadCount > 9 ? '9+' : unreadCount}
             </Badge>
           )}
-          <div className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white ${
-            isOnline ? 'bg-green-500' : 'bg-gray-400'
-          }`} />
+          <div className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white ${adminOnline ? 'bg-green-500' : 'bg-gray-400'
+            }`} />
+
         </Button>
       </div>
     );
@@ -166,9 +124,8 @@ export const ChatBox = () => {
                 <div>
                   <p className="text-sm font-medium">Sifa Heart Support</p>
                   <div className="flex items-center space-x-1">
-                    <div className={`w-2 h-2 rounded-full ${
-                      adminOnline ? 'bg-green-400' : 'bg-gray-400'
-                    }`} />
+                    <div className={`w-2 h-2 rounded-full ${adminOnline ? 'bg-green-400' : 'bg-gray-400'
+                      }`} />
                     <span className="text-xs">
                       {adminOnline ? 'Online' : 'Offline'}
                     </span>
@@ -212,9 +169,8 @@ export const ChatBox = () => {
               <div>
                 <p className="font-medium">Sifa Heart Support</p>
                 <div className="flex items-center space-x-1">
-                  <div className={`w-2 h-2 rounded-full ${
-                    adminOnline ? 'bg-green-400' : 'bg-gray-400'
-                  }`} />
+                  <div className={`w-2 h-2 rounded-full ${adminOnline ? 'bg-green-400' : 'bg-gray-400'
+                    }`} />
                   <span className="text-xs">
                     {adminOnline ? 'Online' : 'Offline'}
                   </span>
@@ -261,35 +217,32 @@ export const ChatBox = () => {
             <div className="space-y-3">
               {messages.map((message) => (
                 <div
-                  key={message.id}
-                  className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                  key={message._id}
+                  className={`flex ${message.senderType === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div className={`flex items-end space-x-2 max-w-[80%] ${
-                    message.sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''
-                  }`}>
-                    {message.sender === 'admin' && (
+                  <div className={`flex items-end space-x-2 max-w-[80%] ${message.senderType === 'user' ? 'flex-row-reverse space-x-reverse' : ''
+                    }`}>
+                    {message.senderType === 'admin' && (
                       <Avatar className="h-6 w-6">
                         <AvatarFallback className="text-xs">SH</AvatarFallback>
                       </Avatar>
                     )}
-                    <div className={`rounded-lg px-3 py-2 ${
-                      message.sender === 'user'
+                    <div className={`rounded-lg px-3 py-2 ${message.senderType === 'user'
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-gray-100 dark:bg-gray-800'
-                    }`}>
+                      }`}>
                       <p className="text-sm">{message.text}</p>
-                      <p className={`text-xs mt-1 ${
-                        message.sender === 'user'
+                      <p className={`text-xs mt-1 ${message.senderType === 'user'
                           ? 'text-primary-foreground/70'
                           : 'text-gray-500'
-                      }`}>
+                        }`}>
                         {formatTime(message.timestamp)}
                       </p>
                     </div>
                   </div>
                 </div>
               ))}
-              
+
               {isTyping && (
                 <div className="flex justify-start">
                   <div className="flex items-end space-x-2">

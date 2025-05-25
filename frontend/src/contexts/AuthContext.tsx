@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 
@@ -7,7 +6,7 @@ interface User {
   name: string;
   email: string;
   profilePicture?: string;
-  isAdmin?: boolean;
+  token: string;
 }
 
 interface Achievement {
@@ -43,9 +42,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 };
 
@@ -55,73 +52,91 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    const saved = localStorage.getItem('user');
+    if (saved) setUser(JSON.parse(saved));
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Simulate login
-    const mockUser: User = {
-      id: '1',
-      name: 'John Doe',
-      email,
-      profilePicture: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-      isAdmin: email === 'admin@sifasheart.org'
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('user', JSON.stringify(mockUser));
-    
-    addAchievement({
-      title: 'Welcome Back!',
-      description: 'You have successfully logged in',
-      icon: '👋'
-    });
-    
-    toast({
-      title: "Welcome back!",
-      description: `Hello ${mockUser.name}, you've successfully logged in.`,
-    });
-    
-    return true;
+    try {
+      const res = await fetch('http://localhost:5000/api/users/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      if (!res.ok) throw new Error('Login failed');
+      const data = await res.json();
+
+      setUser(data.user);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      addAchievement({
+        title: 'Welcome Back!',
+        description: 'You have successfully logged in',
+        icon: '👋'
+      });
+
+      toast({ title: 'Login Success', description: `Welcome ${data.user.name}` });
+      return true;
+    } catch (err) {
+      toast({ title: 'Login Failed', description: 'Invalid credentials.', variant: 'destructive' });
+      return false;
+    }
   };
 
+  // Inside AuthContext.tsx
   const signup = async (name: string, email: string, password: string): Promise<boolean> => {
-    // Simulate signup
-    const mockUser: User = {
-      id: Date.now().toString(),
-      name,
-      email,
-      profilePicture: `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face`,
-      isAdmin: false
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('user', JSON.stringify(mockUser));
-    
-    addAchievement({
-      title: 'Welcome to Sifas Heart!',
-      description: 'Thank you for joining our mission',
-      icon: '🎉'
-    });
-    
-    toast({
-      title: "Welcome to Sifas Heart Foundation!",
-      description: `Hello ${name}, your account has been created successfully.`,
-    });
-    
-    return true;
+    try {
+      const res = await fetch('http://localhost:5000/api/users/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name, email, password })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Signup failed');
+      }
+
+      const { user, token } = data;
+
+      const authUser = {
+        ...user,
+        token
+      };
+
+      setUser(authUser);
+      localStorage.setItem('user', JSON.stringify(authUser));
+
+      addAchievement({
+        title: 'Welcome to Sifas Heart!',
+        description: 'Thank you for joining our mission',
+        icon: '🎉'
+      });
+
+      toast({
+        title: "Account created!",
+        description: `Welcome, ${user.name}!`,
+      });
+
+      return true;
+    } catch (error: any) {
+      toast({
+        title: "Signup Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return false;
+    }
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
-    toast({
-      title: "Goodbye!",
-      description: "You have been logged out successfully.",
-    });
+    toast({ title: 'Logged Out', description: 'Goodbye for now.' });
   };
 
   const addAchievement = (achievement: Omit<Achievement, 'id' | 'earnedAt'>) => {
@@ -130,8 +145,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       id: Date.now().toString(),
       earnedAt: new Date()
     };
-    setAchievements(prev => [newAchievement, ...prev]);
-    
+    setAchievements((prev) => [newAchievement, ...prev]);
     addNotification({
       type: 'achievement',
       title: 'New Achievement!',
@@ -146,29 +160,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       timestamp: new Date(),
       read: false
     };
-    setNotifications(prev => [newNotification, ...prev]);
+    setNotifications((prev) => [newNotification, ...prev]);
   };
 
   const markNotificationAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notif => 
-        notif.id === id ? { ...notif, read: true } : notif
-      )
+    setNotifications(prev =>
+      prev.map(n => (n.id === id ? { ...n, read: true } : n))
     );
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      login,
-      signup,
-      logout,
-      achievements,
-      notifications,
-      markNotificationAsRead,
-      addAchievement,
-      addNotification
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        signup,
+        logout,
+        achievements,
+        notifications,
+        markNotificationAsRead,
+        addAchievement,
+        addNotification
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -1,67 +1,41 @@
 const mongoose = require('mongoose');
 
-const AchievementSchema = new mongoose.Schema({
-    title: {
-        type: String,
-        required: true,
-    },
-    icon: {
-        type: String,
-        required: true,
-    },
-    description: {
-        type: String,
-        required: true,
-    },
-    earnedAt: { 
-        type: Date, 
-        default: Date.now 
-    }
+const achievementSchema = new mongoose.Schema({
+  title: String,
+  description: String,
+  icon: String,
+  earnedAt: { type: Date, default: Date.now }
 });
 
-const UserSchema = new mongoose.Schema({
-  firstName: { type: String, required: true },
-  lastName: { type: String, required: true },
-  name: { // Optional: useful for display in frontend
-    type: String,
-    get: function () {
-      return `${this.firstName} ${this.lastName}`;
-    }
-  },
-  email: { type: String, required: true, unique: true },
-  password: { type: String },
+const notificationSchema = new mongoose.Schema({
+  type: { type: String, enum: ['message', 'donation', 'report'], default: 'message' },
+  title: String,
+  message: String,
+  timestamp: { type: Date, default: Date.now },
+  isRead: { type: Boolean, default: false }
+});
+
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, unique: true, required: true },
+  password: { type: String }, // Optional if using OAuth only
   profilePicture: { type: String, default: '' },
-  mobileNumber: { type: String },
-  donations: [{
-    amount: Number,
-    date: Date,
-    description: String
-  }],
-  donationCount: { type: Number, default: 0 },
-  totalDonated: { type: Number, default: 0 },
-
-  achievements: [AchievementSchema],
-  googleId: { type: String },
-  appleId: { type: String },
-
-  commentsPosted: { type: Number, default: 0 },
-  loginCount: { type: Number, default: 0 },
-  lastLoginDate: { type: Date },
-  date: { type: Date, default: Date.now },
   isAdmin: { type: Boolean, default: false },
-  isDeleted: { type: Boolean, default: false },
-  deleteReason: { type: String, enum: ['TwoAccounts', 'NeedsUpgrade', 'Temporary', 'Other'], default: 'Temporary' },
-  otherDeleteReason: { type: String, default: '' },
-  deactivationDate: { type: Date },
-  resetPasswordToken: String,
-  resetPasswordExpires: Date,
-  timeSpent: { type: Number, default: 0 },
-  dailyVisits: { type: Number, default: 0 },
-  chatAchievements: { type: Number, default: 0 },
+  achievements: [achievementSchema],
+  notifications: [notificationSchema],
+  totalDonations: { type: Number, default: 0 },
+  donationCount: { type: Number, default: 0 },
+  oauthProvider: { type: String, enum: ['google', 'apple', null], default: null },
+  oauthId: { type: String, default: null },
   isOnline: { type: Boolean, default: false },
-  lastSeen: { type: Date, default: Date.now }
-});
+  lastSeen: { type: Date },
+  receipts: [{
+    amount: Number,
+    currency: String,
+    paymentMethod: String,
+    transactionId: String,
+    createdAt: { type: Date, default: Date.now }
+  }]
+}, { timestamps: true });
 
-const User = mongoose.model('User', UserSchema);
-
-module.exports = User;
+module.exports = mongoose.model('User', userSchema);

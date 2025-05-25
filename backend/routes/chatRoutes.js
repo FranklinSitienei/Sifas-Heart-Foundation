@@ -1,44 +1,15 @@
-// chatRoutes.js
-const express = require("express");
-const { authMiddleware } = require("../middleware/authMiddleware");
-const { adminMiddleware } = require("../middleware/adminMiddleware");
-const {
-    fetchChatMessages,
-    sendMessage,
-    checkAdminStatus,
-    handleComplexMessage,
-    editMessage,
-    deleteMessage,
-    getUserChats,
-    fetchChatDetails,
-    replyMessage,
-    setUserOnline,
-    setUserOffline,
-    markAsRead,
-} = require("../controllers/chatController");
-
+const express = require('express');
 const router = express.Router();
+const chatController = require('../controllers/chatController');
+const { authMiddleware } = require('../middlewares/auth');
+const { adminMiddleware } = require('../middlewares/admin');
 
-// User routes
-router.get("/messages", authMiddleware, fetchChatMessages);
-router.post("/send", authMiddleware, sendMessage);
-router.post("/user/online", authMiddleware, setUserOnline);
-router.post("/user/offline", authMiddleware, setUserOffline);
-router.get("/secretary-status", authMiddleware, checkAdminStatus);
-router.post("/complex", authMiddleware, handleComplexMessage);
-router.post("/edit/:chatId", authMiddleware, editMessage);
-router.post("/delete/:chatId", authMiddleware, deleteMessage);
-router.get("/all", authMiddleware, getUserChats);
+// For both users and admins
+router.post('/send', authMiddleware, chatController.sendMessage);
+router.post('/read', authMiddleware, chatController.markAsRead);
+router.get('/conversation/:userId', authMiddleware, chatController.getConversation);
 
-// Admin routes - Define specific routes first
-router.post("/admin/send", adminMiddleware, sendMessage);
-router.post("/admin/edit", adminMiddleware, editMessage);
-router.post("/admin/delete/:chatId", adminMiddleware, deleteMessage);
-router.get("/admin/all", adminMiddleware, getUserChats);
-router.post('/admin/reply/:chatId', adminMiddleware, replyMessage);
-router.post('/admin/:chatId/read', adminMiddleware, markAsRead);
-
-// Generic admin route - Define last
-router.get('/admin/:chatId', adminMiddleware, fetchChatDetails);
+// Admin-only chat list view
+router.get('/admin/conversations', adminMiddleware, chatController.getAdminChatList);
 
 module.exports = router;

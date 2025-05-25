@@ -1,55 +1,19 @@
 const express = require('express');
-const { makeDonation, handleMpesaSuccess, getDonationsOverview, getMonthlyDonations, getRecentTransactions, getPaymentMethodBreakdown } = require('../controllers/donationController');
-const sendDonationPayslip = require('../utils/sendEmail');
-const { adminMiddleware } = require("../middleware/adminMiddleware");
-
 const router = express.Router();
+const donationController = require('../controllers/donationController');
+const { handleStkPush, handleMpesaSuccess } = require('../controllers/StkController');
+const { authMiddleware } = require('../middlewares/auth');
 
-router.get('/',adminMiddleware, async (req, res) => {
-  try {
-      const donations = await Donation.find().populate('userId', 'firstName lastName email mobileNumber');
-      res.json(donations);
-  } catch (error) {
-      console.error('Error fetching donations:', error);
-      res.status(500).json({ message: 'Internal server error' });
-  }
-});
+// M-Pesa
+router.post('/mpesa', authMiddleware, handleStkPush);
+router.post('/mpesa/success', handleMpesaSuccess); // Public callback
 
+// Visa/Mastercard (via Flutterwave)
+router.post('/card', authMiddleware, donationController.handleCardDonation);
 
-// Overview data: Total donations (today, month, year)
-router.get('/overview',adminMiddleware, getDonationsOverview);
+// PayPal
+router.post('/paypal', authMiddleware, donationController.handlePayPalDonation);
 
-// Monthly donations for the bar chart
-router.get('/monthly',adminMiddleware, getMonthlyDonations);
-
-// Recent transactions
-router.get('/recent',adminMiddleware, getRecentTransactions);
-
-// Ensure both routes have valid callback functions
-router.post('/donate', makeDonation);
-
-// router.post('/mpesa/success', handleMpesaSuccess);
-
-// DonationRoutes.js
-router.get('/payment-methods',adminMiddleware, getPaymentMethodBreakdown);
-
-
-router.post('/send-payslip', async (req, res) => {
-  try {
-    await sendDonationPayslip(req.body);
-    res.status(200).json({ message: 'Payslip sent successfully' });
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to send payslip' });
-  }
-});
-
-router.get('/user/:id/donations', async (req, res) => {
-  try {
-    const donations = await Donation.find({ userId: req.params.id }).sort({ date: -1 });
-    res.json(donations);
-  } catch (err) {
-    res.status(500).json({ message: 'Error fetching user donations' });
-  }
-});
+router.get('/verify/:transactionId', authMiddleware, donationController.verifyDonation);
 
 module.exports = router;

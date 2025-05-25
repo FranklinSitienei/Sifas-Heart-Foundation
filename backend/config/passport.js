@@ -6,7 +6,7 @@ const Admin = require("../models/Admin");
 module.exports = (passport) => {
   // Google Strategy for Users
   passport.use(
-    'google-user',
+    "google-user",
     new GoogleStrategy(
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
@@ -16,80 +16,70 @@ module.exports = (passport) => {
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
-          console.log('Profile:', profile); // Log the entire profile object
-  
           const { id, email, given_name, family_name, picture } = profile._json;
-  
+
           if (!email || !given_name || !family_name) {
-            console.error('Received profile fields:', profile._json); // Log missing fields
             return done(new Error("Missing required Google profile fields"), null);
           }
-  
+
+          const fullName = `${given_name} ${family_name}`;
           let user = await User.findOne({ email });
-  
+
           if (!user) {
-            user = new User({
-              googleId: id,
-              email: email,
-              firstName: given_name,
-              lastName: family_name,
+            user = await User.create({
+              oauthProvider: 'google',
+              oauthId: id,
+              name: fullName,
+              email,
               profilePicture: picture,
             });
-            await user.save();
-          } else if (!user.googleId) {
-            user.googleId = id;
-            user.profilePicture = picture;
-            await user.save();
+          } else {
+            // Update OAuth ID and picture if missing
+            if (!user.oauthId || user.oauthProvider !== 'google') {
+              user.oauthProvider = 'google';
+              user.oauthId = id;
+              user.profilePicture = picture;
+              await user.save();
+            }
           }
-  
+
           return done(null, user);
         } catch (error) {
           return done(error, null);
         }
       }
     )
-  );  
+  );
 
-  // Google Strategy for Admins
+  // Google Strategy for Admins (unchanged unless admin model is refactored)
   passport.use(
     "google-admin",
     new GoogleStrategy(
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL:
-          "https://sifas-heart-foundation.onrender.com/api/admin/google/callback",
+        callbackURL: "https://sifas-heart-foundation.onrender.com/api/admin/google/callback",
         scope: ["profile", "email", "openid"],
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
-          const { id, email, given_name, family_name, picture } = profile;
+          const { id, email, given_name, family_name, picture } = profile._json;
 
-          if (!email) {
-            return done(new Error("Missing email field"), null);
-          }
-          if (!given_name) {
-            return done(new Error("Missing given_name field"), null);
-          }
-          if (!family_name) {
-            return done(new Error("Missing family_name field"), null);
+          if (!email || !given_name || !family_name) {
+            return done(new Error("Missing required Google profile fields"), null);
           }
 
-          // Check if admin already exists
           let admin = await Admin.findOne({ email });
 
           if (!admin) {
-            // If admin doesn't exist, create a new admin
-            admin = new Admin({
+            admin = await Admin.create({
               googleId: id,
-              email: email,
+              email,
               firstName: given_name,
               lastName: family_name,
-              profilePicture: picture, // Add profile picture
+              profilePicture: picture,
             });
-            await admin.save();
           } else if (!admin.googleId) {
-            // Update admin with new Google ID and profile picture
             admin.googleId = id;
             admin.profilePicture = picture;
             await admin.save();
@@ -103,15 +93,15 @@ module.exports = (passport) => {
     )
   );
 
-  // Serialize User or Admin
+  // Serialize User/Admin
   passport.serializeUser((entity, done) => {
     done(null, {
-      id: entity.id,
+      id: entity._id,
       type: entity instanceof User ? "User" : "Admin",
     });
   });
 
-  // Deserialize User or Admin
+  // Deserialize User/Admin
   passport.deserializeUser((obj, done) => {
     const Model = obj.type === "User" ? User : Admin;
     Model.findById(obj.id, (err, entity) => {

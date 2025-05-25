@@ -1,216 +1,121 @@
-require('dotenv').config();
-const Flutterwave = require('flutterwave-node-v3');
-const Mpesa = require('mpesa-node');
 const Donation = require('../models/Donation');
 const User = require('../models/User');
-const { generateTransactionId } = require('../utils/generateTransactionId');
-const { sendDonationEmail } = require('../utils/sendEmail');
-const { generatePayslipTemplate } = require('../utils/payslipTemplate');
-const { updateUserDonation } = require('../utils/leaderBoard');
-const { handleDonationAchievements } = require('../utils/achievementUtils');
-const { notifyDonation } = require('../controllers/notificationController');
-const Notification = require('../models/Notification');
+const axios = require('axios');
 
-const flw = new Flutterwave(process.env.FLW_PUBLIC_KEY, process.env.FLW_SECRET_KEY);
-const mpesaApi = new Mpesa({
-    consumerKey: process.env.MPESA_CONSUMER_KEY,
-    consumerSecret: process.env.MPESA_CONSUMER_SECRET,
-    environment: 'sandbox',
-    shortCode: process.env.MPESA_BUSINESS_SHORT_CODE,
-    lipaNaMpesaShortCode: process.env.MPESA_BUSINESS_SHORT_CODE,
-    lipaNaMpesaShortPass: process.env.MPESA_PASS_KEY,
-});
-
-exports.makeDonation = async (req, res) => {
-  const { amount, paymentMethod, accountBank, accountNumber } = req.body;
+// 🅿️ PayPal Donation
+exports.handlePayPalDonation = async (req, res) => {
+  const { amount, currency, paypalEmail } = req.body;
+  const userId = req.user?.id;
 
   try {
-      let transactionId;
-      const user = await User.findById(req.user.id);
-      if (!user) {
-          return res.status(404).json({ msg: 'User not found' });
+    const donation = await Donation.create({
+      userId,
+      donorName: req.user.name,
+      donorEmail: req.user.email,
+      paypalEmail,
+      amount,
+      currency,
+      paymentMethod: 'PayPal',
+      status: 'Pending'
+    });
+
+    const response = await axios.post(`${process.env.PAYPAL_API_URL}`, {
+      amount, currency, paypalEmail, transactionId: donation._id.toString()
+    });
+
+    donation.status = 'Completed';
+    donation.transactionId = response.data.transactionId || donation._id;
+    await donation.save();
+
+    await User.findByIdAndUpdate(userId, {
+      $inc: { totalDonations: donation.amount, donationCount: 1 }
+    });
+
+    await User.findByIdAndUpdate(userId, {
+      $push: {
+        receipts: {
+          amount: donation.amount,
+          currency: donation.currency,
+          paymentMethod: donation.paymentMethod,
+          transactionId: donation.transactionId
+        }
       }
+    });    
 
-      const userFullName = `${user.firstName} ${user.lastName}`;
-      const userEmail = user.email;
-      const userMobileNumber = user.mobileNumber;
-
-      if (paymentMethod === 'Visa' || paymentMethod === 'Mastercard') {
-          const payload = {
-              "account_bank": accountBank, // Flutterwave bank code
-              "account_number": accountNumber,
-              "amount": amount,
-              "narration": `Donation by ${userFullName}`,
-              "currency": "NGN", // change as needed
-              "reference": generateTransactionId(), // Unique reference for this transfer
-              "callback_url": `${process.env.BACKEND_URL}/api/donations/flutterwave/success`,
-              "debit_currency": "NGN"
-          };
-
-          const response = await flw.Transfer.initiate(payload);
-          if (response.status === 'success') {
-              transactionId = response.data.id;
-          } else {
-              return res.status(400).json({ msg: 'Flutterwave payment failed' });
-          }
-      } else if (paymentMethod === 'M-Pesa') {
-          const response = await mpesaApi.lipaNaMpesaOnline(
-              userMobileNumber,
-              amount,
-              `${process.env.BACKEND_URL}/api/donations/mpesa/success`,
-              `Donation-${generateTransactionId()}`
-          );
-
-          if (response.ResponseCode === '0') {
-              transactionId = response.CheckoutRequestID;
-          } else {
-              return res.status(400).json({ msg: 'M-Pesa payment failed' });
-          }
-      }
-
-      // Save donation in the database
-      const donation = new Donation({
-        userId: user._id,
-        donorName: userFullName,
-        donorEmail: userEmail,
-        amount,
-        currency,
-        paymentMethod,
-        phoneNumber,
-        paypalEmail,
-        cardNumber,
-        expiryDate,
-        cvv,
-        transactionId,
-      });
-
-      await donation.save();
-      await updateUserDonation(req.user.id, amount);
-      await handleDonationAchievements(req.user.id, amount);
-      // Notify the user of the successful donation
-      await notifyDonation(req.user.id, amount, transactionId);
-
-      // Send notification
-      const donationMessage = `Thank you for your donation of $${amount}. Your transaction ID is ${transactionId}.`;
-      await Notification.create({ userId: req.user.id, message: donationMessage, type: 'donation' });
-
-      // Send payslip via email
-      const payslipHtml = generatePayslipTemplate(donation);
-      await sendDonationEmail(user.email, payslipHtml);
-
-      res.json(donation);
+    res.status(201).json({ message: 'PayPal donation completed', donation });
   } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server error');
+    res.status(500).json({ message: 'PayPal donation failed', error: err.message });
   }
 };
 
-// Overview: Total donations today, this month, this year
-exports.getDonationsOverview = async (req, res) => {
+// 💳 Visa/Mastercard via Flutterwave
+exports.handleCardDonation = async (req, res) => {
+  const { amount, currency, cardNumber, expiryDate, cvv } = req.body;
+  const userId = req.user?.id;
+
   try {
-      const now = new Date();
-      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const donation = await Donation.create({
+      userId,
+      donorName: req.user.name,
+      donorEmail: req.user.email,
+      amount,
+      currency,
+      paymentMethod: 'Visa', // or 'Mastercard' depending on logic
+      status: 'Pending'
+    });
 
-      const totalToday = await Donation.aggregate([
-          { $match: { date: { $gte: startOfDay } } },
-          { $group: { _id: null, total: { $sum: "$amount" } } }
-      ]);
+    const response = await axios.post(`${process.env.FLUTTERWAVE_API_URL}/charges?type=card`, {
+      amount,
+      currency,
+      card_number: cardNumber,
+      cvv,
+      expiry: expiryDate,
+      email: req.user.email,
+      tx_ref: donation._id.toString(),
+    }, {
+      headers: {
+        Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`,
+      }
+    });
 
-      const totalThisMonth = await Donation.aggregate([
-          { $match: { date: { $gte: startOfMonth } } },
-          { $group: { _id: null, total: { $sum: "$amount" } } }
-      ]);
+    donation.status = 'Completed';
+    donation.transactionId = response.data.data.id;
+    await donation.save();
 
-      const totalThisYear = await Donation.aggregate([
-          { $match: { date: { $gte: startOfYear } } },
-          { $group: { _id: null, total: { $sum: "$amount" } } }
-      ]);
+    await User.findByIdAndUpdate(userId, {
+      $inc: { totalDonations: donation.amount, donationCount: 1 }
+    });
 
-      res.json({
-          totalToday: totalToday[0]?.total || 0,
-          totalThisMonth: totalThisMonth[0]?.total || 0,
-          totalThisYear: totalThisYear[0]?.total || 0
-      });
-  } catch (error) {
-      console.error("Error fetching donations overview:", error);
-      res.status(500).json({ message: 'Internal server error' });
+    await User.findByIdAndUpdate(userId, {
+      $push: {
+        receipts: {
+          amount: donation.amount,
+          currency: donation.currency,
+          paymentMethod: donation.paymentMethod,
+          transactionId: donation.transactionId
+        }
+      }
+    });    
+
+    res.status(201).json({ message: 'Card donation completed', donation });
+  } catch (err) {
+    res.status(500).json({ message: 'Card donation failed', error: err.message });
   }
 };
 
-// Monthly donations for bar chart (current year)
-exports.getMonthlyDonations = async (req, res) => {
+// For Verifying Donation if it was Successful
+exports.verifyDonation = async (req, res) => {
+  const { transactionId } = req.params;
+
   try {
-      const currentYear = new Date().getFullYear();
-      const monthlyDonations = await Donation.aggregate([
-          {
-              $match: {
-                  date: {
-                      $gte: new Date(`${currentYear}-01-01`),
-                      $lte: new Date(`${currentYear}-12-31`)
-                  }
-              }
-          },
-          {
-              $group: {
-                  _id: { $month: "$date" },
-                  total: { $sum: "$amount" }
-              }
-          },
-          { $sort: { "_id": 1 } }
-      ]);
+    const donation = await Donation.findOne({ transactionId });
 
-      res.json(monthlyDonations);
-  } catch (error) {
-      console.error("Error fetching monthly donations:", error);
-      res.status(500).json({ message: 'Internal server error' });
+    if (!donation) return res.status(404).json({ message: 'Donation not found' });
+
+    // Optional: Query external API to reconfirm
+    const isSuccessful = donation.status === 'Completed';
+    res.json({ verified: isSuccessful, donation });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
-
-// Recent transactions
-exports.getRecentTransactions = async (req, res) => {
-  try {
-      const recentTransactions = await Donation.find()
-          .sort({ date: -1 }) // Corrected from 'createdAt' to 'date'
-          .limit(10)
-          .populate('userId', 'firstName lastName email mobileNumber');
-      res.json(recentTransactions);
-  } catch (error) {
-      console.error('Error fetching recent transactions:', error);
-      res.status(500).json({ message: 'Internal server error' });
-  }
-};
-
-// Payment method breakdown
-exports.getPaymentMethodBreakdown = async (req, res) => {
-  try {
-      const allMethods = ['Visa', 'Mastercard', 'PayPal', 'MPesa', 'Flutterwave'];
-
-      const paymentMethods = await Donation.aggregate([
-          {
-              $group: {
-                  _id: "$paymentMethod",
-                  total: { $sum: "$amount" }
-              }
-          }
-      ]);
-
-      // Create an object that sets total to 0 for methods with no donations
-      const paymentBreakdown = allMethods.map(method => {
-          const methodData = paymentMethods.find(pm => pm._id === method);
-          return {
-              paymentMethod: method,
-              total: methodData ? methodData.total : 0
-          };
-      });
-
-      res.json(paymentBreakdown);
-  } catch (error) {
-      console.error('Error fetching payment method breakdown:', error);
-      res.status(500).json({ message: 'Internal server error' });
-  }
-};
-  
-
-  

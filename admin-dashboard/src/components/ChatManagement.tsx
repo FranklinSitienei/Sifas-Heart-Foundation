@@ -1,103 +1,85 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Send, Search, Circle } from 'lucide-react';
-
-const mockChats = [
-  {
-    id: '1',
-    user: {
-      name: 'John Doe',
-      avatar: '',
-      email: 'john@example.com',
-      isOnline: true,
-      lastSeen: 'now',
-    },
-    lastMessage: 'Thank you for your quick response regarding my donation!',
-    timestamp: '2 min ago',
-    unread: 2,
-  },
-  {
-    id: '2',
-    user: {
-      name: 'Jane Smith',
-      avatar: '',
-      email: 'jane@example.com',
-      isOnline: false,
-      lastSeen: '5 min ago',
-    },
-    lastMessage: 'I have a question about the Congo relief project...',
-    timestamp: '1 hour ago',
-    unread: 0,
-  },
-  {
-    id: '3',
-    user: {
-      name: 'Mike Johnson',
-      avatar: '',
-      email: 'mike@example.com',
-      isOnline: true,
-      lastSeen: 'now',
-    },
-    lastMessage: 'How can I volunteer for your upcoming events?',
-    timestamp: '3 hours ago',
-    unread: 1,
-  },
-];
-
-const mockMessages = [
-  {
-    id: '1',
-    sender: 'user',
-    content: 'Hello, I have a question about my recent donation.',
-    timestamp: '10:30 AM',
-  },
-  {
-    id: '2',
-    sender: 'admin',
-    content: 'Hello! I\'d be happy to help you with any questions about your donation. What would you like to know?',
-    timestamp: '10:32 AM',
-  },
-  {
-    id: '3',
-    sender: 'user',
-    content: 'I donated $100 last week but haven\'t received a confirmation email yet.',
-    timestamp: '10:35 AM',
-  },
-  {
-    id: '4',
-    sender: 'admin',
-    content: 'Let me check that for you right away. Can you please provide me with the transaction ID or the email address you used for the donation?',
-    timestamp: '10:36 AM',
-  },
-  {
-    id: '5',
-    sender: 'user',
-    content: 'Thank you for your quick response regarding my donation!',
-    timestamp: '10:45 AM',
-  },
-];
+import { useAdminAuth } from '@/contexts/AdminAuthContext';
 
 export const ChatManagement = () => {
-  const [selectedChat, setSelectedChat] = useState(mockChats[0]);
+  const { admin } = useAdminAuth();
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [selectedChat, setSelectedChat] = useState<any | null>(null);
+  const [messages, setMessages] = useState<any[]>([]);
   const [message, setMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredChats = mockChats.filter(chat =>
+  // Load conversation list
+  const fetchConversations = async () => {
+    try {
+      const res = await fetch('/api/chat/conversations', {
+        headers: { Authorization: `Bearer ${admin.token}` }
+      });
+      const data = await res.json();
+      setConversations(data);
+      if (data.length > 0) setSelectedChat(data[0]);
+    } catch (err) {
+      console.error('Failed to load chats:', err);
+    }
+  };
+
+  // Load messages for selected user
+  const fetchMessages = async (userId: string) => {
+    try {
+      const res = await fetch(`/api/chat/conversation/${userId}`, {
+        headers: { Authorization: `Bearer ${admin.token}` }
+      });
+      const data = await res.json();
+      setMessages(data);
+    } catch (err) {
+      console.error('Failed to load messages:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchConversations();
+  }, []);
+
+  useEffect(() => {
+    if (selectedChat) {
+      fetchMessages(selectedChat.user._id);
+    }
+  }, [selectedChat]);
+
+  const handleSendMessage = async () => {
+    if (!message.trim() || !selectedChat) return;
+
+    try {
+      const res = await fetch('/api/chat/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${admin.token}`
+        },
+        body: JSON.stringify({
+          text: message,
+          receiverId: selectedChat.user._id
+        })
+      });
+
+      const newMsg = await res.json();
+      setMessages(prev => [...prev, newMsg]);
+      setMessage('');
+    } catch (err) {
+      console.error('Failed to send message:', err);
+    }
+  };
+
+  const filteredChats = conversations.filter(chat =>
     chat.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     chat.user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const handleSendMessage = () => {
-    if (message.trim()) {
-      console.log('Sending message:', message);
-      setMessage('');
-    }
-  };
 
   const getOnlineStatus = (isOnline: boolean, lastSeen: string) => {
     return isOnline ? (
@@ -106,7 +88,7 @@ export const ChatManagement = () => {
         <span className="text-xs">Online</span>
       </div>
     ) : (
-      <span className="text-xs text-gray-500">Last seen {lastSeen}</span>
+      <span className="text-xs text-gray-500">Last seen {new Date(lastSeen).toLocaleTimeString()}</span>
     );
   };
 
@@ -196,7 +178,7 @@ export const ChatManagement = () => {
 
           {/* Messages */}
           <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
-            {mockMessages.map((msg) => (
+            {messages.map((msg) => (
               <div
                 key={msg.id}
                 className={`flex ${msg.sender === 'admin' ? 'justify-end' : 'justify-start'}`}
