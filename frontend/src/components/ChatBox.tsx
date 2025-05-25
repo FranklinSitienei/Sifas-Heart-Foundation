@@ -37,24 +37,38 @@ export const ChatBox = () => {
   // Fetch messages from backend
   const fetchMessages = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/chat/conversation/${user.id}`, {
+      const savedUser = localStorage.getItem('user');
+      if (!savedUser) return;
+
+      const parsedUser = JSON.parse(savedUser);
+      const token = parsedUser.token;
+      const userId = parsedUser.id;
+
+      const res = await fetch(`http://localhost:5000/api/chat/conversation/${userId}`, {
         headers: {
-          Authorization: `Bearer ${user.token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
+
       const data = await res.json();
+
+      if (!res.ok || !Array.isArray(data)) {
+        console.error('Invalid response:', data);
+        return;
+      }
+
       setMessages(data);
     } catch (err) {
-      console.error('Failed to load messages:', err);
+      console.error('Failed to fetch messages:', err);
     }
   };
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && user?.id && user?.token) {
       fetchMessages();
       setUnreadCount(0);
     }
-  }, [isOpen]);
+  }, [isOpen, user]);
 
   useEffect(() => {
     scrollToBottom();
@@ -65,19 +79,31 @@ export const ChatBox = () => {
     if (!newMessage.trim()) return;
 
     try {
+      const savedUser = localStorage.getItem('user');
+      if (!savedUser) return;
+
+      const parsedUser = JSON.parse(savedUser);
+      const token = parsedUser.token;
+
       const res = await fetch('http://localhost:5000/api/chat/send', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${user.token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           text: newMessage,
-          receiverId: 'admin-id', // TODO: replace with actual admin ID
+          receiverId: 'admin-id', // update later to dynamic admin if needed
         }),
       });
 
       const sentMsg = await res.json();
+
+      if (!res.ok || !sentMsg) {
+        console.error('Invalid send response:', sentMsg);
+        return;
+      }
+
       setMessages((prev) => [...prev, sentMsg]);
       setNewMessage('');
     } catch (err) {
@@ -215,33 +241,34 @@ export const ChatBox = () => {
         <CardContent className="flex-1 flex flex-col p-0 min-h-0">
           <ScrollArea className="flex-1 p-3">
             <div className="space-y-3">
-              {messages.map((message) => (
-                <div
-                  key={message._id}
-                  className={`flex ${message.senderType === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div className={`flex items-end space-x-2 max-w-[80%] ${message.senderType === 'user' ? 'flex-row-reverse space-x-reverse' : ''
-                    }`}>
-                    {message.senderType === 'admin' && (
-                      <Avatar className="h-6 w-6">
-                        <AvatarFallback className="text-xs">SH</AvatarFallback>
-                      </Avatar>
-                    )}
-                    <div className={`rounded-lg px-3 py-2 ${message.senderType === 'user'
+              {Array.isArray(messages) &&
+                messages.map((message) => (
+                  <div
+                    key={message._id}
+                    className={`flex ${message.senderType === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`flex items-end space-x-2 max-w-[80%] ${message.senderType === 'user' ? 'flex-row-reverse space-x-reverse' : ''
+                      }`}>
+                      {message.senderType === 'admin' && (
+                        <Avatar className="h-6 w-6">
+                          <AvatarFallback className="text-xs">SH</AvatarFallback>
+                        </Avatar>
+                      )}
+                      <div className={`rounded-lg px-3 py-2 ${message.senderType === 'user'
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-gray-100 dark:bg-gray-800'
-                      }`}>
-                      <p className="text-sm">{message.text}</p>
-                      <p className={`text-xs mt-1 ${message.senderType === 'user'
+                        }`}>
+                        <p className="text-sm">{message.text}</p>
+                        <p className={`text-xs mt-1 ${message.senderType === 'user'
                           ? 'text-primary-foreground/70'
                           : 'text-gray-500'
-                        }`}>
-                        {formatTime(message.timestamp)}
-                      </p>
+                          }`}>
+                          {formatTime(message.timestamp)}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
 
               {isTyping && (
                 <div className="flex justify-start">
