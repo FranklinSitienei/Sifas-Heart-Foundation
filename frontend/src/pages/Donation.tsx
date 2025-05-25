@@ -23,6 +23,9 @@ const Donation = () => {
   const [paypalEmail, setPaypalEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
 
+  const savedUser = localStorage.getItem('user');
+  const token = savedUser ? JSON.parse(savedUser).token : null;
+
   const currencies = [
     { code: 'USD', symbol: '$', name: 'US Dollar' },
     { code: 'EUR', symbol: '€', name: 'Euro' },
@@ -51,7 +54,6 @@ const Donation = () => {
     setIsProcessing(true);
 
     try {
-      const token = localStorage.getItem('token'); // assume token is stored here
 
       let endpoint = '';
       let body: any = {
@@ -337,7 +339,7 @@ const Donation = () => {
                   <li>• School supplies for 3 children</li>
                 </ul>
               </div>
-              
+
               <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
                 <h3 className="font-semibold text-green-900 dark:text-green-100 mb-2">$50 Can Provide</h3>
                 <ul className="text-sm text-green-800 dark:text-green-200 space-y-1">
@@ -346,7 +348,7 @@ const Donation = () => {
                   <li>• Educational support for 10 children</li>
                 </ul>
               </div>
-              
+
               <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
                 <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-2">$100 Can Provide</h3>
                 <ul className="text-sm text-purple-800 dark:text-purple-200 space-y-1">

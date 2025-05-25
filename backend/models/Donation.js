@@ -5,7 +5,7 @@ const donationSchema = new mongoose.Schema({
   donorName: String,
   donorEmail: String,
   amount: { type: Number, required: true },
-  currency: { type: String, default: 'USD' },
+  currency: { type: String, default: 'KES' },
   paymentMethod: { type: String, enum: ['MPesa', 'Visa', 'Mastercard', 'PayPal'], required: true },
   transactionId: String,
   receiptNumber: String,

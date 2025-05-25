@@ -30,6 +30,7 @@ const userSchema = new mongoose.Schema({
   isOnline: { type: Boolean, default: false },
   lastSeen: { type: Date },
   timestamp: { type: Date, default: Date.now },
+  mobileNumber: String,
   receipts: [{
     amount: Number,
     currency: String,

@@ -1,159 +1,142 @@
 const axios = require('axios');
-const { timestamp } = require('../utils/timeStamp');
 const Donation = require('../models/Donation');
 const User = require('../models/User');
-require('dotenv').config();
+const { getCurrentTimestamp } = require('../utils/timeStamp');
 
-// Function to get the access token for M-Pesa
+const CONSUMER_KEY = process.env.MPESA_CONSUMER_KEY;
+const CONSUMER_SECRET = process.env.MPESA_CONSUMER_SECRET;
+const PASSKEY = process.env.MPESA_PASS_KEY;
+const SHORTCODE = process.env.BUSINESS_SHORT_CODE;
+const CALLBACK_BASE = process.env.CALLBACK_BASE_URL;
+
+// Step 1: Get M-Pesa access token
 const getAccessToken = async () => {
-  const { MPESA_CONSUMER_KEY, MPESA_CONSUMER_SECRET, MPESA_ACCESS_TOKEN_URL } = process.env;
-
-  const auth = Buffer.from(`${MPESA_CONSUMER_KEY}:${MPESA_CONSUMER_SECRET}`).toString('base64');
-  const response = await axios.get(MPESA_ACCESS_TOKEN_URL, {
-    headers: {
-      Authorization: `Basic ${auth}`,
-    },
+  const auth = Buffer.from(`${CONSUMER_KEY}:${CONSUMER_SECRET}`).toString('base64');
+  const res = await axios.get(process.env.MPESA_ACCESS_TOKEN_URL, {
+    headers: { Authorization: `Basic ${auth}` }
   });
-  return response.data.access_token;
+  return res.data.access_token;
 };
 
-// Handle STK Push for M-Pesa donations
-const handleStkPush = async (req, res) => {
-  const { amount, phoneNumber } = req.body;
-
-  if (!amount) {
-    return res.status(400).json({ message: 'Amount is required.' });
-  }
-
-  const userId = req.user?.id;
-  if (!userId) {
-    return res.status(400).json({ message: 'User ID not found in request.' });
-  }
-
+// Step 2: STK Push Request
+const initiateStkPush = async (req, res) => {
   try {
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    const { amount, phoneNumber } = req.body;
+    const userId = req.user?.id;
 
-    let mobileNumber = user.mobileNumber || phoneNumber;
-    if (!mobileNumber) {
-      return res.status(400).json({ message: 'User mobile number is required.' });
-    }
+    if (!amount || !phoneNumber) return res.status(400).json({ message: 'Missing fields' });
 
-    const formattedPhone = mobileNumber.startsWith('254') ? mobileNumber : mobileNumber.replace(/^0/, '254');
-    const BUSINESS_SHORT_CODE = process.env.BUSINESS_SHORT_CODE;
-    const ACCOUNT_NUMBER = process.env.ACCOUNT_NUMBER;
-
-    const PASSWORD = Buffer.from(
-      `${BUSINESS_SHORT_CODE}${process.env.MPESA_PASS_KEY}${timestamp}`
-    ).toString('base64');
-
-    const payload = {
-      BusinessShortCode: BUSINESS_SHORT_CODE,
-      Password: PASSWORD,
-      Timestamp: timestamp,
-      TransactionType: 'CustomerPayBillOnline',
-      Amount: amount,
-      PartyA: formattedPhone,
-      PartyB: BUSINESS_SHORT_CODE,
-      PhoneNumber: formattedPhone,
-      CallBackURL: `${process.env.BASE_URL}/mpesa/success`, // Callback route for M-Pesa response
-      AccountReference: ACCOUNT_NUMBER,
-      TransactionDesc: 'Donation Payment',
-    };
+    const timestamp = getCurrentTimestamp();
+    const password = Buffer.from(`${SHORTCODE}${PASSKEY}${timestamp}`).toString('base64');
 
     const accessToken = await getAccessToken();
 
     const response = await axios.post(
       process.env.MPESA_STK_PUSH_URL,
-      payload,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
+      {
+        BusinessShortCode: SHORTCODE,
+        Password: password,
+        Timestamp: timestamp,
+        TransactionType: "CustomerPayBillOnline",
+        Amount: amount,
+        PartyA: phoneNumber,
+        PartyB: SHORTCODE,
+        PhoneNumber: phoneNumber,
+        CallBackURL: `${CALLBACK_BASE}/api/mpesa/callback`,
+        AccountReference: "SifaDonation",
+        TransactionDesc: "Charity Donation"
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      }
     );
 
-    const donation = new Donation({
-      userId: userId,
-      amount: amount,
-      paymentMethod: 'MPesa',
+    await Donation.create({
+      userId,
+      phoneNumber,
+      amount,
       transactionId: response.data.CheckoutRequestID,
       status: 'Pending',
+      paymentMethod: 'MPesa'
     });
 
-    await donation.save();
+    res.status(200).json({ message: 'STK Push sent', data: response.data });
 
-    res.status(201).json({ message: 'M-Pesa STK Push initiated', data: response.data });
-  } catch (error) {
-    if (error.response) {
-      return res.status(error.response.status).json({
-        message: 'M-Pesa STK Push failed',
-        error: error.response.data,
-      });
-    } else if (error.request) {
-      return res.status(500).json({ message: 'No response from M-Pesa' });
-    } else {
-      return res.status(500).json({ message: 'M-Pesa STK Push failed', error: error.message });
-    }
+  } catch (err) {
+    console.error(err.response?.data || err.message);
+    res.status(500).json({ message: 'STK push failed', error: err.response?.data || err.message });
   }
 };
 
-// Handle M-Pesa success callback
-const handleMpesaSuccess = async (req, res) => {
+// Step 3: Register URLs
+const registerUrls = async (req, res) => {
   try {
-    const { Body } = req.body;
-    const { CheckoutRequestID, ResultCode, ResultDesc, CallbackMetadata } = Body.stkCallback;
-
-    if (ResultCode === 0) {
-      const donation = await Donation.findOne({ transactionId: CheckoutRequestID });
-
-      if (!donation) {
-        return res.status(404).json({ message: 'Donation not found' });
-      }
-
-      const metadata = CallbackMetadata.Item;
-
-      let mReceipt = null, mPhoneNumber = null, mAmount = null;
-
-      metadata.forEach((entry) => {
-        switch (entry.Name) {
-          case 'MpesaReceiptNumber':
-            mReceipt = entry.Value;
-            break;
-          case 'PhoneNumber':
-            mPhoneNumber = entry.Value;
-            break;
-          case 'Amount':
-            mAmount = entry.Value;
-            break;
-          default:
-            break;
+    const accessToken = await getAccessToken();
+    const response = await axios.post(
+      process.env.MPESA_REGISTER_URL,
+      {
+        ShortCode: SHORTCODE,
+        ResponseType: "Completed",
+        ConfirmationURL: `${CALLBACK_BASE}/api/mpesa/confirmation`,
+        ValidationURL: `${CALLBACK_BASE}/api/mpesa/validation`
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
         }
-      });
-
-      // Update donation details
-      donation.status = 'Completed';
-      donation.receiptNumber = mReceipt;
-      donation.phoneNumber = mPhoneNumber;
-      donation.amount = mAmount;
-
-      await donation.save();
-
-      return res.status(200).json({ message: 'Donation successful', donation });
-    } else if (ResultCode === 1032) {
-      const donation = await Donation.findOne({ transactionId: CheckoutRequestID });
-
-      if (donation) {
-        donation.status = 'Canceled';
-        await donation.save();
-        return res.status(200).json({ message: 'Donation canceled by user' });
       }
+    );
 
-      return res.status(404).json({ message: 'Donation not found' });
-    } else {
-      return res.status(400).json({ message: `Payment failed: ${ResultDesc}` });
-    }
+    res.status(200).json({ message: 'URLs registered', data: response.data });
   } catch (error) {
-    res.status(500).json({ message: 'Error handling M-Pesa success callback', error: error.message });
+    res.status(500).json({ message: 'Failed to register URLs', error: error.message });
   }
 };
 
-module.exports = { handleStkPush, handleMpesaSuccess };
+// Step 4: Confirmation callback
+const handleConfirmation = async (req, res) => {
+  const data = req.body;
+  const { TransID, TransAmount, MSISDN, FirstName, LastName } = data;
+
+  try {
+    const donation = await Donation.findOneAndUpdate(
+      { transactionId: TransID },
+      {
+        status: 'Completed',
+        phoneNumber: MSISDN,
+        donorName: `${FirstName} ${LastName}`,
+        amount: TransAmount,
+        receiptNumber: TransID
+      },
+      { new: true }
+    );
+
+    res.status(200).json({
+      ResultCode: 0,
+      ResultDesc: 'Success'
+    });
+  } catch (err) {
+    console.error('Confirmation error', err);
+    res.status(500).json({
+      ResultCode: 1,
+      ResultDesc: 'Error occurred'
+    });
+  }
+};
+
+// Step 5: Validation (optional, just always accept)
+const handleValidation = (req, res) => {
+  res.status(200).json({
+    ResultCode: "0",
+    ResultDesc: "Accepted"
+  });
+};
+
+module.exports = {
+  initiateStkPush,
+  registerUrls,
+  handleConfirmation,
+  handleValidation
+};

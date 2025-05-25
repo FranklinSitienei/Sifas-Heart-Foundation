@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const donationController = require('../controllers/donationController');
-const { handleStkPush, handleMpesaSuccess } = require('../controllers/StkController');
+const { initiateStkPush, handleConfirmation } = require('../controllers/StkController');
 const { authMiddleware } = require('../middlewares/auth');
 
 // M-Pesa
-router.post('/mpesa', authMiddleware, handleStkPush);
-router.post('/mpesa/success', handleMpesaSuccess); // Public callback
+router.post('/mpesa', authMiddleware, initiateStkPush);
+router.post('/mpesa/success', handleConfirmation); 
 
 // Visa/Mastercard (via Flutterwave)
 router.post('/card', authMiddleware, donationController.handleCardDonation);
