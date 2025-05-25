@@ -37,7 +37,7 @@ export const ChatBox = () => {
   // Fetch messages from backend
   const fetchMessages = async () => {
     try {
-      const res = await fetch(`/api/chat/conversation/${user.id}`, {
+      const res = await fetch(`http://localhost:5000/api/chat/conversation/${user.id}`, {
         headers: {
           Authorization: `Bearer ${user.token}`,
         },
@@ -65,7 +65,7 @@ export const ChatBox = () => {
     if (!newMessage.trim()) return;
 
     try {
-      const res = await fetch('/api/chat/send', {
+      const res = await fetch('http://localhost:5000/api/chat/send', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

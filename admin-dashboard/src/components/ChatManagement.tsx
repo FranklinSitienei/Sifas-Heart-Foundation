@@ -18,7 +18,7 @@ export const ChatManagement = () => {
   // Load conversation list
   const fetchConversations = async () => {
     try {
-      const res = await fetch('/api/chat/conversations', {
+      const res = await fetch('http://localhost:5000/api/chat/conversations', {
         headers: { Authorization: `Bearer ${admin.token}` }
       });
       const data = await res.json();
@@ -32,7 +32,7 @@ export const ChatManagement = () => {
   // Load messages for selected user
   const fetchMessages = async (userId: string) => {
     try {
-      const res = await fetch(`/api/chat/conversation/${userId}`, {
+      const res = await fetch(`http://localhost:5000/api/chat/conversation/${userId}`, {
         headers: { Authorization: `Bearer ${admin.token}` }
       });
       const data = await res.json();
@@ -56,7 +56,7 @@ export const ChatManagement = () => {
     if (!message.trim() || !selectedChat) return;
 
     try {
-      const res = await fetch('/api/chat/send', {
+      const res = await fetch('http://localhost:5000/api/chat/send', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
