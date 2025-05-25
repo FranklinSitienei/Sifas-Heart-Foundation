@@ -29,6 +29,12 @@ export const ChatBox = () => {
   const [isTyping, setIsTyping] = useState(false); // future: socket
   const [adminOnline, setAdminOnline] = useState(true); // future: socket
 
+  const savedUser = localStorage.getItem('user');
+  const parsedUser = savedUser ? JSON.parse(savedUser) : null;
+  const token = parsedUser?.token;
+  const userId = parsedUser?.id;
+
+
   // Scroll to bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -36,32 +42,30 @@ export const ChatBox = () => {
 
   // Fetch messages from backend
   const fetchMessages = async () => {
+    if (!token || !userId) return;
+  
     try {
-      const savedUser = localStorage.getItem('user');
-      if (!savedUser) return;
-
-      const parsedUser = JSON.parse(savedUser);
-      const token = parsedUser.token;
-      const userId = parsedUser.id;
-
       const res = await fetch(`http://localhost:5000/api/chat/conversation/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
+  
       const data = await res.json();
-
+  
       if (!res.ok || !Array.isArray(data)) {
-        console.error('Invalid response:', data);
+        console.error('Expected array of messages, got:', data);
+        setMessages([]);
         return;
       }
-
+  
       setMessages(data);
     } catch (err) {
       console.error('Failed to fetch messages:', err);
+      setMessages([]);
     }
   };
+  
 
   useEffect(() => {
     if (isOpen && user?.id && user?.token) {
@@ -76,15 +80,9 @@ export const ChatBox = () => {
 
   // Send message to backend
   const handleSendMessage = async () => {
-    if (!newMessage.trim()) return;
-
+    if (!newMessage.trim() || !token) return;
+  
     try {
-      const savedUser = localStorage.getItem('user');
-      if (!savedUser) return;
-
-      const parsedUser = JSON.parse(savedUser);
-      const token = parsedUser.token;
-
       const res = await fetch('http://localhost:5000/api/chat/send', {
         method: 'POST',
         headers: {
@@ -93,27 +91,28 @@ export const ChatBox = () => {
         },
         body: JSON.stringify({
           text: newMessage,
-          receiverId: 'admin-id', // update later to dynamic admin if needed
+          receiverId: 'admin-id',
         }),
       });
-
-      const sentMsg = await res.json();
-
-      if (!res.ok || !sentMsg) {
-        console.error('Invalid send response:', sentMsg);
+  
+      const data = await res.json();
+  
+      if (!res.ok) {
+        console.error('Invalid send response:', data);
         return;
       }
-
-      setMessages((prev) => [...prev, sentMsg]);
+  
+      setMessages((prev) => [...prev, data]);
       setNewMessage('');
     } catch (err) {
       console.error('Send message failed:', err);
     }
-  };
+  };  
 
   const formatTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
+    const date = new Date(timestamp);
+    return isNaN(date.getTime()) ? '...' : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };  
 
   if (!isOpen) {
     return (

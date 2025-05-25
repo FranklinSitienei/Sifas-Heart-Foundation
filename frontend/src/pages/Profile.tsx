@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,34 +8,45 @@ import { Link } from 'react-router-dom';
 
 const Profile = () => {
   const { user, achievements, notifications, markNotificationAsRead } = useAuth();
+  const [stats, setStats] = useState({
+    totalDonations: 0,
+    totalAmount: 0,
+    commentsPosted: 0,
+    achievementsEarned: 0
+  });
 
-  if (!user) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-          Please Log In
-        </h1>
-        <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
-          You need to be logged in to view your profile.
-        </p>
-        <div className="space-x-4">
-          <Button asChild>
-            <Link to="/login">Login</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link to="/signup">Sign Up</Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const saved = localStorage.getItem('user');
+        if (!saved) return;
+        const parsed = JSON.parse(saved);
+        const token = parsed.token;
 
-  const stats = {
-    totalDonations: 3,
-    totalAmount: 350,
-    commentsPosted: 5,
-    achievementsEarned: achievements.length
-  };
+        const res = await fetch(`http://localhost:5000/api/users/profile/${parsed.id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to load profile stats');
+
+        setStats({
+          totalDonations: data.totalDonations || 0,
+          totalAmount: data.totalAmount || 0,
+          commentsPosted: data.commentsPosted || 0,
+          achievementsEarned: achievements.length
+        });
+      } catch (err) {
+        console.error('Failed to fetch profile stats:', err);
+      }
+    };
+
+    if (user?.id) {
+      fetchStats();
+    }
+  }, [user, achievements.length]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -65,7 +75,7 @@ const Profile = () => {
                 <div className="flex items-center">
                   <Calendar className="h-4 w-4 mr-2 text-gray-500" />
                   <span className="text-gray-600 dark:text-gray-400">
-                    Member since January 2024
+                    Member since {user.timestamp}
                   </span>
                 </div>
                 <div className="flex items-center">

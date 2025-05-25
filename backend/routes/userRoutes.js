@@ -11,6 +11,7 @@ router.post('/login', userController.login);
 router.post('/oauth', userController.oauthLogin); // Google/Apple
 
 router.get('/profile', authMiddleware, userController.getProfile);
+router.get('/profile/:userId', authMiddleware, userController.getUserStats);
 router.put('/profile', authMiddleware, userController.updateProfile);
 router.delete('/profile', authMiddleware, userController.deleteAccount);
 router.get('/donations', authMiddleware, userController.getUserDonations);

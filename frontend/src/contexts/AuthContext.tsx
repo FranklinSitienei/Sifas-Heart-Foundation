@@ -7,6 +7,7 @@ interface User {
   email: string;
   profilePicture?: string;
   token: string;
+  timestamp: Date;
 }
 
 interface Achievement {
@@ -66,9 +67,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (!res.ok) throw new Error('Login failed');
       const data = await res.json();
+      const authUser = {
+        ...data.user,
+        token: data.token
+      };
+      setUser(authUser);
+      localStorage.setItem('user', JSON.stringify(authUser));
 
-      setUser(data.user);
-      localStorage.setItem('user', JSON.stringify(data.user));
 
       addAchievement({
         title: 'Welcome Back!',

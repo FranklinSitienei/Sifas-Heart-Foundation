@@ -79,6 +79,23 @@ exports.getProfile = async (req, res) => {
   }
 };
 
+exports.getUserStats = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    const user = await User.findById(userId);
+    const donations = await Donation.find({ user: userId });
+
+    res.json({
+      totalDonations: donations.length,
+      totalAmount: donations.reduce((sum, d) => sum + d.amount, 0),
+      commentsPosted: user.commentsPosted || 0,
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch profile stats' });
+  }
+};
+
 // Edit profile
 exports.updateProfile = async (req, res) => {
   try {
