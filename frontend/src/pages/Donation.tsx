@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { CreditCard, DollarSign } from 'lucide-react';
+import { DollarSign } from 'lucide-react';
 
 const Donation = () => {
   const { user, addAchievement, addNotification } = useAuth();
@@ -18,7 +17,6 @@ const Donation = () => {
   const [donorEmail, setDonorEmail] = useState(user?.email || '');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Payment method specific fields
   const [cardNumber, setCardNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [cvv, setCvv] = useState('');
@@ -37,7 +35,7 @@ const Donation = () => {
     { id: 'visa', name: 'Visa', icon: '💳' },
     { id: 'mastercard', name: 'Mastercard', icon: '💳' },
     { id: 'paypal', name: 'PayPal', icon: '🅿️' },
-    { id: 'mobilemoney', name: 'Mobile Money', icon: '📱' },
+    { id: 'mpesa', name: 'M-Pesa', icon: '📱' },
   ];
 
   const handleDonate = async () => {
@@ -52,30 +50,61 @@ const Donation = () => {
 
     setIsProcessing(true);
 
-    // Simulate payment processing
-    setTimeout(() => {
-      setIsProcessing(false);
-      
-      if (user) {
-        addAchievement({
-          title: 'Generous Donor',
-          description: `Thank you for your ${currencies.find(c => c.code === currency)?.symbol}${amount} donation`,
-          icon: '💝'
-        });
+    try {
+      const token = localStorage.getItem('token'); // assume token is stored here
+
+      let endpoint = '';
+      let body: any = {
+        amount,
+        donorName,
+        donorEmail,
+        currency,
+      };
+
+      if (paymentMethod === 'mpesa') {
+        endpoint = 'http://localhost:5000/api/donations/mpesa';
+        body.phoneNumber = phoneNumber;
+      } else if (paymentMethod === 'paypal') {
+        endpoint = 'http://localhost:5000/api/donations/paypal';
+        body.paypalEmail = paypalEmail;
+      } else if (paymentMethod === 'visa' || paymentMethod === 'mastercard') {
+        endpoint = 'http://localhost:5000/api/donations/card';
+        body.cardNumber = cardNumber;
+        body.expiryDate = expiryDate;
+        body.cvv = cvv;
+      } else {
+        throw new Error("Unsupported payment method");
       }
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) throw new Error('Donation failed');
+      const result = await res.json();
 
       addNotification({
         type: 'donation',
         title: 'Donation Confirmed',
-        message: `Your donation of ${currencies.find(c => c.code === currency)?.symbol}${amount} has been processed successfully.`
+        message: `Your donation of ${amount} ${currency} was successful.`,
+      });
+
+      addAchievement({
+        title: 'Generous Donor',
+        description: `Thank you for your ${amount} ${currency} donation!`,
+        icon: '💝',
       });
 
       toast({
-        title: "Thank You!",
-        description: `Your donation of ${currencies.find(c => c.code === currency)?.symbol}${amount} has been processed successfully. You're making a real difference!`,
+        title: "Donation Successful",
+        description: `Thank you, ${donorName}! Your donation of ${amount} ${currency} has been processed.`,
       });
 
-      // Reset form
       setAmount('');
       setPaymentMethod('');
       setCardNumber('');
@@ -83,7 +112,15 @@ const Donation = () => {
       setCvv('');
       setPaypalEmail('');
       setPhoneNumber('');
-    }, 3000);
+    } catch (err) {
+      toast({
+        title: "Payment Failed",
+        description: "Please check your details or try another method.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const renderPaymentFields = () => {
@@ -136,13 +173,13 @@ const Donation = () => {
             />
           </div>
         );
-      case 'mobilemoney':
+      case 'mpesa':
         return (
           <div>
-            <Label htmlFor="phoneNumber">Phone Number</Label>
+            <Label htmlFor="phoneNumber">M-Pesa Phone Number</Label>
             <Input
               id="phoneNumber"
-              placeholder="+1 234 567 8900"
+              placeholder="e.g. 0712345678"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
             />
