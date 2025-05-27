@@ -122,6 +122,34 @@ const Login = () => {
                 <div className="relative flex justify-center text-sm">
                   <span className="px-2 bg-white dark:bg-gray-800 text-gray-500">Or</span>
                 </div>
+                <div className="mt-6 space-y-4">
+                  <Button
+                    onClick={() => alert('Google login coming soon!')}
+                    variant="outline"
+                    className="w-full flex items-center justify-center gap-2 transition transform hover:scale-105 hover:border-blue-600 bg-white text-black"
+                  >
+                    <img
+                      src="https://www.svgrepo.com/show/475656/google-color.svg"
+                      alt="Google"
+                      className="h-5 w-5"
+                    />
+                    <span className="font-medium">Sign in with Google</span>
+                  </Button>
+
+                  <Button
+                    onClick={() => alert('Apple login coming soon!')}
+                    variant="outline"
+                    className="w-full flex items-center justify-center gap-2 transition transform hover:scale-105 hover:border-black bg-white text-black"
+                  >
+                    <img
+                      src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg"
+                      alt="Apple"
+                      className="h-5 w-5"
+                    />
+                    <span className="font-medium">Sign in with Apple</span>
+                  </Button>
+                </div>
+
               </div>
 
               <div className="mt-6 text-center">
@@ -132,17 +160,6 @@ const Login = () => {
                   </Link>
                 </p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Demo credentials */}
-        <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-          <CardContent className="pt-4">
-            <h3 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">Demo Credentials</h3>
-            <div className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-              <p><strong>Admin:</strong> admin@sifasheart.org / password</p>
-              <p><strong>User:</strong> user@example.com / password</p>
             </div>
           </CardContent>
         </Card>

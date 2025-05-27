@@ -26,7 +26,7 @@ const Signup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: "Password Mismatch",
@@ -182,6 +182,33 @@ const Signup = () => {
                 </div>
                 <div className="relative flex justify-center text-sm">
                   <span className="px-2 bg-white dark:bg-gray-800 text-gray-500">Or</span>
+                </div>
+                <div className="mt-6 space-y-4">
+                  <Button
+                    onClick={() => alert('Google login coming soon!')}
+                    variant="outline"
+                    className="w-full flex items-center justify-center gap-2 transition transform hover:scale-105 hover:border-blue-600 bg-white text-black"
+                  >
+                    <img
+                      src="https://www.svgrepo.com/show/475656/google-color.svg"
+                      alt="Google"
+                      className="h-5 w-5"
+                    />
+                    <span className="font-medium">Sign in with Google</span>
+                  </Button>
+
+                  <Button
+                    onClick={() => alert('Apple login coming soon!')}
+                    variant="outline"
+                    className="w-full flex items-center justify-center gap-2 transition transform hover:scale-105 hover:border-black bg-white text-black"
+                  >
+                    <img
+                      src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg"
+                      alt="Apple"
+                      className="h-5 w-5"
+                    />
+                    <span className="font-medium">Sign in with Apple</span>
+                  </Button>
                 </div>
               </div>
 

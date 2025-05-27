@@ -14,6 +14,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 
+const DEFAULT_PROFILE_PIC =
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=random';
+
 const Header = () => {
   const { user, logout, notifications } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -50,11 +53,10 @@ const Header = () => {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`text-sm font-medium transition-colors ${
-                  location.pathname === item.href
+                className={`text-sm font-medium transition-colors ${location.pathname === item.href
                     ? 'text-blue-600 dark:text-blue-400'
                     : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'
-                }`}
+                  }`}
               >
                 {item.name}
               </Link>
@@ -115,7 +117,7 @@ const Header = () => {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="p-1">
                       <img
-                        src={user.profilePicture}
+                        src={user.profilePicture || DEFAULT_PROFILE_PIC}
                         alt={user.name}
                         className="w-8 h-8 rounded-full object-cover"
                       />
@@ -173,11 +175,10 @@ const Header = () => {
                   key={item.name}
                   to={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    location.pathname === item.href
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${location.pathname === item.href
                       ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
+                    }`}
                 >
                   {item.name}
                 </Link>

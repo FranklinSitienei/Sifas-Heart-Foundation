@@ -6,13 +6,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Calendar, Trophy, Bell, Heart, MessageCircle, DollarSign, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+const DEFAULT_PROFILE_PIC =
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=random';
+
 const Profile = () => {
   const { user, achievements, notifications, markNotificationAsRead } = useAuth();
   const [stats, setStats] = useState({
     totalDonations: 0,
     totalAmount: 0,
     commentsPosted: 0,
-    achievementsEarned: 0
+    achievementsEarned: 0,
   });
 
   useEffect(() => {
@@ -36,7 +39,7 @@ const Profile = () => {
           totalDonations: data.totalDonations || 0,
           totalAmount: data.totalAmount || 0,
           commentsPosted: data.commentsPosted || 0,
-          achievementsEarned: achievements.length
+          achievementsEarned: achievements.length,
         });
       } catch (err) {
         console.error('Failed to fetch profile stats:', err);
@@ -48,6 +51,11 @@ const Profile = () => {
     }
   }, [user, achievements.length]);
 
+  // ✅ Null check to prevent crashing
+  if (!user) {
+    return <div className="text-center py-20">Loading profile...</div>;
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Profile Header */}
@@ -56,11 +64,11 @@ const Profile = () => {
           <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-8">
             <div className="relative">
               <img
-                src={user.profilePicture}
+                src={user.profilePicture || DEFAULT_PROFILE_PIC}
                 alt={user.name}
                 className="w-32 h-32 rounded-full object-cover border-4 border-blue-100 dark:border-blue-900"
               />
-              {user.isAdmin && (
+              {user.isAdmin === true && (
                 <Badge className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-blue-600">
                   Admin
                 </Badge>
@@ -75,7 +83,7 @@ const Profile = () => {
                 <div className="flex items-center">
                   <Calendar className="h-4 w-4 mr-2 text-gray-500" />
                   <span className="text-gray-600 dark:text-gray-400">
-                    Member since {user.timestamp}
+                    Member since {new Date(user.timestamp).toLocaleString('default', { month: 'long', year: 'numeric' })}
                   </span>
                 </div>
                 <div className="flex items-center">
@@ -220,11 +228,10 @@ const Profile = () => {
                   {notifications.slice(0, 10).map((notification) => (
                     <div
                       key={notification.id}
-                      className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                        notification.read
-                          ? 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
-                          : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
-                      }`}
+                      className={`p-3 rounded-lg border cursor-pointer transition-colors ${notification.read
+                        ? 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+                        : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                        }`}
                       onClick={() => markNotificationAsRead(notification.id)}
                     >
                       <div className="flex items-start justify-between">
